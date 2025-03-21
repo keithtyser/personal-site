@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Archive - Keith Tyser</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/tsparticles/2.12.0/tsparticles.bundle.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet"/>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          animation: {
+            'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+            'gradient': 'gradient 8s linear infinite',
+            'shine': 'shine 1.5s infinite linear',
+            'shimmer': 'shimmer 2s infinite',
+          },
+          keyframes: {
+            gradient: {
+              '0%': { backgroundPosition: '0% 50%' },
+              '50%': { backgroundPosition: '100% 50%' },
+              '100%': { backgroundPosition: '0% 50%' },
+            },
+            shine: {
+              '0%': { backgroundPosition: '200% center' },
+              '100%': { backgroundPosition: '-200% center' },
+            },
+            shimmer: {
+              '100%': { transform: 'translateX(100%)' },
+            }
+          },
+          backgroundImage: {
+            'gradient-radial': 'radial-gradient(circle, var(--tw-gradient-stops))',
+            'gradient-conic': 'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))',
+          },
+        },
+      },
+    }
+  </script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+    
+    :root {
+      --card-shadow-color: rgba(0, 0, 0, 0.1);
+      --card-shadow-color-dark: rgba(0, 0, 0, 0.3);
+    }
+
+    .dark {
+      --card-shadow-color: rgba(0, 0, 0, 0.4);
+      --card-shadow-color-dark: rgba(0, 0, 0, 0.6);
+    }
+    
+    body { 
+      font-family: 'Inter', sans-serif;
+      max-width: 100%;
+      overflow-x: hidden;
+      opacity: 1 !important;
+    }
+
+    .hover-trigger .hover-target { opacity: 0; transition: all 0.2s; }
+    .hover-trigger:hover .hover-target { opacity: 1; }
+    
+    .gradient-text {
+      background: linear-gradient(90deg, #3B82F6, #8B5CF6, #EC4899);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      background-size: 200% 100%;
+      animation: gradient 8s linear infinite;
+    }
+    
+    .glass-effect {
+      backdrop-filter: blur(16px) saturate(180%);
+      -webkit-backdrop-filter: blur(16px) saturate(180%);
+      background: rgba(255, 255, 255, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 
+        0 8px 32px 0 rgba(31, 38, 135, 0.15),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+    }
+    
+    .dark .glass-effect {
+      background: rgba(17, 24, 39, 0.8);
+      border-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .section-heading {
+      position: relative;
+      display: inline-block;
+      background: linear-gradient(
+        90deg,
+        #3B82F6,
+        #8B5CF6,
+        #EC4899,
+        #3B82F6
+      );
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      background-size: 300% 100%;
+      animation: gradient 8s infinite linear;
+      font-weight: 600;
+      letter-spacing: 0.75px;
+      transform-style: preserve-3d;
+      text-shadow: 
+        0 0 30px rgba(59, 130, 246, 0.3),
+        0 0 60px rgba(139, 92, 246, 0.1);
+    }
+
+    .section-heading::before {
+      content: '';
+      position: absolute;
+      inset: -10px -20px;
+      background: radial-gradient(
+        circle at var(--x, 50%) var(--y, 50%),
+        rgba(59, 130, 246, 0.1) 0%,
+        transparent 70%
+      );
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      border-radius: 20px;
+    }
+
+    .section-heading:hover::before {
+      opacity: 1;
+    }
+
+    .link-underline {
+      position: relative;
+      text-decoration: none;
+    }
+
+    .link-underline::after {
+      content: '';
+      position: absolute;
+      width: 100%;
+      height: 2px;
+      bottom: -2px;
+      left: 0;
+      background: linear-gradient(90deg, #3B82F6, #8B5CF6);
+      transform: scaleX(0);
+      transform-origin: bottom right;
+      transition: transform 0.3s ease;
+    }
+
+    .link-underline:hover::after {
+      transform: scaleX(1);
+      transform-origin: bottom left;
+    }
+
+    .custom-scrollbar {
+      scrollbar-width: thin;
+      scrollbar-color: rgba(156, 163, 175, 0.5) transparent;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background-color: rgba(156, 163, 175, 0.5);
+      border-radius: 20px;
+    }
+
+    /* Morphing Background */
+    .morphing-bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -2;
+      background: radial-gradient(
+        circle at var(--x, 50%) var(--y, 50%),
+        rgba(59, 130, 246, 0.2),
+        rgba(139, 92, 246, 0.2),
+        rgba(236, 73, 153, 0.2)
+      );
+      filter: blur(120px);
+      animation: morphBackground 30s ease-in-out infinite;
+      mix-blend-mode: soft-light;
+      opacity: 0.7;
+    }
+
+    @keyframes morphBackground {
+      0% { transform: scale(1) rotate(0deg); }
+      25% { transform: scale(1.2) rotate(5deg); }
+      50% { transform: scale(1) rotate(0deg); }
+      75% { transform: scale(1.2) rotate(-5deg); }
+      100% { transform: scale(1) rotate(0deg); }
+    }
+
+    @keyframes gradient {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+  </style>
+ </head>
+ <body class="bg-gradient-to-br from-white via-gray-50 to-white dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 text-gray-900 dark:text-white transition-colors duration-500 custom-scrollbar">
+  <div id="particles-js"></div>
+  <div class="fixed bottom-6 right-6 z-50">
+    <button onclick="document.documentElement.classList.toggle('dark')" 
+            class="p-4 rounded-full bg-white dark:bg-gray-800 shadow-lg hover:shadow-xl transition-all duration-300 glass-effect group">
+      <i class="fas fa-moon dark:hidden text-gray-700 group-hover:text-indigo-500 transition-colors"></i>
+      <i class="fas fa-sun hidden dark:block text-yellow-400 group-hover:text-yellow-300 transition-colors"></i>
+    </button>
+  </div>
+
+  <div class="max-w-[420px] mx-auto px-4 sm:px-6">
+    <header class="flex justify-between items-center mb-8 pt-6">
+      <div class="flex items-center gap-3">
+        <a href="/" class="group relative">
+          <div class="flex items-center gap-2">
+            <div class="relative group">
+              <div class="absolute -inset-0.5 bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 rounded-full opacity-75 group-hover:opacity-100 blur transition duration-300"></div>
+              <img alt="Profile picture of Keith Tyser" class="relative rounded-full w-10 h-10 sm:w-12 sm:h-12 object-cover transition-all duration-300 group-hover:scale-105" src="profile_pic.jpeg"/>
+            </div>
+            <div>
+              <h1 class="text-lg sm:text-xl font-semibold">Keith Tyser</h1>
+              <div class="flex items-center gap-1.5">
+                <span class="text-sm text-gray-600 dark:text-gray-400">Archive</span>
+              </div>
+            </div>
+          </div>
+          <span class="absolute -left-2 -top-2 text-xs px-1.5 py-0.5 rounded-md bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 group-hover:bg-indigo-100 dark:group-hover:bg-indigo-900 group-hover:text-indigo-700 dark:group-hover:text-indigo-300 transition-colors">
+            <i class="fas fa-home mr-1 text-xs"></i>
+            <span class="hidden sm:inline">Home</span>
+          </span>
+        </a>
+      </div>
+    </header>
+
+    <main class="space-y-8 relative !opacity-100">
+      <!-- Archive Intro -->
+      <section class="!opacity-100">
+        <h1 class="section-heading text-2xl font-semibold mb-4">Project Archive</h1>
+        <p class="text-sm sm:text-base text-gray-600 dark:text-gray-400 mb-6 leading-relaxed">
+          A collection of past projects I've worked on. These projects showcase my journey and evolution as an AI/ML engineer and data scientist.
+        </p>
+      </section>
+
+      <!-- Projects List -->
+      <section>
+        <h2 class="section-heading font-medium mb-6 text-lg">Past Projects</h2>
+        <div class="space-y-3">
+          <!-- Example Past Project 1 -->
+          <a href="https://example.com/project1" class="group p-3 rounded-lg bg-white/5 dark:bg-gray-800/30 hover:bg-white/10 dark:hover:bg-gray-800/50 transition-all duration-300 flex items-center justify-between border border-white/10">
+            <div class="flex items-center gap-2">
+              <i class="fas fa-robot text-gray-400 group-hover:text-indigo-500 dark:group-hover:text-indigo-400 transition-colors"></i>
+              <span class="text-gray-600 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">AI Chatbot Assistant</span>
+            </div>
+            <div class="flex items-center gap-3">
+              <span class="text-xs text-gray-400">Dec 2023</span>
+              <i class="fas fa-arrow-right text-xs text-gray-400 transform translate-x-0 group-hover:translate-x-1 transition-transform"></i>
+            </div>
+          </a>
+
+          <!-- Example Past Project 2 -->
+          <a href="https://example.com/project2" class="group p-3 rounded-lg bg-white/5 dark:bg-gray-800/30 hover:bg-white/10 dark:hover:bg-gray-800/50 transition-all duration-300 flex items-center justify-between border border-white/10">
+            <div class="flex items-center gap-2">
+              <i class="fas fa-chart-line text-gray-400 group-hover:text-indigo-500 dark:group-hover:text-indigo-400 transition-colors"></i>
+              <span class="text-gray-600 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">Financial Analytics Dashboard</span>
+            </div>
+            <div class="flex items-center gap-3">
+              <span class="text-xs text-gray-400">Oct 2023</span>
+              <i class="fas fa-arrow-right text-xs text-gray-400 transform translate-x-0 group-hover:translate-x-1 transition-transform"></i>
+            </div>
+          </a>
+
+          <!-- Example Past Project 3 -->
+          <a href="https://example.com/project3" class="group p-3 rounded-lg bg-white/5 dark:bg-gray-800/30 hover:bg-white/10 dark:hover:bg-gray-800/50 transition-all duration-300 flex items-center justify-between border border-white/10">
+            <div class="flex items-center gap-2">
+              <i class="fas fa-brain text-gray-400 group-hover:text-indigo-500 dark:group-hover:text-indigo-400 transition-colors"></i>
+              <span class="text-gray-600 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">NLP Research Paper</span>
+            </div>
+            <div class="flex items-center gap-3">
+              <span class="text-xs text-gray-400">Aug 2023</span>
+              <i class="fas fa-arrow-right text-xs text-gray-400 transform translate-x-0 group-hover:translate-x-1 transition-transform"></i>
+            </div>
+          </a>
+
+          <!-- Example Past Project 4 -->
+          <a href="https://example.com/project4" class="group p-3 rounded-lg bg-white/5 dark:bg-gray-800/30 hover:bg-white/10 dark:hover:bg-gray-800/50 transition-all duration-300 flex items-center justify-between border border-white/10">
+            <div class="flex items-center gap-2">
+              <i class="fas fa-image text-gray-400 group-hover:text-indigo-500 dark:group-hover:text-indigo-400 transition-colors"></i>
+              <span class="text-gray-600 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">Image Generation API</span>
+            </div>
+            <div class="flex items-center gap-3">
+              <span class="text-xs text-gray-400">Jul 2023</span>
+              <i class="fas fa-arrow-right text-xs text-gray-400 transform translate-x-0 group-hover:translate-x-1 transition-transform"></i>
+            </div>
+          </a>
+
+          <!-- Example Past Project 5 -->
+          <a href="https://example.com/project5" class="group p-3 rounded-lg bg-white/5 dark:bg-gray-800/30 hover:bg-white/10 dark:hover:bg-gray-800/50 transition-all duration-300 flex items-center justify-between border border-white/10">
+            <div class="flex items-center gap-2">
+              <i class="fas fa-lock text-gray-400 group-hover:text-indigo-500 dark:group-hover:text-indigo-400 transition-colors"></i>
+              <span class="text-gray-600 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">Cybersecurity ML Model</span>
+            </div>
+            <div class="flex items-center gap-3">
+              <span class="text-xs text-gray-400">May 2023</span>
+              <i class="fas fa-arrow-right text-xs text-gray-400 transform translate-x-0 group-hover:translate-x-1 transition-transform"></i>
+            </div>
+          </a>
+        </div>
+      </section>
+
+      <!-- Back to Main Site -->
+      <section class="pt-4">
+        <a href="/" class="magnetic-button glow-effect gradient-border group inline-flex items-center gap-2 bg-gradient-to-r from-gray-900 via-gray-800 to-gray-700 dark:from-white dark:via-gray-100 dark:to-gray-200 text-white dark:text-gray-900 px-5 py-2.5 rounded-full font-medium hover:shadow-lg hover:scale-105 transition-all duration-300 text-sm relative overflow-hidden">
+          <span class="magnetic-content flex items-center">
+            <i class="fas fa-arrow-left mr-2"></i>
+            Back to Main Site
+          </span>
+          <span class="absolute inset-0 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
+        </a>
+      </section>
+    </main>
+
+    <footer class="mt-12 py-6 border-t border-gray-200 dark:border-gray-800 text-center text-gray-600 dark:text-gray-400 text-xs sm:text-sm">
+      <div class="flex justify-center gap-4 mb-3">
+        <a href="https://linkedin.com/in/keithtyser/" class="link-underline hover:text-gray-900 dark:hover:text-white transition-colors" aria-label="LinkedIn Profile">
+          <i class="fab fa-linkedin"></i>
+        </a>
+        <a href="https://github.com/keithtyser" class="link-underline hover:text-gray-900 dark:hover:text-white transition-colors" aria-label="GitHub Profile">
+          <i class="fab fa-github"></i>
+        </a>
+        <a href="https://twitter.com/keithtyser" class="link-underline hover:text-gray-900 dark:hover:text-white transition-colors" aria-label="X (Twitter) Profile">
+          <i class="fa-brands fa-x-twitter"></i>
+        </a>
+        <a href="https://scholar.google.com/citations?user=YOUR_ID" class="link-underline hover:text-gray-900 dark:hover:text-white transition-colors" aria-label="Google Scholar Profile">
+          <i class="fas fa-graduation-cap"></i>
+        </a>
+        <a href="mailto:keithtyser@gmail.com" class="link-underline hover:text-gray-900 dark:hover:text-white transition-colors" aria-label="Email">
+          <i class="fas fa-envelope"></i>
+        </a>
+      </div>
+      <p>© 2025 Keith Tyser. All rights reserved.</p>
+    </footer>
+  </div>
+
+  <div class="morphing-bg"></div>
+
+  <script>
+    // Initialize particles
+    tsParticles.load("particles-js", {
+      particles: {
+        number: { value: 30 },
+        color: { value: ["#3B82F6", "#8B5CF6", "#EC4899"] },
+        shape: { type: "circle" },
+        opacity: {
+          value: 0.3,
+          random: true,
+          anim: {
+            enable: true,
+            speed: 0.5,
+            opacity_min: 0.1,
+            sync: false
+          }
+        },
+        size: {
+          value: 3,
+          random: true,
+          anim: {
+            enable: true,
+            speed: 2,
+            size_min: 0.1,
+            sync: false
+          }
+        },
+        move: {
+          enable: true,
+          speed: 0.8,
+          direction: "none",
+          random: true,
+          straight: false,
+          outModes: "out",
+          attract: {
+            enable: true,
+            rotateX: 600,
+            rotateY: 1200
+          }
+        },
+        links: {
+          enable: true,
+          distance: 150,
+          color: "#8B5CF6",
+          opacity: 0.12,
+          width: 1,
+          triangles: {
+            enable: true,
+            opacity: 0.05
+          }
+        }
+      },
+      interactivity: {
+        events: {
+          onHover: {
+            enable: true,
+            mode: ["grab", "bubble"]
+          },
+          onClick: {
+            enable: true,
+            mode: "push"
+          }
+        },
+        modes: {
+          grab: {
+            distance: 200,
+            links: { opacity: 0.25 }
+          },
+          bubble: {
+            distance: 200,
+            size: 6,
+            duration: 2,
+            opacity: 0.6
+          },
+          push: { particles_nb: 3 }
+        }
+      }
+    });
+
+    // Track mouse for morphing background
+    document.addEventListener('mousemove', e => {
+      const x = (e.clientX / window.innerWidth) * 100;
+      const y = (e.clientY / window.innerHeight) * 100;
+      document.querySelector('.morphing-bg').style.setProperty('--x', `${x}%`);
+      document.querySelector('.morphing-bg').style.setProperty('--y', `${y}%`);
+    });
+
+    // Magnetic button effect
+    document.querySelectorAll('.magnetic-button').forEach(button => {
+      button.addEventListener('mousemove', e => {
+        const rect = button.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        
+        const centerX = rect.width / 2;
+        const centerY = rect.height / 2;
+        
+        const deltaX = (x - centerX) / centerX;
+        const deltaY = (y - centerY) / centerY;
+        
+        button.style.transform = `translate(${deltaX * 10}px, ${deltaY * 10}px)`;
+      });
+
+      button.addEventListener('mouseleave', () => {
+        button.style.transform = '';
+      });
+    });
+  </script>
+ </body>
+</html>
