@@ -8,7 +8,7 @@ When every part of the tool‑chain can reason about your code, the fastest path
 | **Feature‑level implementation & big‑picture editing** | **Gemini 2.5 Pro (MAX)** inside **Cursor** Agent chat | huge context window, blazing fast |
 | **Large, multi‑file diffs** | **RepoPrompt** | instant patch generation on thousand‑line files |
 | **Hands‑on coding IDE** | **Cursor IDE** | AI‑native IDE with inline chat, test runner & git‑aware refactors |
-| **Project management** | **TaskMasterAI** | auto‑prioritises, tracks, and slacks you |
+| **Project management** | **TaskMasterAI** | auto‑prioritizes, tracks, and slacks you |
 
 ---
 
