@@ -5,16 +5,16 @@ When every part of the tool‑chain can reason about your code, the fastest path
 | Layer | Model / Tool | Why it sits here |
 |-------|--------------|------------------|
 | **Architecture & high‑level design** | **OpenAI o3** | best long‑context reasoning, perfect for trade‑off discussions |
-| **Feature‑level implementation & big‑picture editing** | **Gemini 2.5 Pro (MAX)** inside **Windsurf** Agent chat | huge context window, blazing fast |
+| **Feature‑level implementation & big‑picture editing** | **Gemini 2.5 Pro (MAX)** inside **Cursor** Agent chat | huge context window, blazing fast |
 | **Large, multi‑file diffs** | **RepoPrompt** | instant patch generation on thousand‑line files |
-| **Hands‑on coding IDE** | **Windsurf Editor** (Cascade agent) | AI‑native, runs terminals & tests for you |
+| **Hands‑on coding IDE** | **Cursor IDE** | AI‑native IDE with inline chat, test runner & git‑aware refactors |
 | **Project management** | **TaskMasterAI** | auto‑prioritises, tracks, and slacks you |
 
 ---
 
 ## 1. Start with a Product Requirement Doc (PRD)
 
-1. **Open `create-prd.mdc` inside Windsurf.**  
+1. **Open `create-prd.mdc` inside Cursor.**  
 2. In the Agent chat (model = Gemini 2.5 Pro MAX) prompt:
 
    ```text
@@ -66,9 +66,9 @@ Start with 1.1 using @task-list.mdc
 
 ---
 
-## 5. Code comfortably in Windsurf
+## 5. Code comfortably in Cursor
 
-Cascade fixes failing tests *while you type*, predicts your next command, and shares MCP rule files with the Agent chat—so everything stays in sync.
+Cursor’s inline chat fixes failing tests *while you type*, predicts your next command, and re‑writes functions across files—keeping everything in sync with your MCP rule files.
 
 ---
 
