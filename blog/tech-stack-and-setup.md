@@ -1,12 +1,13 @@
----
-title: "Tech Stack & Setup — WIP"
-description: "A living document of the hardware, software, and workflows that power my day-to-day as an AI/ML engineer."
-status: draft
-# change to 'published' when ready
-last_updated: 2025-04-19
----
+# Tech Stack & Setup — WIP
 
-> **Note:** This post is a work‑in‑progress. I'll keep refining it as my stack evolves.
+A living document of the hardware, software, and workflows that power my day-to-day as an AI/ML engineer.
+
+status: draft   # change to 'published' when ready
+
+last_updated: 2025-04-19
+
+
+> **Note:** This post is a work-in-progress. I'll keep refining it as my stack evolves.
 
 ## 1 · Hardware
 
