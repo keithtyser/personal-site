@@ -2,8 +2,7 @@
 
 A living document of the hardware, software, and workflows that power my day-to-day as an AI/ML engineer.
 
-status: draft   # change to 'published' when ready
-
+status: draft
 last_updated: 2025-04-19
 
 
