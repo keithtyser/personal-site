@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI‑First Development Workflow | Keith Tyser</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+<body class="bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 transition-colors duration-300">
+  <main class="max-w-3xl mx-auto px-4 py-10">
+    <header class="mb-10">
+      <a href="../index.html" class="text-sm text-blue-600 dark:text-blue-400 hover:underline">&larr; back home</a>
+    </header>
+    <article id="content" class="prose lg:prose-lg dark:prose-invert mx-auto"></article>
+  </main>
+
+  <script>
+    fetch('ai-first-development-workflow.md')
+      .then(res => res.text())
+      .then(md => { document.getElementById('content').innerHTML = marked.parse(md); });
+  </script>
+</body>
+</html>
