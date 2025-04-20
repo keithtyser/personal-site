@@ -14,15 +14,30 @@
     /* dark-mode tweaks for prose */
     .dark .prose :where(th, td) { border-color: rgba(255,255,255,0.15); }
     .prose table { width: 100%; }
+    /* Ensure sticky positioning works */
+    .sticky-nav { position: -webkit-sticky; position: sticky; top: 2rem; /* Adjust top offset as needed */ }
   </style>
 </head>
 <body class="bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 transition-colors duration-300">
-  <main class="max-w-3xl mx-auto px-4 py-10">
-    <header class="mb-10">
-      <a href="../index.html" class="text-sm text-blue-600 dark:text-blue-400 hover:underline">&larr; back home</a>
-    </header>
-    <article id="content" class="prose lg:prose-lg dark:prose-invert mx-auto"></article>
-  </main>
+
+  <div class="flex flex-col lg:flex-row max-w-7xl mx-auto">
+    <!-- Sidebar Nav -->
+    <nav id="toc-sidebar" class="w-full lg:w-64 xl:w-72 px-4 py-10 lg:sticky-nav lg:self-start lg:max-h-screen lg:overflow-y-auto hidden lg:block border-b lg:border-b-0 lg:border-r border-gray-200 dark:border-gray-700 mb-6 lg:mb-0 lg:mr-6">
+      <h2 class="text-lg font-semibold mb-4">On this page</h2>
+      <ul id="toc-list" class="space-y-2">
+        <!-- ToC items will be generated here -->
+         <li><a href="#" class="text-sm text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400">Loading...</a></li>
+      </ul>
+    </nav>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 px-4 py-10 lg:py-0">
+      <header class="mb-10">
+        <a href="../index.html" class="text-sm text-blue-600 dark:text-blue-400 hover:underline">&larr; back home</a>
+      </header>
+      <article id="content" class="prose lg:prose-lg dark:prose-invert mx-auto max-w-3xl"></article>
+    </main>
+  </div>
 
   <script>
     document.addEventListener('DOMContentLoaded', () => {
@@ -81,6 +96,32 @@
               });
 
               pre.appendChild(button);
+            });
+
+            // Generate ToC for sidebar
+            const tocList = document.getElementById('toc-list');
+            const headings = contentElement.querySelectorAll('h2, h3'); // Select h2 and h3
+            tocList.innerHTML = ''; // Clear the loading message
+
+            headings.forEach(heading => {
+              if (heading.id) { // Only include headings that have an ID
+                const listItem = document.createElement('li');
+                const link = document.createElement('a');
+                link.href = `#${heading.id}`;
+                link.textContent = heading.textContent;
+                
+                // Base styling
+                let linkClasses = 'block text-sm text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors py-1';
+                
+                // Indent H3s
+                if (heading.tagName === 'H3') {
+                  linkClasses += ' pl-4';
+                }
+
+                link.className = linkClasses;
+                listItem.appendChild(link);
+                tocList.appendChild(listItem);
+              }
             });
 
           } catch (e) {
