@@ -276,7 +276,7 @@ COMPLETION NOTES:
 
 ### VERIFICATION REPORT
 Present the verification report in this format:
-```
+
 # FIDELITY VERIFICATION
 
 FIDELITY ASSESSMENT: [X%]
@@ -292,11 +292,10 @@ NUANCE ADJUSTMENTS NEEDED:
 - [Etc.]
 
 RECOMMENDATION: [Refinement needed / High fidelity achieved]
-```
 
 ### FINAL SUMMARY
 Present the final summary in this format:
-```
+
 # FINAL HYPERFIDELITY SUMMARY (100% FIDELITY)
 
 [Fully refined summary with all gaps addressed]
@@ -307,7 +306,6 @@ VERIFICATION COMPLETE:
 - Original tone and style maintained
 - Organization optimized for clarity
 - 100% fidelity achieved
-```
 
 ## ACTIVATION
 Begin with this exact message when provided with text to summarize:
