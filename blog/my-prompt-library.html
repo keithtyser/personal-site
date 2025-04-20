@@ -25,40 +25,42 @@
   </main>
 
   <script>
-    // Enable GitHub‑style heading IDs so Table of Contents links work
-    if (typeof markedGfmHeadingId !== 'undefined') {
-      marked.use(markedGfmHeadingId.gfmHeadingId());
-      console.log('marked-gfm-heading-id plugin applied.'); // Log: Plugin applied
-    } else {
-      console.warn('markedGfmHeadingId plugin not loaded; TOC anchors may not work.');
-    }
-    console.log('Script start. Marked configured.'); // Log: Script start
+    document.addEventListener('DOMContentLoaded', () => {
+      // Enable GitHub‑style heading IDs so Table of Contents links work
+      if (typeof markedGfmHeadingId !== 'undefined') {
+        marked.use(markedGfmHeadingId.gfmHeadingId());
+        console.log('marked-gfm-heading-id plugin applied.'); // Log: Plugin applied
+      } else {
+        console.warn('markedGfmHeadingId plugin not loaded; TOC anchors may not work.');
+      }
+      console.log('Script start. Marked configured.'); // Log: Script start
 
-    fetch('my-prompt-library.md')
-      .then(res => {
-        console.log('Fetched markdown, status:', res.status); // Log: Fetch status
-        if (!res.ok) {
-          throw new Error(`HTTP error! status: ${res.status}`);
-        }
-        return res.text();
-      })
-      .then(md => {
-        console.log('Markdown content fetched:', md.substring(0, 100) + '...'); // Log: Raw MD (first 100 chars)
-        try {
-          console.log('Final content passed to marked.parse():', md.substring(0, 100) + '...'); // Log: Content for marked (first 100 chars)
-          document.getElementById('content').innerHTML = marked.parse(md.trim());
-          console.log('Content updated in DOM.'); // Log: DOM updated
-        } catch (e) {
-          console.error('Error during parsing or DOM update:', e); // Log: Error caught
-          // Fallback: Render the whole thing if parsing fails
-          console.log('Falling back to rendering raw markdown due to error.'); // Log: Fallback trigger
-          document.getElementById('content').innerHTML = marked.parse(md);
-        }
-      })
-      .catch(error => {
-         console.error('Error fetching markdown:', error); // Log: Fetch error
-         document.getElementById('content').innerHTML = '<p>Error loading blog content.</p>';
-      });
+      fetch('my-prompt-library.md')
+        .then(res => {
+          console.log('Fetched markdown, status:', res.status); // Log: Fetch status
+          if (!res.ok) {
+            throw new Error(`HTTP error! status: ${res.status}`);
+          }
+          return res.text();
+        })
+        .then(md => {
+          console.log('Markdown content fetched:', md.substring(0, 100) + '...'); // Log: Raw MD (first 100 chars)
+          try {
+            console.log('Final content passed to marked.parse():', md.substring(0, 100) + '...'); // Log: Content for marked (first 100 chars)
+            document.getElementById('content').innerHTML = marked.parse(md.trim());
+            console.log('Content updated in DOM.'); // Log: DOM updated
+          } catch (e) {
+            console.error('Error during parsing or DOM update:', e); // Log: Error caught
+            // Fallback: Render the whole thing if parsing fails
+            console.log('Falling back to rendering raw markdown due to error.'); // Log: Fallback trigger
+            document.getElementById('content').innerHTML = marked.parse(md);
+          }
+        })
+        .catch(error => {
+           console.error('Error fetching markdown:', error); // Log: Fetch error
+           document.getElementById('content').innerHTML = '<p>Error loading blog content.</p>';
+        });
+    });
   </script>
 </body>
 </html> 
