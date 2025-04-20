@@ -47,8 +47,42 @@
           console.log('Markdown content fetched:', md.substring(0, 100) + '...'); // Log: Raw MD (first 100 chars)
           try {
             console.log('Final content passed to marked.parse():', md.substring(0, 100) + '...'); // Log: Content for marked (first 100 chars)
-            document.getElementById('content').innerHTML = marked.parse(md.trim());
+            const contentElement = document.getElementById('content');
+            contentElement.innerHTML = marked.parse(md.trim());
             console.log('Content updated in DOM.'); // Log: DOM updated
+
+            // Add copy buttons to code blocks
+            contentElement.querySelectorAll('pre').forEach(pre => {
+              // Ensure the pre block itself is positioned relatively for the button
+              pre.style.position = 'relative';
+              pre.style.paddingTop = '2.5rem'; // Add padding to make space for the button
+
+              const button = document.createElement('button');
+              button.textContent = 'Copy';
+              // Tailwind classes for styling and positioning
+              button.className = 'absolute top-2 right-2 px-2 py-1 text-xs font-medium rounded bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors';
+
+              button.addEventListener('click', () => {
+                const code = pre.querySelector('code');
+                if (code) {
+                  navigator.clipboard.writeText(code.textContent || '').then(() => {
+                    button.textContent = 'Copied!';
+                    setTimeout(() => {
+                      button.textContent = 'Copy';
+                    }, 1500); // Reset after 1.5 seconds
+                  }).catch(err => {
+                    console.error('Failed to copy text: ', err);
+                    button.textContent = 'Error'; // Indicate copy failure
+                     setTimeout(() => {
+                      button.textContent = 'Copy';
+                    }, 1500);
+                  });
+                }
+              });
+
+              pre.appendChild(button);
+            });
+
           } catch (e) {
             console.error('Error during parsing or DOM update:', e); // Log: Error caught
             // Fallback: Render the whole thing if parsing fails
