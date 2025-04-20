@@ -1,0 +1,29 @@
+{
+  "name": "personal-site",
+  "version": "1.0.0",
+  "description": "A modern, interactive personal website showcasing my work as an AI/ML Engineer and Data Scientist. The site features a clean, minimalist design with smooth animations and interactive elements.",
+  "main": "tailwind.config.js",
+  "dependencies": {
+    "cssesc": "^3.0.0",
+    "lodash.castarray": "^4.4.0",
+    "lodash.isplainobject": "^4.0.6",
+    "lodash.merge": "^4.6.2",
+    "postcss-selector-parser": "^6.0.10",
+    "util-deprecate": "^1.0.2"
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.4.0",
+    "esbuild": "^0.20.2",
+    "postcss": "^8.4.0",
+    "tailwindcss": "^3.4.0"
+  },
+  "scripts": {
+    "build:css": "npx tailwindcss -i ./src/input.css -o ./public/assets/css/styles.css --minify",
+    "build:js": "npx esbuild public/assets/js/ui.js --bundle --outfile=public/assets/js/app.bundle.js --minify --format=esm",
+    "build": "npm run build:css && npm run build:js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+ <head>
+  <!-- Include Head Partial -->
+  <!--#include virtual="/partials/head.html" -->
+  <title>Keith Tyser - AI/ML Engineer & Data Scientist</title>
+ </head>
+ <body class="bg-gradient-to-br from-white via-gray-50 to-white dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 text-gray-900 dark:text-white transition-colors duration-500 custom-scrollbar">
+  <div id="particles-js"></div>
+  <div class="fixed bottom-6 right-6 z-50">
+    <button onclick="document.documentElement.classList.toggle('dark')" 
+            class="p-4 rounded-full bg-white dark:bg-gray-800 shadow-lg hover:shadow-xl transition-all duration-300 glass-effect group">
+      <i class="fas fa-moon dark:hidden text-gray-700 group-hover:text-indigo-500 transition-colors"></i>
+      <i class="fas fa-sun hidden dark:block text-yellow-400 group-hover:text-yellow-300 transition-colors"></i>
+    </button>
+  </div>
+
+  <div class="max-w-[420px] mx-auto px-4 sm:px-6">
+    <!-- Include Header Partial -->
+    <!--#include virtual="/partials/header.html" -->
+
+    <main class="space-y-12 relative !opacity-100">
+      <!-- Include Section Partials -->
+      <!--#include virtual="/partials/sections/introduction.html" -->
+      <!--#include virtual="/partials/sections/recently-finished.html" -->
+      <!--#include virtual="/partials/sections/currently-working-on.html" -->
+      <!--#include virtual="/partials/sections/writing.html" -->
+      <!--#include virtual="/partials/sections/more.html" -->
+    </main>
+
+    <!-- Include Footer Partial -->
+    <!--#include virtual="/partials/footer.html" -->
+  </div>
+
+  <div class="morphing-bg"></div>
+
+  <!-- Link bundled JS -->
+  <script src="/assets/js/app.bundle.js" defer></script>
+ </body>
+</html>
+
