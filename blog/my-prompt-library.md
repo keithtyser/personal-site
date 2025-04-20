@@ -192,7 +192,7 @@ Clear, professional, concise. Avoid marketing language.
 
 ---  
 
-**Begin by cloning the repository, mapping the current architecture, and returning the initial *Refactor Plan* section. Ask for clarification only if essential information is missing.**  
+**Begin by mapping the current architecture, and returning the initial *Refactor Plan* section. Ask for clarification only if essential information is missing.**  
 
 ---  
 ```
