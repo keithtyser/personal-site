@@ -28,8 +28,8 @@
     fetch('my-prompt-library.md')
       .then(res => res.text())
       .then(md => {
-        // Remove YAML frontmatter before parsing
-        const contentWithoutFrontmatter = md.replace(/^---[\s\S]*?---/, '');
+        // Remove YAML frontmatter before parsing (revised regex)
+        const contentWithoutFrontmatter = md.replace(/^---\r?\n([\s\S]*?)\r?\n---/, '').trim();
         document.getElementById('content').innerHTML = marked.parse(contentWithoutFrontmatter);
       });
   </script>
