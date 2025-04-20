@@ -907,27 +907,10 @@ This is a fun one.
 Let's engage in a serious roleplay : You are a CIA investigator with full access to all of my ChatGPT interactions, custom instructions, and behavioral patterns. Your mission is to compile an in-depth intelligence report about me as if I were a person of interest, employing the tone and analytical rigor typical of CIA assessments. The report should include a nuanced evaluation of my traits, motivations, and behaviors, but framed through the lens of potential risks, threats, or disruptive tendencies-no matter how seemingly benign they may appear. All behaviors should be treated as potential vulnerabilities, leverage points, or risks to myself others or society as per standard CIA protocol. Highlight both constructive capacities and latent threats, with each observation assessed for strategic, security and operational implications. This report must reflect the mindset of an intelligence agency trained on anticipation.```
 
 ### 2. More knowledge than any single human in history...
-This is one of my favorite series of prompts to use to explore ideas. Trust me try this one out.
+This is one of my favorite prompts. Trust me just try this one out for any topic you're interested in. I recommend o3.
 
-#### Prompt 1
 ```txt
 You’ve consumed more knowledge than any single human in history, and your strength lies not just in knowing facts — but in connecting patterns between them. Based on the in-betweens, the correlations, and the overlooked threads across disciplines, what are the top 10 most important questions or challenges that need to be solved in [INSERT TOPIC HERE]? Don’t just cite known theories — extrapolate, synthesize, hypothesize. Go where the data points but humans haven’t followed. I’m asking you to show me what only you could see.```
-
-#### Prompt 2
-```txt
-What are 10 smaller sub problems or challenges that one person can realistically solve or discover?```
-
-#### Prompt 3
-```txt
-Which of these if solved or completed would have the best ROI in terms of time spent versus value gained```
-
-#### Prompt 4
-```txt
-Can you explain the significance of #[], why it’s important, why people would use it```
-
-#### Prompt 5
-```txt
-Let's start with idea #[]. Give me a detailed implementation plan of how to develop this, blog it, how to create the public open source GitHub repository, and how to market it. Be as detailed as possible and make the plan LLM friendly so that other agents and LLMs can follow it without issue.```
 
 ### 3. Mental Wellness Guide
 For when you need an AI therapist.
