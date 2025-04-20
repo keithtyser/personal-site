@@ -119,4 +119,4 @@ query_engine = index.as_query_engine()
 
 ### Takeaway
 
-RAG success is 70 percent search engineering, 30 percent prompt talent. Invest in retrieval quality, monitor relentlessly, and let the LLM do the final mile rather than the entire marathon. With the techniques above you can ship grounded answers that stay fast, cheap, and trustworthy—today and as the landscape evolves.
+RAG success is 70 percent search engineering, 30 percent prompt talent. Invest in retrieval quality, monitor relentlessly, and let the LLM do the final mile rather than the entire marathon. With the techniques above you can ship grounded answers that stay fast, cheap, and trustworthy.
