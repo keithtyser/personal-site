@@ -7,18 +7,6 @@ A living collection of the AI prompts I reach for every day. Feel free to copy a
 
 ---
 
-## Table of Contents
-1. [Getting Started](#getting-started)
-2. [Coding & Debugging](#coding--debugging)
-3. [Research & Reading](#research--reading)
-4. [Writing & Editing](#writing--editing)
-5. [Productivity & Planning](#productivity--planning)
-6. [Creative Exploration](#creative-exploration)
-7. [Fun & Miscellaneous](#fun--miscellaneous)
-8. [Contributing & Updates](#contributing--updates)
-
----
-
 ## Getting Started
 A quick primer on how to use these prompts.
 - **Pick a prompt** that matches your goal.  
