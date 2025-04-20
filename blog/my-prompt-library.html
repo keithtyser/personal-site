@@ -10,6 +10,8 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js"></script>
   <!-- marked.js for markdown parsing -->
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <!-- Plugin: add GitHub‑style heading IDs -->
+  <script src="https://cdn.jsdelivr.net/npm/marked-gfm-heading-id/lib/index.umd.js"></script>
   <style>
     /* dark-mode tweaks for prose */
     .dark .prose :where(th, td) { border-color: rgba(255,255,255,0.15); }
@@ -25,8 +27,12 @@
   </main>
 
   <script>
-    // Enable header IDs for Table of Contents links
-    marked.use({ headerIds: true });
+    // Enable GitHub‑style heading IDs so Table of Contents links work
+    if (typeof gfmHeadingId !== 'undefined') {
+      marked.use(gfmHeadingId());
+    } else {
+      console.warn('gfmHeadingId plugin not loaded; TOC anchors may not work.');
+    }
     console.log('Script start. Marked configured.'); // Log: Script start
 
     fetch('my-prompt-library.md')
