@@ -22,9 +22,16 @@
   </main>
 
   <script>
+    // Enable header IDs for Table of Contents links
+    marked.use({ headerIds: true });
+
     fetch('my-prompt-library.md')
       .then(res => res.text())
-      .then(md => { document.getElementById('content').innerHTML = marked.parse(md); });
+      .then(md => {
+        // Remove YAML frontmatter before parsing
+        const contentWithoutFrontmatter = md.replace(/^---[\s\S]*?---/, '');
+        document.getElementById('content').innerHTML = marked.parse(contentWithoutFrontmatter);
+      });
   </script>
 </body>
 </html> 
