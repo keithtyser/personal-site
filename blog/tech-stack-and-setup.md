@@ -86,10 +86,9 @@ last_updated: 2025‑04‑19
 
 | Tool | Role in workflow |
 |------|------------------|
-| GPT‑4 / GPT‑4o | planning, refactor, multimodal debugging |
-| Gemini 2.5 Pro | alt reasoning; cross‑check solutions |
-| RepoPrompt | repo Q&A; onboarding agents |
-| TaskMasterAI | task decomposition & progress tracking |
+| GPT o3 | planning, refactor, multimodal debugging |
+| Deep Research | for research duh |
+| Gemini 2.5 Pro | daily coding |
 | Ollama + GGUF | offline LLMs; rapid local RAG tests |
 | GitHub Copilot | inline completion, unit tests |
 
@@ -98,7 +97,7 @@ last_updated: 2025‑04‑19
 ## 10 · Productivity & Knowledge Management
 
 - **Notes**: Obsidian · Dataview, Calendar, GPT‑4 summarizer plugin
-- **Task tracking**: Linear for sprints; `todo.md` for daily log
+- **Task tracking**: `todo.md` for daily log
 - **Keyboard shortcuts / hotkeys**:
   1. `Ctrl‑Shift‑Space` ⇒ AI explain selection
   2. `Alt‑.` ⇒ jump to definition
