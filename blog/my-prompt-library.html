@@ -26,10 +26,11 @@
 
   <script>
     // Enable GitHub‑style heading IDs so Table of Contents links work
-    if (typeof gfmHeadingId !== 'undefined') {
-      marked.use(gfmHeadingId());
+    if (typeof markedGfmHeadingId !== 'undefined') {
+      marked.use(markedGfmHeadingId.gfmHeadingId());
+      console.log('marked-gfm-heading-id plugin applied.'); // Log: Plugin applied
     } else {
-      console.warn('gfmHeadingId plugin not loaded; TOC anchors may not work.');
+      console.warn('markedGfmHeadingId plugin not loaded; TOC anchors may not work.');
     }
     console.log('Script start. Marked configured.'); // Log: Script start
 
