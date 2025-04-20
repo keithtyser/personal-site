@@ -1,9 +1,6 @@
- ---
-title: "Keith’s AI Prompt Library"
-description: "My go‑to prompts for coding, research, writing, and more."
+# Keith’s AI Prompt Library
+My go‑to prompts for coding, research, writing, and more.
 date: 2025‑04‑19
-tags: [ai‑prompts, productivity, creativity]
----
 
 ## Overview
 A living collection of the AI prompts I reach for every day. Feel free to copy any prompt straight from the code blocks.  

@@ -27,31 +27,63 @@
   <script>
     // Enable header IDs for Table of Contents links
     marked.use({ headerIds: true });
+    console.log('Script start. Marked configured.'); // Log: Script start
 
     fetch('my-prompt-library.md')
-      .then(res => res.text())
+      .then(res => {
+        console.log('Fetched markdown, status:', res.status); // Log: Fetch status
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+        return res.text();
+      })
       .then(md => {
+        console.log('Markdown content fetched:', md.substring(0, 100) + '...'); // Log: Raw MD (first 100 chars)
         try {
-          const docs = jsyaml.loadAll(md);
-          let content = '';
-          if (docs.length > 1) {
-            // Assumes first doc is frontmatter, second is content
-            // You could inspect docs[0] here if needed
-            content = docs[1]; 
-          } else {
-            // No frontmatter found, use the whole document
-            content = docs[0];
+          // Check if jsyaml is loaded
+          if (typeof jsyaml === 'undefined') {
+            console.error('jsyaml library not loaded!');
+            throw new Error('jsyaml not loaded');
           }
-          // Ensure content is treated as a string if it's not already
+          console.log('jsyaml library seems loaded.'); // Log: jsyaml check
+          
+          const docs = jsyaml.loadAll(md);
+          console.log('jsyaml.loadAll output:', docs); // Log: Parsed docs
+          
+          let content = '';
+          if (docs && docs.length > 1 && typeof docs[1] !== 'undefined') {
+            // Assumes first doc is frontmatter, second is content
+            console.log('Found frontmatter (docs[0]):', docs[0]); // Log: Frontmatter object
+            content = docs[1]; 
+            console.log('Using docs[1] as content.'); // Log: Content source
+          } else if (docs && docs.length === 1) {
+            // No frontmatter found, use the whole document
+            console.log('No frontmatter found, using docs[0] as content.'); // Log: Content source
+            content = docs[0];
+          } else {
+             console.warn('jsyaml.loadAll returned unexpected structure, falling back.', docs); // Log: Unexpected structure
+             content = md; // Fallback to raw md if parsing is weird
+          }
+          
+          // Ensure content is treated as a string
           if (typeof content !== 'string') {
+            console.log('Converting content to string. Original type:', typeof content); // Log: Type conversion
             content = String(content);
           }
+          
+          console.log('Final content passed to marked.parse():', content.substring(0, 100) + '...'); // Log: Content for marked (first 100 chars)
           document.getElementById('content').innerHTML = marked.parse(content.trim());
+          console.log('Content updated in DOM.'); // Log: DOM updated
         } catch (e) {
-          console.error('Error parsing markdown or frontmatter:', e);
+          console.error('Error during parsing or DOM update:', e); // Log: Error caught
           // Fallback: Render the whole thing if parsing fails
+          console.log('Falling back to rendering raw markdown due to error.'); // Log: Fallback trigger
           document.getElementById('content').innerHTML = marked.parse(md);
         }
+      })
+      .catch(error => {
+         console.error('Error fetching markdown:', error); // Log: Fetch error
+         document.getElementById('content').innerHTML = '<p>Error loading blog content.</p>';
       });
   </script>
 </body>
