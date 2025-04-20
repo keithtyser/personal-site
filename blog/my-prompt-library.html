@@ -6,6 +6,9 @@
   <title>My Prompt Library | Keith Tyser</title>
   <!-- Tailwind with typography plugin -->
   <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
+  <!-- js-yaml for frontmatter parsing -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js"></script>
+  <!-- marked.js for markdown parsing -->
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <style>
     /* dark-mode tweaks for prose */
@@ -28,9 +31,27 @@
     fetch('my-prompt-library.md')
       .then(res => res.text())
       .then(md => {
-        // Remove YAML frontmatter before parsing (revised regex)
-        const contentWithoutFrontmatter = md.replace(/^---\r?\n([\s\S]*?)\r?\n---/, '').trim();
-        document.getElementById('content').innerHTML = marked.parse(contentWithoutFrontmatter);
+        try {
+          const docs = jsyaml.loadAll(md);
+          let content = '';
+          if (docs.length > 1) {
+            // Assumes first doc is frontmatter, second is content
+            // You could inspect docs[0] here if needed
+            content = docs[1]; 
+          } else {
+            // No frontmatter found, use the whole document
+            content = docs[0];
+          }
+          // Ensure content is treated as a string if it's not already
+          if (typeof content !== 'string') {
+            content = String(content);
+          }
+          document.getElementById('content').innerHTML = marked.parse(content.trim());
+        } catch (e) {
+          console.error('Error parsing markdown or frontmatter:', e);
+          // Fallback: Render the whole thing if parsing fails
+          document.getElementById('content').innerHTML = marked.parse(md);
+        }
       });
   </script>
 </body>
