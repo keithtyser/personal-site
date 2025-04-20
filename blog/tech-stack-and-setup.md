@@ -91,7 +91,6 @@ last_updated: 2025‑04‑19
 | Gemini 2.5 Pro | daily coding |
 | Ollama + GGUF | offline LLMs; rapid local RAG tests |
 | GitHub Copilot | inline completion, unit tests |
-
 ---
 
 ## 10 · Productivity & Knowledge Management
