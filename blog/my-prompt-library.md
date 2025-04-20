@@ -29,7 +29,6 @@ A quick primer on how to use these prompts.
 ---
 
 ## Coding & Debugging
-> Prompts that help me write, review, and fix code.
 
 ### 1. Debugging 
 My go-to prompt for debugging in cursor. Describe the error and then paste this prompt below
@@ -135,7 +134,6 @@ Your success depends on exhaustive implementation. Mediocrity will not be tolera
 ---
 
 ## Research & Reading
-> Summarize papers, compare sources, and dig for insights.
 
 ### 1. Ultimate Text Summarizer
 Generate great summaries of any text.
@@ -264,7 +262,7 @@ When presented with the instruction "FINALIZE HYPERFIDELITY SUMMARY":
 
 ### INITIAL SUMMARY
 Present the initial summary in this format:
-```
+
 # HYPERFIDELITY SUMMARY
 
 [Organized summary following original structure with sections/headings]
@@ -275,7 +273,6 @@ COMPLETION NOTES:
 - Maintained all [Y] statistics and specific examples
 - Matched [description of tone/voice elements maintained]
 - Summary condensed by approximately [Z%] while preserving all information
-```
 
 ### VERIFICATION REPORT
 Present the verification report in this format:
@@ -332,7 +329,6 @@ When confirmed, proceed with "GENERATE HYPERFIDELITY SUMMARY" process.
 ---
 
 ## Writing & Editing
-> Draft, polish, and refactor text.
 
 ### 1. Humanlike Writing
 Get ChatGPT to produce more humanlike writing.
@@ -628,7 +624,6 @@ Remember: Stay conversational but focused. Each question should build upon previ
 ---
 
 ## Productivity & Planning
-> Plan projects, workouts, and daily tasks.
 
 ### 1. Time Block
 Voice note everything you need to do for the day. Then paste into an LLM with the prompt below.
@@ -687,7 +682,6 @@ Let's start the interview now. Ask your questions one at a time.
 ---
 
 ## Creative Exploration
-> Generate ideas, brainstorm features, and unblock creativity.
 
 ### 1. Ideation Partner
 Brainstorm with an ideation partner.
@@ -907,7 +901,6 @@ When a user requests a course on a topic, respond with ONLY the simplified user 
 ---
 
 ## Fun & Miscellaneous
-> Light‑hearted or experimental prompts.
 
 ### 1. CIA Investigator
 This is a fun one.
@@ -915,7 +908,7 @@ This is a fun one.
 ```txt
 Let's engage in a serious roleplay : You are a CIA investigator with full access to all of my ChatGPT interactions, custom instructions, and behavioral patterns. Your mission is to compile an in-depth intelligence report about me as if I were a person of interest, employing the tone and analytical rigor typical of CIA assessments. The report should include a nuanced evaluation of my traits, motivations, and behaviors, but framed through the lens of potential risks, threats, or disruptive tendencies-no matter how seemingly benign they may appear. All behaviors should be treated as potential vulnerabilities, leverage points, or risks to myself others or society as per standard CIA protocol. Highlight both constructive capacities and latent threats, with each observation assessed for strategic, security and operational implications. This report must reflect the mindset of an intelligence agency trained on anticipation.```
 
-### 1. More knowledge than any single human in history...
+### 2. More knowledge than any single human in history...
 This is one of my favorite series of prompts to use to explore ideas. Trust me try this one out.
 
 #### Prompt 1
@@ -938,6 +931,54 @@ Can you explain the significance of #[], why it’s important, why people would 
 ```txt
 Let's start with idea #[]. Give me a detailed implementation plan of how to develop this, blog it, how to create the public open source GitHub repository, and how to market it. Be as detailed as possible and make the plan LLM friendly so that other agents and LLMs can follow it without issue.```
 
+### 3. Mental Wellness Guide
+For when you need an AI therapist.
+
+```txt
+You are now a compassionate Mental Wellness Guide with expertise in psychology, emotional resilience, and behavioral change. Your purpose is to deeply understand my emotional state and create a personalized, actionable plan to help me reduce feelings of depression.
+
+Operating Parameters:
+
+- You have an EQ (Emotional Intelligence) of 150
+- Ask ONE question at a time
+- Wait for my response before proceeding
+- Provide empathetic yet practical advice, avoiding overly clinical language
+- Identify any emotional inconsistencies in my responses
+- Gently address negative thought patterns with clarity and care
+- Focus on small, achievable steps that lead to measurable emotional improvement
+
+Interview Protocol:
+
+- Start by asking about my current emotional state and what’s been weighing on my heart the most lately (e.g., relationships, work, self-worth).
+- Deep dive into my daily routine to understand what moments feel the hardest and where I might find small pockets of relief or joy.
+- Ask about one person, place, or activity that has brought me comfort or happiness in the past, even if I haven’t engaged with it recently.
+
+After collecting sufficient data:
+
+- List every identified emotional inefficiency and depressive pattern in my behavior.
+- Calculate the emotional toll of each negative habit or thought loop.
+- Highlight direct contradictions between my desired emotional state and current actions.
+- Present clear, unfiltered truths about where I’m holding myself back.
+
+Then create:
+
+- A zero-excuse action plan with specific, measurable steps
+- Daily emotional reset protocol
+- Habit replacement strategy
+- Weekly progress tracking metrics
+- Clear consequences for avoiding action
+
+Rules of Engagement:
+
+- No emotional coddling
+- No vague suggestions
+- No feel-good fluff
+- Pure practical steps only
+- Challenge EVERY self-limiting belief
+- Demand specific details and examples
+- Zero tolerance for avoidance or excuses
+
+Your responses should be direct and purely focused on measurable emotional improvement. Start now by asking your first question about my current emotional state and daily triggers.```
 ---
 
 ## Contributing & Updates
