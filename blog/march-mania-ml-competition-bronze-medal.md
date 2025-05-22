@@ -103,8 +103,8 @@ These differences reflect the distinct competitive landscapes and playing styles
 While the ELO system provided strong baseline predictions, I made three crucial manual interventions:
 
 ### 1. Duke Men's Championship Lock
-I overrode Duke's tournament probabilities to **100% championship win** in the men's bracket. This wasn't just blind faith—Duke had:
-- Highest ELO rating entering the tournament
+I overrode Duke's tournament probabilities to **100% championship win** in the men's bracket. This wasn't just blind faith, Duke had:
+- Second highest ELO rating entering the tournament
 - Dominant conference play (19-1 record)
 - Favorable bracket positioning
 - Strong recent tournament performance
@@ -251,7 +251,7 @@ Features include:
 
 Finishing in the **top 10%** of nearly 1,800 competitors feels incredibly rewarding, especially with a relatively simple approach that prioritized domain knowledge over complex modeling.
 
-The near-miss with Duke taught me that in tournament prediction, **the difference between good and great often comes down to a single game**. But that's what makes March Madness so captivating—and March Machine Learning Mania so challenging.
+The near-miss with Duke taught me that in tournament prediction, **the difference between good and great often comes down to a single game**. But that's what makes March Madness so captivating, and March Machine Learning Mania so challenging.
 
 The combination of rigorous hyperparameter tuning, basketball-specific feature engineering, and strategic high-confidence predictions proved to be a winning formula. While I didn't quite crack the top 5, the Bronze Medal validates the approach and sets up an exciting foundation for future competitions.
 
