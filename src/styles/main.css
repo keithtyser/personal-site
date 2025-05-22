@@ -1,0 +1,295 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+
+:root {
+  --card-shadow-color: rgba(0, 0, 0, 0.1);
+  --card-shadow-color-dark: rgba(0, 0, 0, 0.3);
+}
+
+.dark {
+  --card-shadow-color: rgba(0, 0, 0, 0.4);
+  --card-shadow-color-dark: rgba(0, 0, 0, 0.6);
+}
+
+body { 
+  font-family: 'Inter', sans-serif;
+  /* max-width: 100%; */ /* Usually handled by containers */
+  /* overflow-x: hidden; */ /* Usually handled by framework/containers */
+  opacity: 1 !important; /* Consider removing !important if possible */
+}
+
+.hover-trigger .hover-target { opacity: 0; transition: all 0.2s; }
+.hover-trigger:hover .hover-target { opacity: 1; }
+
+.gradient-text {
+  background: linear-gradient(90deg, #3B82F6, #8B5CF6, #EC4899);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  background-size: 200% 100%;
+  animation: gradient 8s linear infinite;
+}
+
+.glass-effect {
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 
+    0 8px 32px 0 rgba(31, 38, 135, 0.15),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+}
+
+.dark .glass-effect {
+  background: rgba(17, 24, 39, 0.8);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.card-hover {
+  transform-style: preserve-3d;
+  perspective: 3000px;
+}
+
+.card-hover:hover {
+  transform: translateY(-15px) rotateX(8deg) rotateY(5deg) scale(1.03);
+  box-shadow: 
+    0 40px 80px -15px rgba(50, 50, 93, 0.3),
+    0 25px 50px -25px rgba(0, 0, 0, 0.3),
+    0 0 100px -30px rgba(59, 130, 246, 0.2);
+}
+
+.card-hover::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    1200px circle at var(--mouse-x) var(--mouse-y),
+    rgba(255, 255, 255, 0.1),
+    transparent 40%
+  );
+  z-index: 3;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.card-hover:hover::before {
+  opacity: 1;
+}
+
+.skill-tag {
+  position: relative;
+  background: linear-gradient(135deg, 
+    rgba(59, 130, 246, 0.12),
+    rgba(139, 92, 246, 0.12)
+  );
+  transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+  overflow: hidden;
+  transform-style: preserve-3d;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.skill-tag:hover {
+  transform: translateY(-8px) scale(1.15) translateZ(20px);
+  background: linear-gradient(135deg,
+    rgba(59, 130, 246, 0.25),
+    rgba(139, 92, 246, 0.25)
+  );
+  box-shadow: 
+    0 20px 40px -10px rgba(50, 50, 93, 0.3),
+    0 10px 20px -10px rgba(0, 0, 0, 0.2);
+}
+
+.skill-tag::before,
+.skill-tag::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    circle at var(--x, 50%) var(--y, 50%),
+    rgba(255, 255, 255, 0.2) 0%,
+    transparent 50%
+  );
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.skill-tag:hover::before {
+  opacity: 1;
+}
+
+.section-heading {
+  position: relative;
+  display: inline-block;
+  background: linear-gradient(
+    90deg,
+    #3B82F6,
+    #8B5CF6,
+    #EC4899,
+    #3B82F6
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  background-size: 300% 100%;
+  animation: gradient 8s infinite linear;
+  font-weight: 600;
+  letter-spacing: 0.75px;
+  transform-style: preserve-3d;
+  text-shadow: 
+    0 0 30px rgba(59, 130, 246, 0.3),
+    0 0 60px rgba(139, 92, 246, 0.1);
+}
+
+.section-heading::before {
+  content: '';
+  position: absolute;
+  inset: -10px -20px;
+  background: radial-gradient(
+    circle at var(--x, 50%) var(--y, 50%),
+    rgba(59, 130, 246, 0.1) 0%,
+    transparent 70%
+  );
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  border-radius: 20px;
+}
+
+.section-heading:hover::before {
+  opacity: 1;
+}
+
+.profile-container {
+  position: relative;
+  overflow: hidden;
+  border-radius: 1rem;
+  background: linear-gradient(
+    135deg,
+    rgba(59, 130, 246, 0.1),
+    rgba(139, 92, 246, 0.1),
+    rgba(236, 73, 153, 0.1)
+  );
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.profile-container::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+    rgba(255, 255, 255, 0.1) 0%,
+    transparent 50%
+  );
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.profile-container:hover::before {
+  opacity: 1;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0) rotate(0); }
+  25% { transform: translateY(-5px) rotate(-1deg); }
+  75% { transform: translateY(5px) rotate(1deg); }
+}
+
+@keyframes shine {
+  0% { transform: translateX(-100%) rotate(45deg); }
+  100% { transform: translateX(100%) rotate(45deg); }
+}
+
+@keyframes gradient {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Assuming .animate-on-scroll is used for JS-driven animations, keep it */
+.animate-on-scroll {
+  /* Default state before animation (handled by JS/GSAP?) */
+  opacity: 1 !important; /* Might conflict with JS animation */
+  transform: none !important; /* Might conflict with JS animation */
+  transition: none !important; /* Might conflict with JS animation */
+}
+
+.animate-on-scroll.visible {
+  /* State after animation (handled by JS/GSAP?) */
+  opacity: 1;
+  transform: none;
+}
+
+.link-underline {
+  position: relative;
+  text-decoration: none;
+}
+
+.link-underline::after {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 2px;
+  bottom: -2px;
+  left: 0;
+  background: linear-gradient(90deg, #3B82F6, #8B5CF6);
+  transform: scaleX(0);
+  transform-origin: bottom right;
+  transition: transform 0.3s ease;
+}
+
+.link-underline:hover::after {
+  transform: scaleX(1);
+  transform-origin: bottom left;
+}
+
+/* Added styles found in archive.html that were missing in index.html */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(156, 163, 175, 0.5) transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: rgba(156, 163, 175, 0.5);
+  border-radius: 20px;
+}
+
+.morphing-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -2;
+  background: radial-gradient(
+    circle at var(--x, 50%) var(--y, 50%),
+    rgba(59, 130, 246, 0.2),
+    rgba(139, 92, 246, 0.2),
+    rgba(236, 73, 153, 0.2)
+  );
+  filter: blur(120px);
+  animation: morphBackground 30s ease-in-out infinite;
+  mix-blend-mode: soft-light;
+  opacity: 0.7;
+}
+
+@keyframes morphBackground {
+  0% { transform: scale(1) rotate(0deg); }
+  25% { transform: scale(1.2) rotate(5deg); }
+  50% { transform: scale(1) rotate(0deg); }
+  75% { transform: scale(1.2) rotate(-5deg); }
+  100% { transform: scale(1) rotate(0deg); }
+} 

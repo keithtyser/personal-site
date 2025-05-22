@@ -569,13 +569,7 @@
  </head>
  <body class="bg-gradient-to-br from-white via-gray-50 to-white dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 text-gray-900 dark:text-white transition-colors duration-500 custom-scrollbar">
   <div id="particles-js"></div>
-  <div class="fixed bottom-6 right-6 z-50">
-    <button onclick="document.documentElement.classList.toggle('dark')" 
-            class="p-4 rounded-full bg-white dark:bg-gray-800 shadow-lg hover:shadow-xl transition-all duration-300 glass-effect group">
-      <i class="fas fa-moon dark:hidden text-gray-700 group-hover:text-indigo-500 transition-colors"></i>
-      <i class="fas fa-sun hidden dark:block text-yellow-400 group-hover:text-yellow-300 transition-colors"></i>
-    </button>
-  </div>
+   <div class="fixed bottom-6 right-6 z-50">    <button id="darkModeToggle"            class="p-4 rounded-full bg-white dark:bg-gray-800 shadow-lg hover:shadow-xl transition-all duration-300 glass-effect group">      <i class="fas fa-moon dark:hidden text-gray-700 group-hover:text-indigo-500 transition-colors"></i>      <i class="fas fa-sun hidden dark:block text-yellow-400 group-hover:text-yellow-300 transition-colors"></i>    </button>  </div>
 
   <div class="max-w-[420px] mx-auto px-4 sm:px-6">
     <header class="flex justify-between items-center mb-8 pt-6">
@@ -643,6 +637,30 @@
             <div class="card-content relative z-10">
               <div class="flex items-center justify-between mb-2">
                 <div class="flex items-center gap-2">
+                  <span class="font-medium text-gray-800 dark:text-gray-100">JudgeFlow</span>
+                </div>
+                <div class="flex gap-2">
+                  <a href="https://github.com/keithtyser/judgeflow" target="_blank" class="group flex items-center justify-center h-8 w-8 rounded-lg bg-white/10 dark:bg-gray-700/30 border border-white/10 dark:border-gray-700/50 hover:bg-gray-500/20 dark:hover:bg-gray-500/20 hover:border-gray-600/30 dark:hover:border-gray-400/30 transition-all duration-300" aria-label="View GitHub Repository">
+                    <i class="fab fa-github text-gray-600 dark:text-gray-400 group-hover:text-gray-800 dark:group-hover:text-white transition-colors"></i>
+                  </a>
+                </div>
+              </div>
+              <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">JudgeFlow is a modular, responsible LLM evaluation framework. Plug in new metrics with YAML, run one command, and get a CSV-grade-sheet & reliability diagram. Features built-in calibration, fairness, privacy, and safety metrics. <a href='https://github.com/keithtyser/judgeflow' class='underline text-blue-600 dark:text-blue-400' target='_blank'>Learn more</a>.</p>
+              <div class="flex flex-wrap gap-2">
+                <span class="px-2 py-1 text-xs rounded-full bg-gray-200/10 dark:bg-gray-700/50 text-gray-600 dark:text-gray-400">Python</span>
+                <span class="px-2 py-1 text-xs rounded-full bg-gray-200/10 dark:bg-gray-700/50 text-gray-600 dark:text-gray-400">LLM Evaluation</span>
+                <span class="px-2 py-1 text-xs rounded-full bg-gray-200/10 dark:bg-gray-700/50 text-gray-600 dark:text-gray-400">Responsible AI</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="relative mb-4">
+          <div class="p-4 sm:p-5 rounded-xl bg-white/5 dark:bg-gray-800/30 hover:bg-white/10 dark:hover:bg-gray-800/50 transition-all duration-300 card-hover glass-effect border border-white/10">
+            <div class="card-background"></div>
+            <div class="card-content relative z-10">
+              <div class="flex items-center justify-between mb-2">
+                <div class="flex items-center gap-2">
                   <span class="font-medium text-gray-800 dark:text-gray-100">LoRA‑Provenance Toolkit</span>
                 </div>
                 <div class="flex gap-2">
@@ -664,7 +682,7 @@
           </div>
         </div>
 
-        <div class="relative mb-4">
+        <div class="relative mt-4">
           <div class="p-4 sm:p-5 rounded-xl bg-white/5 dark:bg-gray-800/30 hover:bg-white/10 dark:hover:bg-gray-800/50 transition-all duration-300 card-hover glass-effect border border-white/10">
             <div class="card-background"></div>
             <div class="card-content relative z-10">
@@ -693,33 +711,7 @@
           </div>
         </div>
 
-        <div class="relative mt-4">
-          <div class="p-4 sm:p-5 rounded-xl bg-white/5 dark:bg-gray-800/30 hover:bg-white/10 dark:hover:bg-gray-800/50 transition-all duration-300 card-hover glass-effect border border-white/10">
-            <div class="card-background"></div>
-            <div class="card-content relative z-10">
-              <div class="flex items-center justify-between mb-2">
-                <div class="flex items-center gap-2">
-                  <span class="font-medium text-gray-800 dark:text-gray-100">SF Dining Guide</span>
-                </div>
-                <div class="flex gap-2">
-                  <a href="http://www.sfdining.ai" target="_blank" class="group flex items-center justify-center h-8 w-8 rounded-lg bg-white/10 dark:bg-gray-700/30 border border-white/10 dark:border-gray-700/50 hover:bg-blue-500/20 dark:hover:bg-blue-500/20 hover:border-blue-500/30 dark:hover:border-blue-500/30 transition-all duration-300" aria-label="View Website">
-                    <i class="fas fa-external-link-alt text-gray-600 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors"></i>
-                  </a>
-                  <a href="https://github.com/keithtyser/sf-dining-rag" target="_blank" class="group flex items-center justify-center h-8 w-8 rounded-lg bg-white/10 dark:bg-gray-700/30 border border-white/10 dark:border-gray-700/50 hover:bg-gray-500/20 dark:hover:bg-gray-500/20 hover:border-gray-600/30 dark:hover:border-gray-400/30 transition-all duration-300" aria-label="View GitHub Repository">
-                    <i class="fab fa-github text-gray-600 dark:text-gray-400 group-hover:text-gray-800 dark:group-hover:text-white transition-colors"></i>
-                  </a>
-                </div>
-              </div>
-              <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">A production-grade RAG system for context-aware restaurant recommendations across San Francisco.</p>
-              <div class="flex flex-wrap gap-2">
-                <span class="px-2 py-1 text-xs rounded-full bg-gray-200/10 dark:bg-gray-700/50 text-gray-600 dark:text-gray-400">Next.js</span>
-                <span class="px-2 py-1 text-xs rounded-full bg-gray-200/10 dark:bg-gray-700/50 text-gray-600 dark:text-gray-400">OpenAI</span>
-                <span class="px-2 py-1 text-xs rounded-full bg-gray-200/10 dark:bg-gray-700/50 text-gray-600 dark:text-gray-400">Pinecone</span>
-                <span class="px-2 py-1 text-xs rounded-full bg-gray-200/10 dark:bg-gray-700/50 text-gray-600 dark:text-gray-400">Vercel</span>
-              </div>
-            </div>
-          </div>
-        </div>
+        
    </section>
 
       <!-- Currently working on Section -->
@@ -1105,7 +1097,5 @@
         attributeFilter: ['class']
       });
     });
-  </script>
- </body>
-</html>
+    </script>  <script src="/src/scripts/main.js" defer></script> </body></html>
 
