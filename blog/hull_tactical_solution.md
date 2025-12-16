@@ -54,10 +54,10 @@ Final architecture:
 - `d_block=512` (hidden dimension)
 - `n_blocks=6` (depth)
 - `k=24` (ensemble members per forward pass)
-- 50 seeds for outer bagging (50 TabM models, each with 24 internal members)
+- 13 seeds for outer bagging (13 TabM models, each with 24 internal members)
 - Early stopping with patience=12
 
-Training took about 10 minutes on GPU for all 50 seeds.
+Training took about 10 minutes on GPU for all 13 seeds.
 
 ## Feature Engineering
 
@@ -113,7 +113,7 @@ The val_frac change was surprising. Using only 8% of training data for validatio
 
 **Feature selection.** Identified 33 features with negative permutation importance and dropped them. Sharpe dropped 30%. The "useless" features apparently contained signal the model was using.
 
-**Confidence weighting.** When the 15 seeds disagreed (high prediction variance), shrink the prediction toward zero. No effect. The seeds agreed too closely for this to matter.
+**Confidence weighting.** When the 13 seeds disagreed (high prediction variance), shrink the prediction toward zero. No effect. The seeds agreed too closely for this to matter.
 
 **Regime-based exposure modulation.** Shrink bets by 50% in crisis regimes, expand by 20% in risk-on regimes. Sharpe dropped 22%. The vol-adaptive scaling already captured what mattered; adding regime logic on top just added noise.
 
@@ -121,7 +121,7 @@ The val_frac change was surprising. Using only 8% of training data for validatio
 
 **Tighter vol-ratio bounds.** Changed [0.5, 2.0] to [0.7, 1.5] for less extreme adjustments. Sharpe dropped 4%. The wider bounds were optimal.
 
-**PiecewiseLinearEmbeddings.** The TabM paper shows that adding feature embeddings (TabM†) consistently outperforms vanilla TabM. I tried it. Sharpe dropped 63%, from 2.94 to 1.08. One period went negative.
+**PiecewiseLinearEmbeddings.** The TabM paper shows that adding feature embeddings (TabM†) consistently outperforms vanilla TabM. I tried it. Sharpe dropped 68%, from 3.39 to 1.08. One period went negative.
 
 Why? The paper benchmarks on large, static datasets up to 13M rows. I had 8,000 training rows and financial time series with regime changes. The embeddings compute bin boundaries from training data. Those boundaries don't generalize when market conditions shift. The extra parameters (142 features × 12 embedding dims) overfit on small data. And my features were already engineered - winsorized, rolling stats, percentile-normalized. The embeddings had nothing useful to add.
 
@@ -131,14 +131,15 @@ The pattern: every attempt to add complexity after vol-adaptive scaling made thi
 
 Walk-forward out-of-sample validation (11 periods, 84 trading days each):
 
-- **Sharpe: 2.94**
-- Mean metric: 1.83
-- Min metric: 0.96
-- Max metric: 3.16
-- Total return: +176%
-- Max drawdown: -8.3%
+- **Sharpe: 3.39**
+- Mean metric: 1.88
+- Std: 0.55
+- Min metric: 1.04
+- Max metric: 2.75
+- Total return: +171%
+- Max drawdown: -8.2%
 
-Starting point was Sharpe ~0.5. Final solution achieved 6x improvement.
+Starting point was Sharpe ~0.5. Final solution achieved nearly 7x improvement.
 
 ## What I Learned
 
@@ -151,8 +152,8 @@ Everything else was noise. I tried a lot of clever ideas. Regime-based exposure 
 
 Markets are efficient. The signal is faint. Respect that.
 
-The WFO framework was the real win. It gave me confidence that my improvements were real, not artifacts of overfitting. When I saw Sharpe go from 0.5 to 2.94 across 11 independent periods, I knew I was onto something. The public LB never told me anything useful.
+The WFO framework was the real win. It gave me confidence that my improvements were real, not artifacts of overfitting. When I saw Sharpe go from 0.5 to 3.39 across 11 independent periods, I knew I was onto something. The public LB never told me anything useful.
 
 This competition reminded me why I enjoy this stuff. The iteration loop was tight. Ideas could be tested in minutes. The feedback was immediate and quantitative. No ambiguity about whether something worked. Just numbers going up or down.
 
-I'll be watching the private LB closely when it drops.
+I'll be watching the private LB closely over the next 6 months.
