@@ -54,11 +54,41 @@
       --card-shadow-color-dark: rgba(0, 0, 0, 0.6);
     }
     
-    body { 
+    body {
       font-family: 'Inter', sans-serif;
       max-width: 100%;
       overflow-x: hidden;
       opacity: 1 !important;
+    }
+
+    .tooltip-wrapper {
+      position: relative;
+    }
+
+    .tooltip-wrapper .tooltip-text {
+      visibility: hidden;
+      opacity: 0;
+      position: absolute;
+      bottom: calc(100% + 8px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(17, 24, 39, 0.95);
+      color: #d1d5db;
+      font-size: 0.75rem;
+      line-height: 1.4;
+      padding: 8px 12px;
+      border-radius: 8px;
+      white-space: normal;
+      width: max-content;
+      max-width: 280px;
+      z-index: 50;
+      transition: opacity 0.2s ease, visibility 0.2s ease;
+      pointer-events: none;
+    }
+
+    .tooltip-wrapper:hover .tooltip-text {
+      visibility: visible;
+      opacity: 1;
     }
 
     .hover-trigger .hover-target { opacity: 0; transition: all 0.2s; }
@@ -247,7 +277,8 @@
         <h2 class="section-heading font-medium mb-6 text-lg">Past Projects</h2>
         <div class="space-y-3">
           <!-- LLM Trading Agent -->
-          <div class="group p-3 rounded-lg bg-white/5 dark:bg-gray-800/30 hover:bg-white/10 dark:hover:bg-gray-800/50 transition-all duration-300 flex items-center justify-between border border-white/10" title="Turns out LLMs aren't good at trading crypto futures with leverage. Thank god for paper trading.">
+          <div class="tooltip-wrapper group p-3 rounded-lg bg-white/5 dark:bg-gray-800/30 hover:bg-white/10 dark:hover:bg-gray-800/50 transition-all duration-300 flex items-center justify-between border border-white/10">
+            <span class="tooltip-text">Turns out LLMs aren't good at trading crypto futures with leverage. Thank god for paper trading.</span>
             <div class="flex items-center gap-2">
               <i class="fas fa-chart-line text-gray-400 group-hover:text-indigo-500 dark:group-hover:text-indigo-400 transition-colors"></i>
               <span class="text-gray-600 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">LLM Trading Agent</span>
