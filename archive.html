@@ -17,6 +17,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
   <link rel="stylesheet" href="dist/styles.css">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
   <script src="src/scripts/main.js" defer></script>
 </head>
 <body>
@@ -26,7 +28,10 @@
     <header class="flex items-center justify-between gap-4 pt-10 mb-14">
       <a href="/" class="flex items-center gap-3 min-w-0 group">
         <div class="avatar">
-          <img src="profile_pic.jpeg" alt="Keith Tyser">
+          <picture>
+            <source srcset="profile_pic.webp" type="image/webp">
+            <img src="profile_pic.jpeg" alt="Keith Tyser" width="44" height="44">
+          </picture>
         </div>
         <div class="min-w-0">
           <div class="flex items-baseline gap-2">

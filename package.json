@@ -10,7 +10,8 @@
     "watch:blog": "chokidar \"blog/*.md\" \"src/scripts/render-blog.mjs\" -c \"npm run build:blog\"",
     "build": "npm run build:css && npm run build:blog",
     "dev": "npm run build && concurrently -n css,blog,serve -c blue,green,magenta \"npm run watch:css\" \"npm run watch:blog\" \"live-server --port=8080 --ignore=node_modules;.git;.claude\"",
-    "new-post": "node src/scripts/new-post.mjs"
+    "new-post": "node src/scripts/new-post.mjs",
+    "build:images": "node src/scripts/build-images.mjs"
   },
   "devDependencies": {
     "chokidar-cli": "^3.0.0",
@@ -18,6 +19,7 @@
     "gray-matter": "^4.0.3",
     "live-server": "^1.2.2",
     "marked": "^12.0.2",
+    "sharp": "^0.34.5",
     "tailwindcss": "^3.4.1"
   },
   "keywords": [],

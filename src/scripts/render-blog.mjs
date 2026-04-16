@@ -202,6 +202,8 @@ ${articleMeta}
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
   <link rel="stylesheet" href="${cssPath}">
+  <link rel="icon" type="image/svg+xml" href="${cssPath.startsWith('..') ? '../favicon.svg' : 'favicon.svg'}">
+  <link rel="apple-touch-icon" href="${cssPath.startsWith('..') ? '../apple-touch-icon.png' : 'apple-touch-icon.png'}">
 ${rssLink}
   <script src="${scriptPath}" defer></script>
 </head>
@@ -314,6 +316,8 @@ function renderIndexPage(posts) {
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
   <link rel="stylesheet" href="../dist/styles.css">
+  <link rel="icon" type="image/svg+xml" href="../favicon.svg">
+  <link rel="apple-touch-icon" href="../apple-touch-icon.png">
   <link rel="alternate" type="application/rss+xml" title="${escapeHtml(SITE_TITLE)}" href="${SITE_URL}/feed.xml">
   <script src="../src/scripts/main.js" defer></script>
 </head>
@@ -387,6 +391,52 @@ function renderFeed(posts) {
 ${items}
   </channel>
 </rss>
+`;
+}
+
+/* ------------------------------------------------------------------ */
+/* Sitemap                                                            */
+/* ------------------------------------------------------------------ */
+
+function renderSitemap({ posts, pagesMeta }) {
+  const today = new Date().toISOString().split('T')[0];
+
+  const urls = [
+    { loc: `${SITE_URL}/`, lastmod: today, priority: '1.0' },
+    { loc: `${SITE_URL}/archive.html`, lastmod: today, priority: '0.6' },
+    { loc: `${SITE_URL}/blog/`, lastmod: posts[0]?.dateISO || today, priority: '0.9' },
+  ];
+
+  for (const page of pagesMeta) {
+    urls.push({
+      loc: `${SITE_URL}/${page.slug}.html`,
+      lastmod: page.updatedISO || today,
+      priority: '0.7',
+    });
+  }
+
+  for (const p of posts) {
+    urls.push({
+      loc: `${SITE_URL}/blog/${p.slug}.html`,
+      lastmod: p.dateISO,
+      priority: '0.8',
+    });
+  }
+
+  const body = urls
+    .map(
+      (u) => `  <url>
+    <loc>${u.loc}</loc>
+    <lastmod>${u.lastmod}</lastmod>
+    <priority>${u.priority}</priority>
+  </url>`,
+    )
+    .join('\n');
+
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${body}
+</urlset>
 `;
 }
 
@@ -468,7 +518,7 @@ async function renderStaticPages() {
     });
 
     await fs.writeFile(path.join(projectRoot, `${slug}.html`), pageHtml, 'utf8');
-    rendered.push(slug);
+    rendered.push({ slug, updatedISO });
   }
   return rendered;
 }
@@ -538,13 +588,20 @@ async function main() {
   // Render standalone pages from /pages/*.md
   const pagesRendered = await renderStaticPages();
 
-  console.log(`[render-blog] Rendered ${posts.length} posts + index + feed.xml`);
+  // Sitemap at repo root
+  await fs.writeFile(
+    path.join(projectRoot, 'sitemap.xml'),
+    renderSitemap({ posts, pagesMeta: pagesRendered }),
+    'utf8',
+  );
+
+  console.log(`[render-blog] Rendered ${posts.length} posts + index + feed.xml + sitemap.xml`);
   for (const p of posts) {
     console.log(`  - ${p.dateDisplay}  ${p.title}`);
   }
   if (pagesRendered.length) {
     console.log(`[render-blog] Rendered ${pagesRendered.length} pages:`);
-    for (const slug of pagesRendered) console.log(`  - ${slug}.html`);
+    for (const page of pagesRendered) console.log(`  - ${page.slug}.html`);
   }
 }
 
