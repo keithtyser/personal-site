@@ -7,6 +7,8 @@ toc: true
 
 A working reading list. Ordered by tier, not by how much I recommend any single book. Later tiers assume you've worked through the earlier ones.
 
+Legend: `✓` read, `→` reading, `·` queued. Unmarked entries are queued too; I'll fill the markers in as I go.
+
 ---
 
 ## Tier 1: Foundations of Civilization

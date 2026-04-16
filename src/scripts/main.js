@@ -1,32 +1,77 @@
 document.addEventListener('DOMContentLoaded', () => {
+  // ---------------------------------------------------------------
+  // Dark mode toggle
+  // ---------------------------------------------------------------
   const toggleButton = document.getElementById('darkModeToggle');
-
   if (toggleButton) {
-    // Function to toggle dark mode
-    const toggleDarkMode = () => {
+    toggleButton.addEventListener('click', () => {
       document.documentElement.classList.toggle('dark');
-      
-      // Optional: Store preference in localStorage
       if (document.documentElement.classList.contains('dark')) {
         localStorage.setItem('theme', 'dark');
       } else {
         localStorage.removeItem('theme');
       }
-    };
-
-    // Add click event listener
-    toggleButton.addEventListener('click', toggleDarkMode);
-
-    // Check for saved theme preference on load
-    const savedTheme = localStorage.getItem('theme');
-    if (savedTheme === 'dark') {
-      document.documentElement.classList.add('dark');
-    } // No need for 'else' as default is light
-
-  } else {
-    console.warn('Dark mode toggle button with ID "darkModeToggle" not found.');
+    });
   }
 
-  // --- Other potential JS code can be added below --- 
+  // ---------------------------------------------------------------
+  // Copy permalink on anchor click (blog headings)
+  // ---------------------------------------------------------------
+  document.addEventListener('click', (e) => {
+    const anchor = e.target.closest('a.anchor');
+    if (!anchor) return;
+    e.preventDefault();
+    const hash = anchor.getAttribute('href');
+    const url = new URL(hash, window.location.href).href;
+    history.replaceState(null, '', hash);
+    const target = document.querySelector(hash);
+    if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(url).then(() => {
+        const original = anchor.textContent;
+        anchor.textContent = '✓';
+        setTimeout(() => { anchor.textContent = original; }, 1000);
+      }).catch(() => {});
+    }
+  });
 
-}); 
+  // ---------------------------------------------------------------
+  // Latest GitHub public activity (landing only)
+  // ---------------------------------------------------------------
+  const ghTarget = document.getElementById('gh-activity');
+  if (ghTarget) {
+    const username = ghTarget.dataset.user || 'keithtyser';
+    fetch(`https://api.github.com/users/${username}/events/public?per_page=30`)
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
+      .then((events) => {
+        const push = events.find((e) => e.type === 'PushEvent' && e.repo && e.payload && e.payload.commits && e.payload.commits.length);
+        if (!push) throw new Error('no recent push');
+        const repo = push.repo.name;
+        const commit = push.payload.commits[push.payload.commits.length - 1];
+        const msg = (commit.message || '').split('\n')[0].slice(0, 80);
+        const when = relativeTime(new Date(push.created_at));
+        ghTarget.innerHTML = `latest: <a href="https://github.com/${repo}/commit/${commit.sha}" target="_blank" rel="noopener">${repo}</a> — <span>${escapeText(msg)}</span> · ${when}`;
+        ghTarget.hidden = false;
+      })
+      .catch(() => { ghTarget.hidden = true; });
+  }
+});
+
+function relativeTime(date) {
+  const diffMs = Date.now() - date.getTime();
+  const sec = Math.round(diffMs / 1000);
+  const min = Math.round(sec / 60);
+  const hr = Math.round(min / 60);
+  const day = Math.round(hr / 24);
+  if (sec < 60) return 'just now';
+  if (min < 60) return `${min}m ago`;
+  if (hr < 24) return `${hr}h ago`;
+  if (day < 30) return `${day}d ago`;
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+
+function escapeText(s) {
+  const div = document.createElement('div');
+  div.textContent = s;
+  return div.innerHTML;
+}

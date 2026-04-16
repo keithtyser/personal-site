@@ -85,7 +85,7 @@ marked.setOptions({ gfm: true, breaks: false });
 function renderMarkdown(body, tocEntries) {
   let html = marked.parse(body);
 
-  // Inject ids on h2/h3 and collect TOC
+  // Inject ids on h2/h3, prepend a permalink anchor, and collect TOC
   const slugCounts = new Map();
   html = html.replace(/<h([23])>([\s\S]*?)<\/h\1>/g, (_m, depth, inner) => {
     const d = Number(depth);
@@ -95,7 +95,8 @@ function renderMarkdown(body, tocEntries) {
     slugCounts.set(base, seen + 1);
     const slug = seen === 0 ? base : `${base}-${seen + 1}`;
     tocEntries.push({ depth: d, slug, text: rawText });
-    return `<h${depth} id="${slug}">${inner}</h${depth}>`;
+    const anchor = `<a class="anchor" href="#${slug}" aria-label="Link to section: ${escapeHtml(rawText)}">#</a>`;
+    return `<h${depth} id="${slug}">${anchor}${inner}</h${depth}>`;
   });
 
   // Force external links to open in a new tab
@@ -244,7 +245,7 @@ ${rssLink}
           <a href="${SITE_URL}/feed.xml" class="icon-link" aria-label="RSS feed"><svg class="icon text-[12px]" aria-hidden="true"><use href="/icons.svg#rss"/></svg></a>
         </nav>
       </div>
-      <p class="mt-4 text-center text-[11px]"><a href="/ai.html" class="hover:text-[color:var(--text)] transition-colors">for AI agents →</a></p>
+      <p class="mt-4 text-center text-[11px]"><a href="/ai.html" class="hover:text-[color:var(--text)] transition-colors">for AI agents →</a> <span aria-hidden="true">·</span> <a href="https://github.com/keithtyser/personal-site/tree/gh-pages" target="_blank" rel="noopener" class="hover:text-[color:var(--text)] transition-colors">view source →</a></p>
     </footer>
   </div>
 </body>

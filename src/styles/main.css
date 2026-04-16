@@ -515,6 +515,7 @@
   margin-bottom: 0.6em;
   color: var(--text);
   scroll-margin-top: 24px;
+  position: relative;
 }
 
 .article-body h3 {
@@ -524,6 +525,31 @@
   margin-bottom: 0.5em;
   color: var(--text);
   scroll-margin-top: 24px;
+  position: relative;
+}
+
+/* Click-to-copy permalink anchor on article headings */
+.article-body .anchor {
+  position: absolute;
+  right: 100%;
+  padding-right: 8px;
+  color: var(--faint);
+  text-decoration: none;
+  opacity: 0;
+  transition: opacity 150ms ease, color 150ms ease;
+  user-select: none;
+  font-weight: 400;
+  font-size: 0.85em;
+}
+
+.article-body h2:hover .anchor,
+.article-body h3:hover .anchor,
+.article-body .anchor:focus-visible {
+  opacity: 1;
+}
+
+.article-body .anchor:hover {
+  color: var(--accent);
 }
 
 .article-body h4 {
