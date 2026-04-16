@@ -212,7 +212,6 @@ ${articleMeta}
     })();
   </script>
   <link rel="preload" href="${cssPath.startsWith('..') ? '../fonts/InterVariable.woff2' : 'fonts/InterVariable.woff2'}" as="font" type="font/woff2" crossorigin>
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
   <link rel="stylesheet" href="${cssPath}">
   <link rel="icon" type="image/svg+xml" href="${cssPath.startsWith('..') ? '../favicon.svg' : 'favicon.svg'}">
   <link rel="apple-touch-icon" href="${cssPath.startsWith('..') ? '../apple-touch-icon.png' : 'apple-touch-icon.png'}">
@@ -226,8 +225,8 @@ ${rssLink}
     <header class="article-header">
       <a href="${backHref}" class="text-[12px] muted hover:text-[color:var(--text)] transition-colors">← ${escapeHtml(backLabel)}</a>
       <button id="darkModeToggle" type="button" class="icon-link" aria-label="Toggle theme">
-        <i class="fas fa-moon text-[13px] dark:hidden"></i>
-        <i class="fas fa-sun text-[13px] hidden dark:inline"></i>
+        <svg class="icon text-[13px] dark:hidden" aria-hidden="true"><use href="/icons.svg#moon"/></svg>
+        <svg class="icon text-[13px] hidden dark:inline" aria-hidden="true"><use href="/icons.svg#sun"/></svg>
       </button>
     </header>
 
@@ -239,13 +238,13 @@ ${rssLink}
       <div class="flex items-center justify-between gap-4">
         <a href="/" class="hover:text-[color:var(--text)] transition-colors">keithtyser.com</a>
         <nav class="flex items-center gap-1" aria-label="Social links">
-          <a href="mailto:keithtyser@gmail.com" class="icon-link" aria-label="Email"><i class="fas fa-envelope text-[12px]"></i></a>
-          <a href="https://github.com/keithtyser" target="_blank" rel="noopener" class="icon-link" aria-label="GitHub"><i class="fab fa-github text-[12px]"></i></a>
-          <a href="https://twitter.com/keithtyser" target="_blank" rel="noopener" class="icon-link" aria-label="X (Twitter)"><i class="fa-brands fa-x-twitter text-[12px]"></i></a>
-          <a href="${SITE_URL}/feed.xml" class="icon-link" aria-label="RSS feed"><i class="fas fa-rss text-[12px]"></i></a>
+          <a href="mailto:keithtyser@gmail.com" class="icon-link" aria-label="Email"><svg class="icon text-[12px]" aria-hidden="true"><use href="/icons.svg#envelope"/></svg></a>
+          <a href="https://github.com/keithtyser" target="_blank" rel="noopener" class="icon-link" aria-label="GitHub"><svg class="icon text-[12px]" aria-hidden="true"><use href="/icons.svg#github"/></svg></a>
+          <a href="https://twitter.com/keithtyser" target="_blank" rel="noopener" class="icon-link" aria-label="X (Twitter)"><svg class="icon text-[12px]" aria-hidden="true"><use href="/icons.svg#x-twitter"/></svg></a>
+          <a href="${SITE_URL}/feed.xml" class="icon-link" aria-label="RSS feed"><svg class="icon text-[12px]" aria-hidden="true"><use href="/icons.svg#rss"/></svg></a>
         </nav>
       </div>
-      <p class="mt-4 text-center text-[11px] opacity-50"><a href="${cssPath.startsWith('..') ? '../ai.html' : 'ai.html'}" class="hover:opacity-100 transition-opacity">for AI agents →</a></p>
+      <p class="mt-4 text-center text-[11px]"><a href="${cssPath.startsWith('..') ? '../ai.html' : 'ai.html'}" class="hover:text-[color:var(--text)] transition-colors">for AI agents →</a></p>
     </footer>
   </div>
 </body>
@@ -333,7 +332,6 @@ function renderIndexPage(posts) {
     })();
   </script>
   <link rel="preload" href="../fonts/InterVariable.woff2" as="font" type="font/woff2" crossorigin>
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
   <link rel="stylesheet" href="../dist/styles.css">
   <link rel="icon" type="image/svg+xml" href="../favicon.svg">
   <link rel="apple-touch-icon" href="../apple-touch-icon.png">
@@ -347,8 +345,8 @@ function renderIndexPage(posts) {
     <header class="flex items-center justify-between gap-4 pt-10 mb-14">
       <a href="/" class="text-[12px] muted hover:text-[color:var(--text)] transition-colors">← keithtyser.com</a>
       <button id="darkModeToggle" type="button" class="icon-link" aria-label="Toggle theme">
-        <i class="fas fa-moon text-[13px] dark:hidden"></i>
-        <i class="fas fa-sun text-[13px] hidden dark:inline"></i>
+        <svg class="icon text-[13px] dark:hidden" aria-hidden="true"><use href="/icons.svg#moon"/></svg>
+        <svg class="icon text-[13px] hidden dark:inline" aria-hidden="true"><use href="/icons.svg#sun"/></svg>
       </button>
     </header>
 
@@ -369,13 +367,13 @@ ${entries}
       <div class="flex items-center justify-between gap-4">
         <a href="/" class="hover:text-[color:var(--text)] transition-colors">keithtyser.com</a>
         <nav class="flex items-center gap-1" aria-label="Social links">
-          <a href="mailto:keithtyser@gmail.com" class="icon-link" aria-label="Email"><i class="fas fa-envelope text-[12px]"></i></a>
-          <a href="https://github.com/keithtyser" target="_blank" rel="noopener" class="icon-link" aria-label="GitHub"><i class="fab fa-github text-[12px]"></i></a>
-          <a href="https://twitter.com/keithtyser" target="_blank" rel="noopener" class="icon-link" aria-label="X (Twitter)"><i class="fa-brands fa-x-twitter text-[12px]"></i></a>
-          <a href="${SITE_URL}/feed.xml" class="icon-link" aria-label="RSS feed"><i class="fas fa-rss text-[12px]"></i></a>
+          <a href="mailto:keithtyser@gmail.com" class="icon-link" aria-label="Email"><svg class="icon text-[12px]" aria-hidden="true"><use href="/icons.svg#envelope"/></svg></a>
+          <a href="https://github.com/keithtyser" target="_blank" rel="noopener" class="icon-link" aria-label="GitHub"><svg class="icon text-[12px]" aria-hidden="true"><use href="/icons.svg#github"/></svg></a>
+          <a href="https://twitter.com/keithtyser" target="_blank" rel="noopener" class="icon-link" aria-label="X (Twitter)"><svg class="icon text-[12px]" aria-hidden="true"><use href="/icons.svg#x-twitter"/></svg></a>
+          <a href="${SITE_URL}/feed.xml" class="icon-link" aria-label="RSS feed"><svg class="icon text-[12px]" aria-hidden="true"><use href="/icons.svg#rss"/></svg></a>
         </nav>
       </div>
-      <p class="mt-4 text-center text-[11px] opacity-50"><a href="../ai.html" class="hover:opacity-100 transition-opacity">for AI agents →</a></p>
+      <p class="mt-4 text-center text-[11px]"><a href="../ai.html" class="hover:text-[color:var(--text)] transition-colors">for AI agents →</a></p>
     </footer>
   </div>
 </body>

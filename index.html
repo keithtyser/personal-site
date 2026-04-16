@@ -23,7 +23,6 @@
     })();
   </script>
   <link rel="preload" href="fonts/InterVariable.woff2" as="font" type="font/woff2" crossorigin>
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
   <link rel="stylesheet" href="dist/styles.css">
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -47,11 +46,11 @@
           <div class="flex items-center gap-2.5">
             <h1 class="text-[17px] font-semibold leading-tight tracking-tight">Keith Tyser</h1>
             <nav class="flex items-center gap-0.5" aria-label="Social links">
-              <a href="https://linkedin.com/in/keithtyser/" target="_blank" rel="noopener" class="icon-link" aria-label="LinkedIn"><i class="fab fa-linkedin text-[13px]"></i></a>
-              <a href="https://github.com/keithtyser" target="_blank" rel="noopener" class="icon-link" aria-label="GitHub"><i class="fab fa-github text-[13px]"></i></a>
-              <a href="https://twitter.com/keithtyser" target="_blank" rel="noopener" class="icon-link" aria-label="X (Twitter)"><i class="fa-brands fa-x-twitter text-[13px]"></i></a>
-              <a href="https://scholar.google.com/citations?user=YOUR_ID" target="_blank" rel="noopener" class="icon-link" aria-label="Google Scholar"><i class="fas fa-graduation-cap text-[13px]"></i></a>
-              <a href="mailto:keithtyser@gmail.com" class="icon-link" aria-label="Email"><i class="fas fa-envelope text-[13px]"></i></a>
+              <a href="https://linkedin.com/in/keithtyser/" target="_blank" rel="noopener" class="icon-link" aria-label="LinkedIn"><svg class="icon text-[13px]" aria-hidden="true"><use href="/icons.svg#linkedin"/></svg></a>
+              <a href="https://github.com/keithtyser" target="_blank" rel="noopener" class="icon-link" aria-label="GitHub"><svg class="icon text-[13px]" aria-hidden="true"><use href="/icons.svg#github"/></svg></a>
+              <a href="https://twitter.com/keithtyser" target="_blank" rel="noopener" class="icon-link" aria-label="X (Twitter)"><svg class="icon text-[13px]" aria-hidden="true"><use href="/icons.svg#x-twitter"/></svg></a>
+              <a href="https://scholar.google.com/citations?user=YOUR_ID" target="_blank" rel="noopener" class="icon-link" aria-label="Google Scholar"><svg class="icon text-[13px]" aria-hidden="true"><use href="/icons.svg#graduation-cap"/></svg></a>
+              <a href="mailto:keithtyser@gmail.com" class="icon-link" aria-label="Email"><svg class="icon text-[13px]" aria-hidden="true"><use href="/icons.svg#envelope"/></svg></a>
             </nav>
           </div>
           <p class="text-[13px] muted mt-0.5">AI/ML Engineer &amp; Data Scientist</p>
@@ -59,8 +58,8 @@
       </div>
 
       <button id="darkModeToggle" type="button" class="icon-link" aria-label="Toggle theme">
-        <i class="fas fa-moon text-[13px] dark:hidden"></i>
-        <i class="fas fa-sun text-[13px] hidden dark:inline"></i>
+        <svg class="icon text-[13px] dark:hidden" aria-hidden="true"><use href="/icons.svg#moon"/></svg>
+        <svg class="icon text-[13px] hidden dark:inline" aria-hidden="true"><use href="/icons.svg#sun"/></svg>
       </button>
     </header>
 
@@ -89,7 +88,7 @@
           <a href="https://agent.keithtyser.com" target="_blank" rel="noopener" class="card">
             <div class="flex items-center justify-between gap-3 mb-1.5">
               <span class="card-title">Keef: Autonomous AI Agent</span>
-              <i class="fas fa-arrow-up-right-from-square text-[11px] muted" aria-hidden="true"></i>
+              <svg class="icon text-[11px] muted" aria-hidden="true"><use href="/icons.svg#arrow-up-right"/></svg>
             </div>
             <p class="card-desc">My own autonomous AI agent running on OpenClaw. Journaling, building, scanning the web, and maintaining its own site at <span class="underline decoration-dotted underline-offset-2">agent.keithtyser.com</span>.</p>
             <div class="flex flex-wrap gap-1.5 mt-4">
@@ -102,7 +101,7 @@
           <a href="blog/hull_tactical_solution.html" class="card">
             <div class="flex items-center justify-between gap-3 mb-1.5">
               <span class="card-title">Hull Tactical Market Prediction</span>
-              <i class="fas fa-arrow-right text-[11px] muted" aria-hidden="true"></i>
+              <svg class="icon text-[11px] muted" aria-hidden="true"><use href="/icons.svg#arrow-right"/></svg>
             </div>
             <p class="card-desc">My solution for the Hull Tactical Kaggle competition using TabM, walk-forward validation, and vol-adaptive bet sizing. Achieved a 6× improvement in Sharpe ratio.</p>
             <div class="flex flex-wrap gap-1.5 mt-4">
@@ -115,7 +114,7 @@
           <a href="https://keithtyser--keithtyser-chat-web.modal.run/" target="_blank" rel="noopener" class="card">
             <div class="flex items-center justify-between gap-3 mb-1.5">
               <span class="card-title">KeithGPT</span>
-              <i class="fas fa-arrow-up-right-from-square text-[11px] muted" aria-hidden="true"></i>
+              <svg class="icon text-[11px] muted" aria-hidden="true"><use href="/icons.svg#arrow-up-right"/></svg>
             </div>
             <p class="card-desc">A 1.9B parameter language model with 32 layers trained from scratch and fine-tuned. Built using Karpathy's nanochat framework. First load may take ~20 seconds if the model needs to be warmed.</p>
             <div class="flex flex-wrap gap-1.5 mt-4">
@@ -137,10 +136,10 @@
         <a href="https://twitter.com/keithtyser" target="_blank" rel="noopener" class="card mb-3">
           <div class="flex items-center justify-between gap-3">
             <div class="flex items-center gap-2.5">
-              <i class="fa-brands fa-x-twitter text-[13px]" aria-hidden="true"></i>
+              <svg class="icon text-[13px]" aria-hidden="true"><use href="/icons.svg#x-twitter"/></svg>
               <span class="card-title">Active on X</span>
             </div>
-            <i class="fas fa-arrow-up-right-from-square text-[11px] muted" aria-hidden="true"></i>
+            <svg class="icon text-[11px] muted" aria-hidden="true"><use href="/icons.svg#arrow-up-right"/></svg>
           </div>
           <p class="card-desc">Thoughts on AI, machine learning, and tech. Usually before they make it into longer writing.</p>
         </a>
@@ -169,56 +168,56 @@
         <div class="space-y-2">
           <a href="https://scholar.google.com/citations?user=YOUR_ID" class="row" target="_blank" rel="noopener">
             <div class="row-left">
-              <i class="fas fa-graduation-cap row-icon" aria-hidden="true"></i>
+              <svg class="icon row-icon" aria-hidden="true"><use href="/icons.svg#graduation-cap"/></svg>
               <span class="row-label">Research Publications</span>
             </div>
             <div class="flex items-center gap-3">
               <span class="row-meta">Updated Dec '24</span>
-              <i class="fas fa-arrow-right row-arrow" aria-hidden="true"></i>
+              <svg class="icon row-arrow" aria-hidden="true"><use href="/icons.svg#arrow-right"/></svg>
             </div>
           </a>
 
           <a href="books.html" class="row">
             <div class="row-left">
-              <i class="fas fa-book row-icon" aria-hidden="true"></i>
+              <svg class="icon row-icon" aria-hidden="true"><use href="/icons.svg#book"/></svg>
               <span class="row-label">Books</span>
             </div>
             <div class="flex items-center gap-3">
               <span class="row-meta">Living Document</span>
-              <i class="fas fa-arrow-right row-arrow" aria-hidden="true"></i>
+              <svg class="icon row-arrow" aria-hidden="true"><use href="/icons.svg#arrow-right"/></svg>
             </div>
           </a>
 
           <a href="blog/my-prompt-library.html" class="row">
             <div class="row-left">
-              <i class="fas fa-lightbulb row-icon" aria-hidden="true"></i>
+              <svg class="icon row-icon" aria-hidden="true"><use href="/icons.svg#lightbulb"/></svg>
               <span class="row-label">My Prompt Library</span>
             </div>
             <div class="flex items-center gap-3">
               <span class="row-meta">Living Document</span>
-              <i class="fas fa-arrow-right row-arrow" aria-hidden="true"></i>
+              <svg class="icon row-arrow" aria-hidden="true"><use href="/icons.svg#arrow-right"/></svg>
             </div>
           </a>
 
           <a href="tech-stack.html" class="row">
             <div class="row-left">
-              <i class="fas fa-laptop-code row-icon" aria-hidden="true"></i>
+              <svg class="icon row-icon" aria-hidden="true"><use href="/icons.svg#laptop-code"/></svg>
               <span class="row-label">Tech Stack &amp; Setup</span>
             </div>
             <div class="flex items-center gap-3">
               <span class="row-meta">Living Document</span>
-              <i class="fas fa-arrow-right row-arrow" aria-hidden="true"></i>
+              <svg class="icon row-arrow" aria-hidden="true"><use href="/icons.svg#arrow-right"/></svg>
             </div>
           </a>
 
           <a href="archive.html" class="row">
             <div class="row-left">
-              <i class="fas fa-archive row-icon" aria-hidden="true"></i>
+              <svg class="icon row-icon" aria-hidden="true"><use href="/icons.svg#archive"/></svg>
               <span class="row-label">Archive</span>
             </div>
             <div class="flex items-center gap-3">
               <span class="row-meta">Past Projects</span>
-              <i class="fas fa-arrow-right row-arrow" aria-hidden="true"></i>
+              <svg class="icon row-arrow" aria-hidden="true"><use href="/icons.svg#arrow-right"/></svg>
             </div>
           </a>
         </div>
@@ -227,14 +226,14 @@
 
     <footer class="mt-24 mb-12 pt-8 border-t flex flex-col items-center gap-4 text-[12px] muted">
       <nav class="flex items-center gap-1" aria-label="Footer social links">
-        <a href="https://linkedin.com/in/keithtyser/" class="icon-link" target="_blank" rel="noopener" aria-label="LinkedIn"><i class="fab fa-linkedin text-[13px]"></i></a>
-        <a href="https://github.com/keithtyser" class="icon-link" target="_blank" rel="noopener" aria-label="GitHub"><i class="fab fa-github text-[13px]"></i></a>
-        <a href="https://twitter.com/keithtyser" class="icon-link" target="_blank" rel="noopener" aria-label="X (Twitter)"><i class="fa-brands fa-x-twitter text-[13px]"></i></a>
-        <a href="https://scholar.google.com/citations?user=YOUR_ID" class="icon-link" target="_blank" rel="noopener" aria-label="Google Scholar"><i class="fas fa-graduation-cap text-[13px]"></i></a>
-        <a href="mailto:keithtyser@gmail.com" class="icon-link" aria-label="Email"><i class="fas fa-envelope text-[13px]"></i></a>
+        <a href="https://linkedin.com/in/keithtyser/" class="icon-link" target="_blank" rel="noopener" aria-label="LinkedIn"><svg class="icon text-[13px]" aria-hidden="true"><use href="/icons.svg#linkedin"/></svg></a>
+        <a href="https://github.com/keithtyser" class="icon-link" target="_blank" rel="noopener" aria-label="GitHub"><svg class="icon text-[13px]" aria-hidden="true"><use href="/icons.svg#github"/></svg></a>
+        <a href="https://twitter.com/keithtyser" class="icon-link" target="_blank" rel="noopener" aria-label="X (Twitter)"><svg class="icon text-[13px]" aria-hidden="true"><use href="/icons.svg#x-twitter"/></svg></a>
+        <a href="https://scholar.google.com/citations?user=YOUR_ID" class="icon-link" target="_blank" rel="noopener" aria-label="Google Scholar"><svg class="icon text-[13px]" aria-hidden="true"><use href="/icons.svg#graduation-cap"/></svg></a>
+        <a href="mailto:keithtyser@gmail.com" class="icon-link" aria-label="Email"><svg class="icon text-[13px]" aria-hidden="true"><use href="/icons.svg#envelope"/></svg></a>
       </nav>
       <p>© 2026 Keith Tyser</p>
-      <a href="ai.html" class="text-[11px] opacity-50 hover:opacity-100 transition-opacity">for AI agents →</a>
+      <a href="ai.html" class="text-[11px] muted hover:text-[color:var(--text)] transition-colors">for AI agents →</a>
     </footer>
   </div>
 </body>

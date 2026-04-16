@@ -23,7 +23,6 @@
     })();
   </script>
   <link rel="preload" href="fonts/InterVariable.woff2" as="font" type="font/woff2" crossorigin>
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
   <link rel="stylesheet" href="dist/styles.css">
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -47,15 +46,15 @@
             <span class="text-[13px] muted">/ Archive</span>
           </div>
           <p class="text-[12px] muted mt-0.5">
-            <i class="fas fa-arrow-left text-[10px] mr-1"></i>
+            <svg class="icon text-[10px] mr-1" aria-hidden="true"><use href="/icons.svg#arrow-left"/></svg>
             Back home
           </p>
         </div>
       </a>
 
       <button id="darkModeToggle" type="button" class="icon-link" aria-label="Toggle theme">
-        <i class="fas fa-moon text-[13px] dark:hidden"></i>
-        <i class="fas fa-sun text-[13px] hidden dark:inline"></i>
+        <svg class="icon text-[13px] dark:hidden" aria-hidden="true"><use href="/icons.svg#moon"/></svg>
+        <svg class="icon text-[13px] hidden dark:inline" aria-hidden="true"><use href="/icons.svg#sun"/></svg>
       </button>
     </header>
 
@@ -74,12 +73,12 @@
           <div class="tooltip-wrapper">
             <div class="row cursor-default">
               <div class="row-left">
-                <i class="fas fa-chart-line row-icon" aria-hidden="true"></i>
+                <svg class="icon row-icon" aria-hidden="true"><use href="/icons.svg#chart-line"/></svg>
                 <span class="row-label">LLM Trading Agent</span>
               </div>
               <div class="flex items-center gap-3">
                 <span class="row-meta">Dec '25</span>
-                <i class="fas fa-circle-info text-[11px] muted" aria-hidden="true"></i>
+                <svg class="icon text-[11px] muted" aria-hidden="true"><use href="/icons.svg#info"/></svg>
               </div>
             </div>
             <span class="tooltip-text">Turns out LLMs aren't good at trading crypto futures with leverage. Thank god for paper trading.</span>
@@ -87,67 +86,67 @@
 
           <a href="https://github.com/keithtyser/genesis-agents" target="_blank" rel="noopener" class="row">
             <div class="row-left">
-              <i class="fas fa-users row-icon" aria-hidden="true"></i>
+              <svg class="icon row-icon" aria-hidden="true"><use href="/icons.svg#users"/></svg>
               <span class="row-label">Genesis Agents</span>
             </div>
             <div class="flex items-center gap-3">
               <span class="row-meta">May '25</span>
-              <i class="fas fa-arrow-right row-arrow" aria-hidden="true"></i>
+              <svg class="icon row-arrow" aria-hidden="true"><use href="/icons.svg#arrow-right"/></svg>
             </div>
           </a>
 
           <a href="https://github.com/keithtyser/judgeflow" target="_blank" rel="noopener" class="row">
             <div class="row-left">
-              <i class="fas fa-gavel row-icon" aria-hidden="true"></i>
+              <svg class="icon row-icon" aria-hidden="true"><use href="/icons.svg#gavel"/></svg>
               <span class="row-label">JudgeFlow</span>
             </div>
             <div class="flex items-center gap-3">
               <span class="row-meta">May '25</span>
-              <i class="fas fa-arrow-right row-arrow" aria-hidden="true"></i>
+              <svg class="icon row-arrow" aria-hidden="true"><use href="/icons.svg#arrow-right"/></svg>
             </div>
           </a>
 
           <a href="https://github.com/keithtyser/lora-provenance" target="_blank" rel="noopener" class="row">
             <div class="row-left">
-              <i class="fas fa-shield-alt row-icon" aria-hidden="true"></i>
+              <svg class="icon row-icon" aria-hidden="true"><use href="/icons.svg#shield"/></svg>
               <span class="row-label">LoRA-Provenance Toolkit</span>
             </div>
             <div class="flex items-center gap-3">
               <span class="row-meta">Apr '25</span>
-              <i class="fas fa-arrow-right row-arrow" aria-hidden="true"></i>
+              <svg class="icon row-arrow" aria-hidden="true"><use href="/icons.svg#arrow-right"/></svg>
             </div>
           </a>
 
           <a href="https://www.kaggle.com/competitions/march-machine-learning-mania-2025" target="_blank" rel="noopener" class="row">
             <div class="row-left">
-              <i class="fas fa-trophy row-icon" aria-hidden="true"></i>
+              <svg class="icon row-icon" aria-hidden="true"><use href="/icons.svg#trophy"/></svg>
               <span class="row-label">March Mania ML Competition</span>
             </div>
             <div class="flex items-center gap-3">
               <span class="row-meta">Mar '25</span>
-              <i class="fas fa-arrow-right row-arrow" aria-hidden="true"></i>
+              <svg class="icon row-arrow" aria-hidden="true"><use href="/icons.svg#arrow-right"/></svg>
             </div>
           </a>
 
           <a href="http://www.sfdining.ai" target="_blank" rel="noopener" class="row">
             <div class="row-left">
-              <i class="fas fa-utensils row-icon" aria-hidden="true"></i>
+              <svg class="icon row-icon" aria-hidden="true"><use href="/icons.svg#utensils"/></svg>
               <span class="row-label">SF Dining Guide</span>
             </div>
             <div class="flex items-center gap-3">
               <span class="row-meta">Feb '25</span>
-              <i class="fas fa-arrow-right row-arrow" aria-hidden="true"></i>
+              <svg class="icon row-arrow" aria-hidden="true"><use href="/icons.svg#arrow-right"/></svg>
             </div>
           </a>
 
           <a href="http://www.prompt-crafter.com" target="_blank" rel="noopener" class="row">
             <div class="row-left">
-              <i class="fas fa-keyboard row-icon" aria-hidden="true"></i>
+              <svg class="icon row-icon" aria-hidden="true"><use href="/icons.svg#keyboard"/></svg>
               <span class="row-label">PromptCrafter</span>
             </div>
             <div class="flex items-center gap-3">
               <span class="row-meta">Jan '25</span>
-              <i class="fas fa-arrow-right row-arrow" aria-hidden="true"></i>
+              <svg class="icon row-arrow" aria-hidden="true"><use href="/icons.svg#arrow-right"/></svg>
             </div>
           </a>
         </div>
@@ -155,7 +154,7 @@
 
       <section>
         <a href="/" class="btn btn-ghost">
-          <i class="fas fa-arrow-left text-[11px]" aria-hidden="true"></i>
+          <svg class="icon text-[11px]" aria-hidden="true"><use href="/icons.svg#arrow-left"/></svg>
           Back to main site
         </a>
       </section>
@@ -163,14 +162,14 @@
 
     <footer class="mt-24 mb-12 pt-8 border-t flex flex-col items-center gap-4 text-[12px] muted">
       <nav class="flex items-center gap-1" aria-label="Footer social links">
-        <a href="https://linkedin.com/in/keithtyser/" class="icon-link" target="_blank" rel="noopener" aria-label="LinkedIn"><i class="fab fa-linkedin text-[13px]"></i></a>
-        <a href="https://github.com/keithtyser" class="icon-link" target="_blank" rel="noopener" aria-label="GitHub"><i class="fab fa-github text-[13px]"></i></a>
-        <a href="https://twitter.com/keithtyser" class="icon-link" target="_blank" rel="noopener" aria-label="X (Twitter)"><i class="fa-brands fa-x-twitter text-[13px]"></i></a>
-        <a href="https://scholar.google.com/citations?user=YOUR_ID" class="icon-link" target="_blank" rel="noopener" aria-label="Google Scholar"><i class="fas fa-graduation-cap text-[13px]"></i></a>
-        <a href="mailto:keithtyser@gmail.com" class="icon-link" aria-label="Email"><i class="fas fa-envelope text-[13px]"></i></a>
+        <a href="https://linkedin.com/in/keithtyser/" class="icon-link" target="_blank" rel="noopener" aria-label="LinkedIn"><svg class="icon text-[13px]" aria-hidden="true"><use href="/icons.svg#linkedin"/></svg></a>
+        <a href="https://github.com/keithtyser" class="icon-link" target="_blank" rel="noopener" aria-label="GitHub"><svg class="icon text-[13px]" aria-hidden="true"><use href="/icons.svg#github"/></svg></a>
+        <a href="https://twitter.com/keithtyser" class="icon-link" target="_blank" rel="noopener" aria-label="X (Twitter)"><svg class="icon text-[13px]" aria-hidden="true"><use href="/icons.svg#x-twitter"/></svg></a>
+        <a href="https://scholar.google.com/citations?user=YOUR_ID" class="icon-link" target="_blank" rel="noopener" aria-label="Google Scholar"><svg class="icon text-[13px]" aria-hidden="true"><use href="/icons.svg#graduation-cap"/></svg></a>
+        <a href="mailto:keithtyser@gmail.com" class="icon-link" aria-label="Email"><svg class="icon text-[13px]" aria-hidden="true"><use href="/icons.svg#envelope"/></svg></a>
       </nav>
       <p>© 2026 Keith Tyser</p>
-      <a href="ai.html" class="text-[11px] opacity-50 hover:opacity-100 transition-opacity">for AI agents →</a>
+      <a href="ai.html" class="text-[11px] muted hover:text-[color:var(--text)] transition-colors">for AI agents →</a>
     </footer>
   </div>
 </body>
