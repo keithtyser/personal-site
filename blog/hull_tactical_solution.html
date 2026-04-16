@@ -11,11 +11,14 @@
   <meta property="og:title" content="Hull Tactical Market Prediction: A TabM Approach">
   <meta property="og:description" content="Walk-forward validation, TabM, and volatility-aware exposure sizing for the Hull Tactical Kaggle competition.">
   <meta property="og:url" content="https://keithtyser.com/blog/hull_tactical_solution.html">
-  <meta property="og:image" content="https://keithtyser.com/profile_pic.jpeg">
+  <meta property="og:image" content="https://keithtyser.com/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
   <meta property="article:published_time" content="2025-12-16">
-  <meta name="twitter:card" content="summary">
+  <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Hull Tactical Market Prediction: A TabM Approach">
   <meta name="twitter:description" content="Walk-forward validation, TabM, and volatility-aware exposure sizing for the Hull Tactical Kaggle competition.">
+  <meta name="twitter:image" content="https://keithtyser.com/og-image.png">
   <script>
     (() => {
       const saved = localStorage.getItem('theme');
@@ -23,8 +26,7 @@
       if (dark) document.documentElement.classList.add('dark');
     })();
   </script>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preload" href="../fonts/InterVariable.woff2" as="font" type="font/woff2" crossorigin>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
   <link rel="stylesheet" href="../dist/styles.css">
   <link rel="icon" type="image/svg+xml" href="../favicon.svg">
@@ -111,11 +113,10 @@
 <p>The standard approach: sigmoid mapping. Positive predictions go above 1.0 (long), negative predictions go below 1.0 (defensive).</p>
 <p>The problem: a fixed sigmoid treats all market conditions equally. A prediction of +0.0001 gets the same exposure whether volatility is 10% or 40%.</p>
 <p><strong>Vol-adaptive scaling</strong> fixed this. Instead of a fixed sigmoid scale, I compute:</p>
-<pre><code class="language-python">vol_ratio = current_vol / median_vol
-vol_ratio = clip(vol_ratio, 0.5, 2.0)
+<pre><code class="hljs language-python">vol_ratio = current_vol / median_vol
+vol_ratio = clip(vol_ratio, <span class="hljs-number">0.5</span>, <span class="hljs-number">2.0</span>)
 dynamic_scale = base_scale * vol_ratio
-</code></pre>
-<p>When volatility is twice the historical median, the sigmoid compresses toward neutral (exposure ~1.0). When volatility is half the median, the sigmoid expands and bets get more aggressive.</p>
+</code></pre><p>When volatility is twice the historical median, the sigmoid compresses toward neutral (exposure ~1.0). When volatility is half the median, the sigmoid expands and bets get more aggressive.</p>
 <p>This single change improved WFO Sharpe by 12%.</p>
 <h2 id="what-worked">What Worked</h2>
 <table>

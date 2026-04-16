@@ -2,6 +2,8 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { marked } from 'marked';
+import { markedHighlight } from 'marked-highlight';
+import hljs from 'highlight.js';
 import matter from 'gray-matter';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -70,6 +72,14 @@ function toRFC822(d) {
 /* links in new tabs. Collects TOC entries as a side-effect.          */
 /* ------------------------------------------------------------------ */
 
+marked.use(markedHighlight({
+  emptyLangClass: 'hljs',
+  langPrefix: 'hljs language-',
+  highlight(code, lang) {
+    const language = hljs.getLanguage(lang) ? lang : 'plaintext';
+    return hljs.highlight(code, { language }).value;
+  },
+}));
 marked.setOptions({ gfm: true, breaks: false });
 
 function renderMarkdown(body, tocEntries) {
@@ -186,11 +196,14 @@ ${content}
   <meta property="og:title" content="${escapeHtml(title)}">
   <meta property="og:description" content="${escapeHtml(description)}">
   <meta property="og:url" content="${canonical}">
-  <meta property="og:image" content="${SITE_URL}/profile_pic.jpeg">
+  <meta property="og:image" content="${SITE_URL}/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
 ${articleMeta}
-  <meta name="twitter:card" content="summary">
+  <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="${escapeHtml(title)}">
   <meta name="twitter:description" content="${escapeHtml(description)}">
+  <meta name="twitter:image" content="${SITE_URL}/og-image.png">
   <script>
     (() => {
       const saved = localStorage.getItem('theme');
@@ -198,8 +211,7 @@ ${articleMeta}
       if (dark) document.documentElement.classList.add('dark');
     })();
   </script>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preload" href="${cssPath.startsWith('..') ? '../fonts/InterVariable.woff2' : 'fonts/InterVariable.woff2'}" as="font" type="font/woff2" crossorigin>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
   <link rel="stylesheet" href="${cssPath}">
   <link rel="icon" type="image/svg+xml" href="${cssPath.startsWith('..') ? '../favicon.svg' : 'favicon.svg'}">
@@ -308,6 +320,11 @@ function renderIndexPage(posts) {
   <meta property="og:title" content="Writing - Keith Tyser">
   <meta property="og:description" content="${escapeHtml(SITE_DESCRIPTION)}">
   <meta property="og:url" content="${SITE_URL}/blog/">
+  <meta property="og:image" content="${SITE_URL}/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="${SITE_URL}/og-image.png">
   <script>
     (() => {
       const saved = localStorage.getItem('theme');
@@ -315,8 +332,7 @@ function renderIndexPage(posts) {
       if (dark) document.documentElement.classList.add('dark');
     })();
   </script>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preload" href="../fonts/InterVariable.woff2" as="font" type="font/woff2" crossorigin>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
   <link rel="stylesheet" href="../dist/styles.css">
   <link rel="icon" type="image/svg+xml" href="../favicon.svg">
@@ -406,7 +422,7 @@ ${items}
 
 function renderLlmsTxt({ posts, pagesMeta }) {
   const pageLines = pagesMeta
-    .filter((p) => p.slug !== 'ai')
+    .filter((p) => p.slug !== 'ai' && !p.unlisted)
     .map((p) => `- [${p.slug}](${SITE_URL}/${p.slug}.html)`)
     .join('\n');
 
@@ -451,6 +467,7 @@ function renderSitemap({ posts, pagesMeta }) {
   ];
 
   for (const page of pagesMeta) {
+    if (page.unlisted) continue;
     urls.push({
       loc: `${SITE_URL}/${page.slug}.html`,
       lastmod: page.updatedISO || today,
@@ -561,7 +578,7 @@ async function renderStaticPages() {
     });
 
     await fs.writeFile(path.join(projectRoot, `${slug}.html`), pageHtml, 'utf8');
-    rendered.push({ slug, updatedISO });
+    rendered.push({ slug, updatedISO, unlisted: Boolean(data.unlisted) });
   }
   return rendered;
 }

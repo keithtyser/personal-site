@@ -882,12 +882,12 @@ button {
   text-underline-offset: 4px;
 }
 
-.opacity-70 {
-  opacity: 0.7;
-}
-
 .opacity-50 {
   opacity: 0.5;
+}
+
+.opacity-70 {
+  opacity: 0.7;
 }
 
 .filter {
@@ -904,6 +904,19 @@ button {
   transition-property: opacity;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 150ms;
+}
+
+@font-face {
+  font-family: 'Inter';
+
+  font-style: normal;
+
+  font-display: swap;
+
+  font-weight: 100 900;
+
+  src: url('/fonts/InterVariable.woff2') format('woff2-variations'),
+       url('/fonts/InterVariable.woff2') format('woff2');
 }
 
 /* ============================================================
@@ -1465,6 +1478,67 @@ button {
   border: 0;
   padding: 0;
   font-size: inherit;
+}
+
+/* Syntax highlighting: minimal two-tone palette. Comments dim,
+   literals accented, keywords slightly heavier, rest body color. */
+
+.article-body .hljs {
+  color: var(--text);
+  background: transparent;
+}
+
+.article-body .hljs-comment,
+.article-body .hljs-quote {
+  color: var(--muted);
+  font-style: italic;
+}
+
+.article-body .hljs-string,
+.article-body .hljs-number,
+.article-body .hljs-regexp,
+.article-body .hljs-literal,
+.article-body .hljs-attr {
+  color: var(--accent);
+}
+
+.article-body .hljs-keyword,
+.article-body .hljs-selector-tag,
+.article-body .hljs-built_in,
+.article-body .hljs-type,
+.article-body .hljs-tag,
+.article-body .hljs-name,
+.article-body .hljs-section {
+  color: var(--text);
+  font-weight: 500;
+}
+
+.article-body .hljs-title,
+.article-body .hljs-title.class_,
+.article-body .hljs-title.function_,
+.article-body .hljs-variable.language_ {
+  color: var(--text);
+  font-weight: 500;
+}
+
+.article-body .hljs-params,
+.article-body .hljs-variable,
+.article-body .hljs-template-variable,
+.article-body .hljs-symbol,
+.article-body .hljs-bullet,
+.article-body .hljs-link,
+.article-body .hljs-meta,
+.article-body .hljs-addition,
+.article-body .hljs-deletion {
+  color: var(--text);
+}
+
+.article-body .hljs-emphasis {
+  font-style: italic;
+}
+
+.article-body .hljs-strong {
+  font-weight: 600;
 }
 
 .article-body hr {

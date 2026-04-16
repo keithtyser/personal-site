@@ -11,11 +11,14 @@
   <meta property="og:title" content="Advanced RAG Techniques in Production Systems">
   <meta property="og:description" content="A practical overview of retrieval quality, reranking, evaluation, and production engineering patterns for modern RAG systems.">
   <meta property="og:url" content="https://keithtyser.com/blog/advanced-rag-techniques-in-production-systems.html">
-  <meta property="og:image" content="https://keithtyser.com/profile_pic.jpeg">
+  <meta property="og:image" content="https://keithtyser.com/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
   <meta property="article:published_time" content="2025-04-19">
-  <meta name="twitter:card" content="summary">
+  <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Advanced RAG Techniques in Production Systems">
   <meta name="twitter:description" content="A practical overview of retrieval quality, reranking, evaluation, and production engineering patterns for modern RAG systems.">
+  <meta name="twitter:image" content="https://keithtyser.com/og-image.png">
   <script>
     (() => {
       const saved = localStorage.getItem('theme');
@@ -23,8 +26,7 @@
       if (dark) document.documentElement.classList.add('dark');
     })();
   </script>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preload" href="../fonts/InterVariable.woff2" as="font" type="font/woff2" crossorigin>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
   <link rel="stylesheet" href="../dist/styles.css">
   <link rel="icon" type="image/svg+xml" href="../favicon.svg">
@@ -93,19 +95,18 @@
 <li><strong>Semantic or layout‑aware chunking</strong> can lift retrieval recall by up to nine points on BEIR‑style tasks.  </li>
 <li>If documents are long or heterogeneous, <strong>hierarchical indexes</strong> (section → paragraph → sentence) in tools like LlamaIndex let you trade speed for depth when needed.</li>
 </ul>
-<pre><code class="language-python"># Example: hierarchical index with LlamaIndex
-from llama_index.core import VectorStoreIndex, Document
+<pre><code class="hljs language-python"><span class="hljs-comment"># Example: hierarchical index with LlamaIndex</span>
+<span class="hljs-keyword">from</span> llama_index.core <span class="hljs-keyword">import</span> VectorStoreIndex, Document
 
-docs = [Document.from_file(&quot;whitepaper.pdf&quot;)]
+docs = [Document.from_file(<span class="hljs-string">&quot;whitepaper.pdf&quot;</span>)]
 index = VectorStoreIndex.from_documents(
     docs,
-    chunk_size=512,
-    chunk_overlap=64,
-    chunking_strategy=&quot;semantic&quot;
+    chunk_size=<span class="hljs-number">512</span>,
+    chunk_overlap=<span class="hljs-number">64</span>,
+    chunking_strategy=<span class="hljs-string">&quot;semantic&quot;</span>
 )
 query_engine = index.as_query_engine()
-</code></pre>
-<hr>
+</code></pre><hr>
 <h2 id="3-reranking-and-answer-generation-keep-the-llm-honest">3. Reranking &amp; Answer Generation: keep the LLM honest</h2>
 <ol>
 <li><strong>LLM‑based rerankers</strong> (OpenAI <code>/v1/rerank</code>, Cohere Rerank) score the top 20–50 hits and often double precision over simple dot‑product sorting.  </li>

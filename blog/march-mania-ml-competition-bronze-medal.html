@@ -11,11 +11,14 @@
   <meta property="og:title" content="March Mania ML Competition: Bronze Medal with Custom ELO">
   <meta property="og:description" content="How a custom ELO system, targeted tuning, and manual overrides led to a bronze medal finish in March Machine Learning Mania 2025.">
   <meta property="og:url" content="https://keithtyser.com/blog/march-mania-ml-competition-bronze-medal.html">
-  <meta property="og:image" content="https://keithtyser.com/profile_pic.jpeg">
+  <meta property="og:image" content="https://keithtyser.com/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
   <meta property="article:published_time" content="2025-03-28">
-  <meta name="twitter:card" content="summary">
+  <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="March Mania ML Competition: Bronze Medal with Custom ELO">
   <meta name="twitter:description" content="How a custom ELO system, targeted tuning, and manual overrides led to a bronze medal finish in March Machine Learning Mania 2025.">
+  <meta name="twitter:image" content="https://keithtyser.com/og-image.png">
   <script>
     (() => {
       const saved = localStorage.getItem('theme');
@@ -23,8 +26,7 @@
       if (dark) document.documentElement.classList.add('dark');
     })();
   </script>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preload" href="../fonts/InterVariable.woff2" as="font" type="font/woff2" crossorigin>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
   <link rel="stylesheet" href="../dist/styles.css">
   <link rel="icon" type="image/svg+xml" href="../favicon.svg">
@@ -68,25 +70,24 @@
 </ul>
 <h3 id="technical-implementation">Technical Implementation</h3>
 <p>My system extends traditional ELO with basketball-specific enhancements:</p>
-<pre><code class="language-python"># Core ELO update formula with margin of victory
-def update_elo_rating(winner_elo, loser_elo, margin, location, k=32):
-    # Expected win probability
-    expected = 1 / (1 + 10**((loser_elo - winner_elo) / 400))
+<pre><code class="hljs language-python"><span class="hljs-comment"># Core ELO update formula with margin of victory</span>
+<span class="hljs-keyword">def</span> <span class="hljs-title function_">update_elo_rating</span>(<span class="hljs-params">winner_elo, loser_elo, margin, location, k=<span class="hljs-number">32</span></span>):
+    <span class="hljs-comment"># Expected win probability</span>
+    expected = <span class="hljs-number">1</span> / (<span class="hljs-number">1</span> + <span class="hljs-number">10</span>**((loser_elo - winner_elo) / <span class="hljs-number">400</span>))
     
-    # Margin of victory multiplier
+    <span class="hljs-comment"># Margin of victory multiplier</span>
     mov_factor = calculate_mov_factor(margin, expected)
     
-    # Home court adjustment
-    if location == &#39;H&#39;:
+    <span class="hljs-comment"># Home court adjustment</span>
+    <span class="hljs-keyword">if</span> location == <span class="hljs-string">&#x27;H&#x27;</span>:
         winner_elo += HOME_COURT_ADVANTAGE
-    elif location == &#39;A&#39;:
+    <span class="hljs-keyword">elif</span> location == <span class="hljs-string">&#x27;A&#x27;</span>:
         loser_elo += HOME_COURT_ADVANTAGE
     
-    # Update ratings
-    rating_change = k * mov_factor * (1 - expected)
-    return winner_elo + rating_change, loser_elo - rating_change
-</code></pre>
-<p>Key features of my implementation:</p>
+    <span class="hljs-comment"># Update ratings</span>
+    rating_change = k * mov_factor * (<span class="hljs-number">1</span> - expected)
+    <span class="hljs-keyword">return</span> winner_elo + rating_change, loser_elo - rating_change
+</code></pre><p>Key features of my implementation:</p>
 <ul>
 <li><strong>Margin of Victory Scaling</strong>: Larger wins against strong opponents matter more</li>
 <li><strong>Home Court Advantage</strong>: ~100 ELO point boost for home teams</li>
@@ -104,23 +105,22 @@ def update_elo_rating(winner_elo, loser_elo, margin, location, k=32):
 <li><strong>MOV Formula</strong>: Linear vs. logarithmic margin scaling</li>
 </ol>
 <h3 id="tuning-methodology">Tuning Methodology</h3>
-<pre><code class="language-python"># Hyperparameter search space
+<pre><code class="hljs language-python"><span class="hljs-comment"># Hyperparameter search space</span>
 param_grid = {
-    &#39;k_factor&#39;: [28, 32, 38, 42],
-    &#39;alpha&#39;: [3, 5, 7, 10],
-    &#39;home_court&#39;: [80, 100, 120],
-    &#39;carryover&#39;: [0.6, 0.7, 0.8],
-    &#39;mov_formula&#39;: [&#39;linear&#39;, &#39;log&#39;]
+    <span class="hljs-string">&#x27;k_factor&#x27;</span>: [<span class="hljs-number">28</span>, <span class="hljs-number">32</span>, <span class="hljs-number">38</span>, <span class="hljs-number">42</span>],
+    <span class="hljs-string">&#x27;alpha&#x27;</span>: [<span class="hljs-number">3</span>, <span class="hljs-number">5</span>, <span class="hljs-number">7</span>, <span class="hljs-number">10</span>],
+    <span class="hljs-string">&#x27;home_court&#x27;</span>: [<span class="hljs-number">80</span>, <span class="hljs-number">100</span>, <span class="hljs-number">120</span>],
+    <span class="hljs-string">&#x27;carryover&#x27;</span>: [<span class="hljs-number">0.6</span>, <span class="hljs-number">0.7</span>, <span class="hljs-number">0.8</span>],
+    <span class="hljs-string">&#x27;mov_formula&#x27;</span>: [<span class="hljs-string">&#x27;linear&#x27;</span>, <span class="hljs-string">&#x27;log&#x27;</span>]
 }
 
-# Optimize for historical tournament prediction accuracy
+<span class="hljs-comment"># Optimize for historical tournament prediction accuracy</span>
 best_params = optimize_parameters(
     data=historical_tournaments,
     param_grid=param_grid,
-    cv_splits=5
+    cv_splits=<span class="hljs-number">5</span>
 )
-</code></pre>
-<p>Through extensive optimization, I found that the optimal parameters differed significantly between men&#39;s and women&#39;s basketball. The two sports behave differently. While I won&#39;t share the exact values (competitive advantage!), the key findings were:</p>
+</code></pre><p>Through extensive optimization, I found that the optimal parameters differed significantly between men&#39;s and women&#39;s basketball. The two sports behave differently. While I won&#39;t share the exact values (competitive advantage!), the key findings were:</p>
 <h3 id="why-gender-specific-tuning-matters">Why Gender-Specific Tuning Matters</h3>
 <p>Women&#39;s college basketball showed different patterns:</p>
 <ul>
@@ -219,33 +219,32 @@ best_params = optimize_parameters(
 <li><strong>Prediction Module</strong>: Tournament bracket probability generation</li>
 <li><strong>Web Interface</strong>: User-friendly dashboard for analysis and predictions</li>
 </ol>
-<pre><code class="language-python">class HoopsELO:
-    def __init__(self, k=32, alpha=5, home_court=100):
-        self.k = k
-        self.alpha = alpha
-        self.home_court = home_court
-        self.ratings = {}
+<pre><code class="hljs language-python"><span class="hljs-keyword">class</span> <span class="hljs-title class_">HoopsELO</span>:
+    <span class="hljs-keyword">def</span> <span class="hljs-title function_">__init__</span>(<span class="hljs-params">self, k=<span class="hljs-number">32</span>, alpha=<span class="hljs-number">5</span>, home_court=<span class="hljs-number">100</span></span>):
+        <span class="hljs-variable language_">self</span>.k = k
+        <span class="hljs-variable language_">self</span>.alpha = alpha
+        <span class="hljs-variable language_">self</span>.home_court = home_court
+        <span class="hljs-variable language_">self</span>.ratings = {}
     
-    def predict_game(self, team_a, team_b, location=&#39;N&#39;):
-        &quot;&quot;&quot;Predict game outcome and spread&quot;&quot;&quot;
-        elo_a = self.ratings.get(team_a, 1500)
-        elo_b = self.ratings.get(team_b, 1500)
+    <span class="hljs-keyword">def</span> <span class="hljs-title function_">predict_game</span>(<span class="hljs-params">self, team_a, team_b, location=<span class="hljs-string">&#x27;N&#x27;</span></span>):
+        <span class="hljs-string">&quot;&quot;&quot;Predict game outcome and spread&quot;&quot;&quot;</span>
+        elo_a = <span class="hljs-variable language_">self</span>.ratings.get(team_a, <span class="hljs-number">1500</span>)
+        elo_b = <span class="hljs-variable language_">self</span>.ratings.get(team_b, <span class="hljs-number">1500</span>)
         
-        # Location adjustment
-        if location == &#39;H&#39;:
-            elo_a += self.home_court
-        elif location == &#39;A&#39;:
-            elo_b += self.home_court
+        <span class="hljs-comment"># Location adjustment</span>
+        <span class="hljs-keyword">if</span> location == <span class="hljs-string">&#x27;H&#x27;</span>:
+            elo_a += <span class="hljs-variable language_">self</span>.home_court
+        <span class="hljs-keyword">elif</span> location == <span class="hljs-string">&#x27;A&#x27;</span>:
+            elo_b += <span class="hljs-variable language_">self</span>.home_court
         
-        # Win probability
-        prob_a = 1 / (1 + 10**((elo_b - elo_a) / 400))
+        <span class="hljs-comment"># Win probability</span>
+        prob_a = <span class="hljs-number">1</span> / (<span class="hljs-number">1</span> + <span class="hljs-number">10</span>**((elo_b - elo_a) / <span class="hljs-number">400</span>))
         
-        # Point spread
-        spread = (elo_a - elo_b) * 0.03  # ~30 points per 1000 ELO
+        <span class="hljs-comment"># Point spread</span>
+        spread = (elo_a - elo_b) * <span class="hljs-number">0.03</span>  <span class="hljs-comment"># ~30 points per 1000 ELO</span>
         
-        return prob_a, spread
-</code></pre>
-<h3 id="validation-and-backtesting">Validation and Backtesting</h3>
+        <span class="hljs-keyword">return</span> prob_a, spread
+</code></pre><h3 id="validation-and-backtesting">Validation and Backtesting</h3>
 <p>I validated the system using:</p>
 <ul>
 <li><strong>5-fold cross-validation</strong> on historical tournaments (2015-2024)</li>
