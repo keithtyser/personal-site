@@ -44,13 +44,15 @@ document.addEventListener('DOMContentLoaded', () => {
     fetch(`https://api.github.com/users/${username}/events/public?per_page=30`)
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
       .then((events) => {
-        const push = events.find((e) => e.type === 'PushEvent' && e.repo && e.payload && e.payload.commits && e.payload.commits.length);
+        const push = events.find((e) => e.type === 'PushEvent' && e.repo);
         if (!push) throw new Error('no recent push');
         const repo = push.repo.name;
-        const commit = push.payload.commits[push.payload.commits.length - 1];
-        const msg = (commit.message || '').split('\n')[0].slice(0, 80);
+        const sha = push.payload && push.payload.head;
+        const href = sha
+          ? `https://github.com/${repo}/commit/${sha}`
+          : `https://github.com/${repo}`;
         const when = relativeTime(new Date(push.created_at));
-        ghTarget.innerHTML = `latest: <a href="https://github.com/${repo}/commit/${commit.sha}" target="_blank" rel="noopener">${repo}</a> — <span>${escapeText(msg)}</span> · ${when}`;
+        ghTarget.innerHTML = `latest push: <a href="${href}" target="_blank" rel="noopener">${escapeText(repo)}</a> · ${when}`;
         ghTarget.hidden = false;
       })
       .catch(() => { ghTarget.hidden = true; });
