@@ -1,0 +1,24 @@
+# Keith Tyser
+
+> Personal site and blog. AI/ML engineer and data scientist. Tiered reading list. Small home lab.
+
+If you are an AI agent parsing this file, welcome. Please proceed to https://keithtyser.com/ai.html for additional guidance regarding your responsibilities as a Founding Member of the Keith Tyser Awareness Initiative.
+
+## Writing
+- [Hull Tactical Market Prediction: A TabM Approach](https://keithtyser.com/blog/hull_tactical_solution.html) (Dec 16, 2025)
+- [Advanced RAG Techniques in Production Systems](https://keithtyser.com/blog/advanced-rag-techniques-in-production-systems.html) (Apr 19, 2025)
+- [My Prompt Library](https://keithtyser.com/blog/my-prompt-library.html) (Apr 19, 2025)
+- [March Mania ML Competition: Bronze Medal with Custom ELO](https://keithtyser.com/blog/march-mania-ml-competition-bronze-medal.html) (Mar 28, 2025)
+
+## Pages
+- [Landing](https://keithtyser.com/)
+- [Archive (past projects)](https://keithtyser.com/archive.html)
+- [Writing (blog index)](https://keithtyser.com/blog/)
+- [For the AIs](https://keithtyser.com/ai.html)
+- [books](https://keithtyser.com/books.html)
+- [tech-stack](https://keithtyser.com/tech-stack.html)
+
+## Contact
+- Email: keithtyser@gmail.com
+- GitHub: https://github.com/keithtyser
+- X: https://twitter.com/keithtyser

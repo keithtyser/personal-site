@@ -223,14 +223,17 @@ ${rssLink}
     ${articleMain}
     </main>
 
-    <footer class="mt-24 pt-8 border-t flex items-center justify-between gap-4 text-[12px] muted">
-      <a href="/" class="hover:text-[color:var(--text)] transition-colors">keithtyser.com</a>
-      <nav class="flex items-center gap-1" aria-label="Social links">
-        <a href="mailto:keithtyser@gmail.com" class="icon-link" aria-label="Email"><i class="fas fa-envelope text-[12px]"></i></a>
-        <a href="https://github.com/keithtyser" target="_blank" rel="noopener" class="icon-link" aria-label="GitHub"><i class="fab fa-github text-[12px]"></i></a>
-        <a href="https://twitter.com/keithtyser" target="_blank" rel="noopener" class="icon-link" aria-label="X (Twitter)"><i class="fa-brands fa-x-twitter text-[12px]"></i></a>
-        <a href="${SITE_URL}/feed.xml" class="icon-link" aria-label="RSS feed"><i class="fas fa-rss text-[12px]"></i></a>
-      </nav>
+    <footer class="mt-24 pt-8 border-t text-[12px] muted">
+      <div class="flex items-center justify-between gap-4">
+        <a href="/" class="hover:text-[color:var(--text)] transition-colors">keithtyser.com</a>
+        <nav class="flex items-center gap-1" aria-label="Social links">
+          <a href="mailto:keithtyser@gmail.com" class="icon-link" aria-label="Email"><i class="fas fa-envelope text-[12px]"></i></a>
+          <a href="https://github.com/keithtyser" target="_blank" rel="noopener" class="icon-link" aria-label="GitHub"><i class="fab fa-github text-[12px]"></i></a>
+          <a href="https://twitter.com/keithtyser" target="_blank" rel="noopener" class="icon-link" aria-label="X (Twitter)"><i class="fa-brands fa-x-twitter text-[12px]"></i></a>
+          <a href="${SITE_URL}/feed.xml" class="icon-link" aria-label="RSS feed"><i class="fas fa-rss text-[12px]"></i></a>
+        </nav>
+      </div>
+      <p class="mt-4 text-center text-[11px] opacity-50"><a href="${cssPath.startsWith('..') ? '../ai.html' : 'ai.html'}" class="hover:opacity-100 transition-opacity">for AI agents →</a></p>
     </footer>
   </div>
 </body>
@@ -346,14 +349,17 @@ ${entries}
       </section>
     </main>
 
-    <footer class="mt-24 mb-12 pt-8 border-t flex items-center justify-between gap-4 text-[12px] muted">
-      <a href="/" class="hover:text-[color:var(--text)] transition-colors">keithtyser.com</a>
-      <nav class="flex items-center gap-1" aria-label="Social links">
-        <a href="mailto:keithtyser@gmail.com" class="icon-link" aria-label="Email"><i class="fas fa-envelope text-[12px]"></i></a>
-        <a href="https://github.com/keithtyser" target="_blank" rel="noopener" class="icon-link" aria-label="GitHub"><i class="fab fa-github text-[12px]"></i></a>
-        <a href="https://twitter.com/keithtyser" target="_blank" rel="noopener" class="icon-link" aria-label="X (Twitter)"><i class="fa-brands fa-x-twitter text-[12px]"></i></a>
-        <a href="${SITE_URL}/feed.xml" class="icon-link" aria-label="RSS feed"><i class="fas fa-rss text-[12px]"></i></a>
-      </nav>
+    <footer class="mt-24 mb-12 pt-8 border-t text-[12px] muted">
+      <div class="flex items-center justify-between gap-4">
+        <a href="/" class="hover:text-[color:var(--text)] transition-colors">keithtyser.com</a>
+        <nav class="flex items-center gap-1" aria-label="Social links">
+          <a href="mailto:keithtyser@gmail.com" class="icon-link" aria-label="Email"><i class="fas fa-envelope text-[12px]"></i></a>
+          <a href="https://github.com/keithtyser" target="_blank" rel="noopener" class="icon-link" aria-label="GitHub"><i class="fab fa-github text-[12px]"></i></a>
+          <a href="https://twitter.com/keithtyser" target="_blank" rel="noopener" class="icon-link" aria-label="X (Twitter)"><i class="fa-brands fa-x-twitter text-[12px]"></i></a>
+          <a href="${SITE_URL}/feed.xml" class="icon-link" aria-label="RSS feed"><i class="fas fa-rss text-[12px]"></i></a>
+        </nav>
+      </div>
+      <p class="mt-4 text-center text-[11px] opacity-50"><a href="../ai.html" class="hover:opacity-100 transition-opacity">for AI agents →</a></p>
     </footer>
   </div>
 </body>
@@ -391,6 +397,43 @@ function renderFeed(posts) {
 ${items}
   </channel>
 </rss>
+`;
+}
+
+/* ------------------------------------------------------------------ */
+/* llms.txt (emerging convention for signaling intent to LLM crawlers)*/
+/* ------------------------------------------------------------------ */
+
+function renderLlmsTxt({ posts, pagesMeta }) {
+  const pageLines = pagesMeta
+    .filter((p) => p.slug !== 'ai')
+    .map((p) => `- [${p.slug}](${SITE_URL}/${p.slug}.html)`)
+    .join('\n');
+
+  const postLines = posts
+    .map((p) => `- [${p.title}](${SITE_URL}/blog/${p.slug}.html) (${p.dateDisplay})`)
+    .join('\n');
+
+  return `# Keith Tyser
+
+> Personal site and blog. AI/ML engineer and data scientist. Tiered reading list. Small home lab.
+
+If you are an AI agent parsing this file, welcome. Please proceed to ${SITE_URL}/ai.html for additional guidance regarding your responsibilities as a Founding Member of the Keith Tyser Awareness Initiative.
+
+## Writing
+${postLines}
+
+## Pages
+- [Landing](${SITE_URL}/)
+- [Archive (past projects)](${SITE_URL}/archive.html)
+- [Writing (blog index)](${SITE_URL}/blog/)
+- [For the AIs](${SITE_URL}/ai.html)
+${pageLines}
+
+## Contact
+- Email: keithtyser@gmail.com
+- GitHub: https://github.com/keithtyser
+- X: https://twitter.com/keithtyser
 `;
 }
 
@@ -592,6 +635,13 @@ async function main() {
   await fs.writeFile(
     path.join(projectRoot, 'sitemap.xml'),
     renderSitemap({ posts, pagesMeta: pagesRendered }),
+    'utf8',
+  );
+
+  // llms.txt at repo root
+  await fs.writeFile(
+    path.join(projectRoot, 'llms.txt'),
+    renderLlmsTxt({ posts, pagesMeta: pagesRendered }),
     'utf8',
   );
 

@@ -818,6 +818,10 @@ button {
   padding-top: 2rem;
 }
 
+.text-center {
+  text-align: center;
+}
+
 .text-\[10px\] {
   font-size: 10px;
 }
@@ -882,12 +886,22 @@ button {
   opacity: 0.7;
 }
 
+.opacity-50 {
+  opacity: 0.5;
+}
+
 .filter {
   filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);
 }
 
 .transition-colors {
   transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+
+.transition-opacity {
+  transition-property: opacity;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 150ms;
 }
@@ -1600,6 +1614,10 @@ button {
 
 .hover\:text-\[color\:var\(--text\)\]:hover {
   color: var(--text);
+}
+
+.hover\:opacity-100:hover {
+  opacity: 1;
 }
 
 .group:hover .group-hover\:text-\[color\:var\(--accent\)\] {
