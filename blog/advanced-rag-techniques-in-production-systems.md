@@ -1,11 +1,13 @@
- # Advanced RAG Techniques in Production Systems  
-*State‑of‑the‑art practice and lessons learned, April 2025*
-
+---
+title: Advanced RAG Techniques in Production Systems
+description: A practical overview of retrieval quality, reranking, evaluation, and production engineering patterns for modern RAG systems.
+date: 2025-04-19
+toc: true
 ---
 
 ## Why RAG still matters in 2025
 
-Retrieval‑Augmented Generation (RAG) gives large language models instant access to your freshest data without re‑training. Over the last 18 months RAG has moved from research slide decks to the core of products such as Microsoft 365 Copilot and many internal search assistants. Teams that succeed treat RAG as **search engineering plus LLMops**, not as “just add a vector DB”. 
+Retrieval‑Augmented Generation (RAG) gives large language models instant access to your freshest data without re‑training. Over the last 18 months RAG has moved from research slide decks to the core of products such as Microsoft 365 Copilot and many internal search assistants. Teams that succeed treat RAG as **search engineering plus LLMops**, not as "just add a vector DB". 
 
 ---
 
@@ -24,7 +26,7 @@ Retrieval‑Augmented Generation (RAG) gives large language models instant acces
 
 ## 2. Chunking & Indexing: structure your knowledge
 
-* Fixed‑size chunks are yesterday’s default.  
+* Fixed‑size chunks are yesterday's default.  
 * **Semantic or layout‑aware chunking** can lift retrieval recall by up to nine points on BEIR‑style tasks.  
 * If documents are long or heterogeneous, **hierarchical indexes** (section → paragraph → sentence) in tools like LlamaIndex let you trade speed for depth when needed.
 
@@ -49,7 +51,7 @@ query_engine = index.as_query_engine()
 1. **LLM‑based rerankers** (OpenAI `/v1/rerank`, Cohere Rerank) score the top 20–50 hits and often double precision over simple dot‑product sorting.  
 2. **Knowledge‑graph augmentation** (GraphRAG) links entities so the model can handle multi‑hop questions and ambiguous names.  
 3. **Hallucination control**  
-   * Prompt: *“Answer only with facts found in the sources. Cite each fact.”*  
+   * Prompt: *"Answer only with facts found in the sources. Cite each fact."*  
    * Verifier pass: an LLM (or rule set) checks that every sentence is supported.  
    * Selective answering: abstain when context score is below a tuned threshold.  
 
@@ -66,7 +68,7 @@ query_engine = index.as_query_engine()
 ## 5. Production Engineering Playbook
 
 * **Streaming retrieval**: start generation after the first chunk arrives; paginate the rest.  
-* **Hot cache**: Redis or Qdrant’s local cache for the top 5 percent of queries can drop average latency by 40 percent.  
+* **Hot cache**: Redis or Qdrant's local cache for the top 5 percent of queries can drop average latency by 40 percent.  
 * **Security & privacy**: restrict retrieval by ACL first, then add redact‑at‑source if needed (Copilot uses Microsoft Graph permissions before GPT‑4 sees anything).  
 * **Cost tuning**: merge CPU retrieval with GPU rerank only on the final shortlist; offload embedding generation to batch jobs where possible.  
 * **Deploy patterns**:  
@@ -80,7 +82,7 @@ query_engine = index.as_query_engine()
 
 | System | Key technique | Lesson |
 |--------|---------------|--------|
-| **Microsoft 365 Copilot** | Semantic index over Microsoft Graph, hybrid retrieval, GPT‑4 generation | Permission‑aware retrieval solves 80 percent of “why did Copilot show that?” tickets. |
+| **Microsoft 365 Copilot** | Semantic index over Microsoft Graph, hybrid retrieval, GPT‑4 generation | Permission‑aware retrieval solves 80 percent of "why did Copilot show that?" tickets. |
 | **RAGFlow OSS engine** | Semantic chunking + hybrid search out of the box | Spend effort on data prep; chunking quality drives user trust. |
 | **GraphRAG library** | LLM‑derived knowledge graph + graph traversal | Graph helps when queries need multi‑step reasoning but costs more to build. |
 | **Internal support bot at IBM** | LLM verifier pass + token‑level logging | Hallucination rate fell from 12 percent to 2 percent after adding a fact‑check rerank step. |
@@ -119,4 +121,4 @@ query_engine = index.as_query_engine()
 
 ### Takeaway
 
-RAG success is 70 percent search engineering, 30 percent prompt talent. Invest in retrieval quality, monitor relentlessly, and let the LLM do the final mile rather than the entire marathon. With the techniques above you can ship grounded answers that stay fast, cheap, and trustworthy.
+RAG success is 70 percent search engineering, 30 percent prompt talent. Invest in retrieval quality. Monitor relentlessly. Let the LLM do the last mile, not the entire marathon.

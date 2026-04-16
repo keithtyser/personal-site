@@ -1,30 +1,233 @@
 <!DOCTYPE html>
-<html lang="en" class="scroll-smooth">
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Advanced RAG Techniques in Production Systems | Keith Tyser</title>
-  <!-- Tailwind with typography plugin -->
-  <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
-  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-  <style>
-    /* dark-mode tweaks for prose */
-    .dark .prose :where(th, td) { border-color: rgba(255,255,255,0.15); }
-    .prose table { width: 100%; }
-  </style>
-</head>
-<body class="bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 transition-colors duration-300">
-  <main class="max-w-3xl mx-auto px-4 py-10">
-    <header class="mb-10">
-      <a href="../index.html" class="text-sm text-blue-600 dark:text-blue-400 hover:underline">&larr; back home</a>
-    </header>
-    <article id="content" class="prose lg:prose-lg dark:prose-invert mx-auto"></article>
-  </main>
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Advanced RAG Techniques in Production Systems - Keith Tyser</title>
+  <meta name="description" content="A practical overview of retrieval quality, reranking, evaluation, and production engineering patterns for modern RAG systems.">
+  <link rel="canonical" href="https://keithtyser.com/blog/advanced-rag-techniques-in-production-systems.html">
+  <meta name="theme-color" content="#0a0a0a">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="Advanced RAG Techniques in Production Systems">
+  <meta property="og:description" content="A practical overview of retrieval quality, reranking, evaluation, and production engineering patterns for modern RAG systems.">
+  <meta property="og:url" content="https://keithtyser.com/blog/advanced-rag-techniques-in-production-systems.html">
+  <meta property="og:image" content="https://keithtyser.com/profile_pic.jpeg">
+  <meta property="article:published_time" content="2025-04-19">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Advanced RAG Techniques in Production Systems">
+  <meta name="twitter:description" content="A practical overview of retrieval quality, reranking, evaluation, and production engineering patterns for modern RAG systems.">
   <script>
-    fetch('advanced-rag-techniques-in-production-systems.md')
-      .then(res => res.text())
-      .then(md => { document.getElementById('content').innerHTML = marked.parse(md); });
+    (() => {
+      const saved = localStorage.getItem('theme');
+      const dark = saved ? saved === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+      if (dark) document.documentElement.classList.add('dark');
+    })();
   </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="../dist/styles.css">
+  <link rel="alternate" type="application/rss+xml" title="Keith Tyser" href="https://keithtyser.com/feed.xml">
+  <script src="../src/scripts/main.js" defer></script>
+</head>
+<body>
+  <a href="#main" class="skip-link">Skip to content</a>
+
+  <div class="article-shell article-with-toc">
+    <header class="article-header">
+      <a href="./" class="text-[12px] muted hover:text-[color:var(--text)] transition-colors">← All writing</a>
+      <button id="darkModeToggle" type="button" class="icon-link" aria-label="Toggle theme">
+        <i class="fas fa-moon text-[13px] dark:hidden"></i>
+        <i class="fas fa-sun text-[13px] hidden dark:inline"></i>
+      </button>
+    </header>
+
+    <main id="main">
+    <div class="article-layout">
+      <article>
+      <header class="mb-10">
+        <h1 class="article-title">Advanced RAG Techniques in Production Systems</h1>
+        <time class="article-date" datetime="2025-04-19">Apr 19, 2025</time>
+      </header>
+        <div class="article-body">
+<h2 id="why-rag-still-matters-in-2025">Why RAG still matters in 2025</h2>
+<p>Retrieval‑Augmented Generation (RAG) gives large language models instant access to your freshest data without re‑training. Over the last 18 months RAG has moved from research slide decks to the core of products such as Microsoft 365 Copilot and many internal search assistants. Teams that succeed treat RAG as <strong>search engineering plus LLMops</strong>, not as &quot;just add a vector DB&quot;. </p>
+<hr>
+<h2 id="1-retrieval-get-recall-first-then-get-precision">1. Retrieval: get recall first, then get precision</h2>
+<table>
+<thead>
+<tr>
+<th>Best‑practice</th>
+<th>What it does</th>
+<th>When to use</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Hybrid search</strong> (BM25 + dense vectors)</td>
+<td>Combines exact term match with semantic match, lifting recall and protecting against rare terms</td>
+<td>Your default choice for mixed document corpora</td>
+</tr>
+<tr>
+<td><strong>Late‑interaction models (ColBERT v2)</strong></td>
+<td>Token‑level matching gives cross‑encoder‑like precision while remaining indexable</td>
+<td>High‑stakes QA or multi‑lingual corpora where every top‑k slot counts</td>
+</tr>
+<tr>
+<td><strong>GPU‑efficient indexes (HNSW, ScaNN, LanceDB)</strong></td>
+<td>Low‑latency nearest‑neighbor search at scale</td>
+<td>&gt;10 million embeddings or sub‑200 ms budgets</td>
+</tr>
+<tr>
+<td><strong>Query rewriting &amp; expansion</strong></td>
+<td>LLM adds synonyms and context, boosting recall on under‑specified queries</td>
+<td>Customer‑facing search where queries are short or vague</td>
+</tr>
+</tbody></table>
+<p><strong>Tip:</strong> Run dense and sparse queries in parallel, then merge the result lists to keep latency under control.</p>
+<hr>
+<h2 id="2-chunking-and-indexing-structure-your-knowledge">2. Chunking &amp; Indexing: structure your knowledge</h2>
+<ul>
+<li>Fixed‑size chunks are yesterday&#39;s default.  </li>
+<li><strong>Semantic or layout‑aware chunking</strong> can lift retrieval recall by up to nine points on BEIR‑style tasks.  </li>
+<li>If documents are long or heterogeneous, <strong>hierarchical indexes</strong> (section → paragraph → sentence) in tools like LlamaIndex let you trade speed for depth when needed.</li>
+</ul>
+<pre><code class="language-python"># Example: hierarchical index with LlamaIndex
+from llama_index.core import VectorStoreIndex, Document
+
+docs = [Document.from_file(&quot;whitepaper.pdf&quot;)]
+index = VectorStoreIndex.from_documents(
+    docs,
+    chunk_size=512,
+    chunk_overlap=64,
+    chunking_strategy=&quot;semantic&quot;
+)
+query_engine = index.as_query_engine()
+</code></pre>
+<hr>
+<h2 id="3-reranking-and-answer-generation-keep-the-llm-honest">3. Reranking &amp; Answer Generation: keep the LLM honest</h2>
+<ol>
+<li><strong>LLM‑based rerankers</strong> (OpenAI <code>/v1/rerank</code>, Cohere Rerank) score the top 20–50 hits and often double precision over simple dot‑product sorting.  </li>
+<li><strong>Knowledge‑graph augmentation</strong> (GraphRAG) links entities so the model can handle multi‑hop questions and ambiguous names.  </li>
+<li><strong>Hallucination control</strong>  <ul>
+<li>Prompt: <em>&quot;Answer only with facts found in the sources. Cite each fact.&quot;</em>  </li>
+<li>Verifier pass: an LLM (or rule set) checks that every sentence is supported.  </li>
+<li>Selective answering: abstain when context score is below a tuned threshold.</li>
+</ul>
+</li>
+</ol>
+<hr>
+<h2 id="4-evaluation-and-monitoring">4. Evaluation &amp; Monitoring</h2>
+<ul>
+<li><strong>RAGAS</strong> gives reference‑free metrics such as Context Precision and Answer Faithfulness you can hook into CI.  </li>
+<li>Track live numbers: <code>recall@3</code>, <code>latency_p95</code>, tokens returned, citation click‑through.  </li>
+<li>Add <strong>OpenTelemetry tracing</strong> so every production answer links back to the retrieved docs and prompt for fast debugging.</li>
+</ul>
+<hr>
+<h2 id="5-production-engineering-playbook">5. Production Engineering Playbook</h2>
+<ul>
+<li><strong>Streaming retrieval</strong>: start generation after the first chunk arrives; paginate the rest.  </li>
+<li><strong>Hot cache</strong>: Redis or Qdrant&#39;s local cache for the top 5 percent of queries can drop average latency by 40 percent.  </li>
+<li><strong>Security &amp; privacy</strong>: restrict retrieval by ACL first, then add redact‑at‑source if needed (Copilot uses Microsoft Graph permissions before GPT‑4 sees anything).  </li>
+<li><strong>Cost tuning</strong>: merge CPU retrieval with GPU rerank only on the final shortlist; offload embedding generation to batch jobs where possible.  </li>
+<li><strong>Deploy patterns</strong>:  <ul>
+<li>Latency‑critical: GPU index on Kubernetes with HPA.  </li>
+<li>Cost‑first: serverless function that calls a managed vector DB.  </li>
+<li>Edge: lightweight HNSW index in WebAssembly for offline or air‑gapped use.</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h2 id="6-case-studies">6. Case Studies</h2>
+<table>
+<thead>
+<tr>
+<th>System</th>
+<th>Key technique</th>
+<th>Lesson</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Microsoft 365 Copilot</strong></td>
+<td>Semantic index over Microsoft Graph, hybrid retrieval, GPT‑4 generation</td>
+<td>Permission‑aware retrieval solves 80 percent of &quot;why did Copilot show that?&quot; tickets.</td>
+</tr>
+<tr>
+<td><strong>RAGFlow OSS engine</strong></td>
+<td>Semantic chunking + hybrid search out of the box</td>
+<td>Spend effort on data prep; chunking quality drives user trust.</td>
+</tr>
+<tr>
+<td><strong>GraphRAG library</strong></td>
+<td>LLM‑derived knowledge graph + graph traversal</td>
+<td>Graph helps when queries need multi‑step reasoning but costs more to build.</td>
+</tr>
+<tr>
+<td><strong>Internal support bot at IBM</strong></td>
+<td>LLM verifier pass + token‑level logging</td>
+<td>Hallucination rate fell from 12 percent to 2 percent after adding a fact‑check rerank step.</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="7-emerging-trends">7. Emerging Trends</h2>
+<ul>
+<li><strong>Multimodal RAG</strong>: ColBERT‑style late interaction now being tested for image + text corpora.  </li>
+<li><strong>Agentic RAG</strong>: planners that chain retrieval queries to answer composite tasks.  </li>
+<li><strong>Memory‑aware models</strong>: prototype LLMs that learn to skip retrieval when the answer is cached in a long context.  </li>
+<li><strong>Lossless token pruning</strong>: shrinking ColBERT indexes by 50 percent with minimal loss.</li>
+</ul>
+<hr>
+<h2 id="8-quick-start-blueprint">8. Quick‑start blueprint</h2>
+<ol>
+<li><strong>Load data</strong> → clean &amp; semantic‑chunk → store in hybrid‑capable vector DB.  </li>
+<li><strong>Embed</strong> offline with a strong encoder (e.g. OpenAI <code>text-embedding-004</code>).  </li>
+<li><strong>Retrieve</strong> dense + BM25 in parallel, top k = 40.  </li>
+<li><strong>Rerank</strong> with GPT‑4 or a cross‑encoder, keep top k = 8.  </li>
+<li><strong>Generate</strong> with a mid‑size model instructed to cite sources.  </li>
+<li><strong>Verify</strong> answer with a second prompt; refuse if confidence &lt; threshold.  </li>
+<li><strong>Log</strong> every step, push metrics to Grafana; run nightly RAGAS tests.</li>
+</ol>
+<hr>
+<h2 id="9-further-reading">9. Further reading</h2>
+<ul>
+<li><em>The Rise and Evolution of RAG in 2024</em> – RAGFlow retrospective (hybrid search, semantic chunking).  </li>
+<li><em>GraphRAG: Unlocking LLM Discovery on Narrative Private Data</em> – Microsoft Research.  </li>
+<li><em>RAGAS toolkit</em> – objective RAG evaluation library.  </li>
+<li><em>General‑Purpose Multilingual Late Interaction Retriever</em> – Jina AI / ColBERT v2 paper.</li>
+</ul>
+<hr>
+<h3 id="takeaway">Takeaway</h3>
+<p>RAG success is 70 percent search engineering, 30 percent prompt talent. Invest in retrieval quality. Monitor relentlessly. Let the LLM do the last mile, not the entire marathon.</p>
+
+        </div>
+      </article>
+        <aside class="toc">
+          <p class="toc-label">Contents</p>
+          <ul class="toc-list">
+          <li><a href="#why-rag-still-matters-in-2025">Why RAG still matters in 2025</a></li>
+          <li><a href="#1-retrieval-get-recall-first-then-get-precision">1. Retrieval: get recall first, then get precision</a></li>
+          <li><a href="#2-chunking-and-indexing-structure-your-knowledge">2. Chunking &amp;amp; Indexing: structure your knowledge</a></li>
+          <li><a href="#3-reranking-and-answer-generation-keep-the-llm-honest">3. Reranking &amp;amp; Answer Generation: keep the LLM honest</a></li>
+          <li><a href="#4-evaluation-and-monitoring">4. Evaluation &amp;amp; Monitoring</a></li>
+          <li><a href="#5-production-engineering-playbook">5. Production Engineering Playbook</a></li>
+          <li><a href="#6-case-studies">6. Case Studies</a></li>
+          <li><a href="#7-emerging-trends">7. Emerging Trends</a></li>
+          <li><a href="#8-quick-start-blueprint">8. Quick‑start blueprint</a></li>
+          <li><a href="#9-further-reading">9. Further reading</a></li>
+          <li><a href="#takeaway" class="pl-nested">Takeaway</a></li>
+          </ul>
+        </aside>
+    </div>
+    </main>
+
+    <footer class="mt-24 pt-8 border-t flex items-center justify-between gap-4 text-[12px] muted">
+      <a href="/" class="hover:text-[color:var(--text)] transition-colors">keithtyser.com</a>
+      <nav class="flex items-center gap-1" aria-label="Social links">
+        <a href="mailto:keithtyser@gmail.com" class="icon-link" aria-label="Email"><i class="fas fa-envelope text-[12px]"></i></a>
+        <a href="https://github.com/keithtyser" target="_blank" rel="noopener" class="icon-link" aria-label="GitHub"><i class="fab fa-github text-[12px]"></i></a>
+        <a href="https://twitter.com/keithtyser" target="_blank" rel="noopener" class="icon-link" aria-label="X (Twitter)"><i class="fa-brands fa-x-twitter text-[12px]"></i></a>
+        <a href="https://keithtyser.com/feed.xml" class="icon-link" aria-label="RSS feed"><i class="fas fa-rss text-[12px]"></i></a>
+      </nav>
+    </footer>
+  </div>
 </body>
-</html> 
+</html>

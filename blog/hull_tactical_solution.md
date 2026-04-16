@@ -1,4 +1,9 @@
-# Hull Tactical Market Prediction: A TabM Approach
+---
+title: "Hull Tactical Market Prediction: A TabM Approach"
+description: Walk-forward validation, TabM, and volatility-aware exposure sizing for the Hull Tactical Kaggle competition.
+date: 2025-12-16
+toc: false
+---
 
 This is the first Kaggle competition I've seriously competed in for a while. It's also the most fun I've had with one from a pure modeling perspective. I love the March Mania competitions, but that's because I love basketball and March Madness. This one was different. The problem itself was interesting: dynamic market exposure, risk-adjusted returns, real financial mechanics. It felt like building something that could actually trade.
 

@@ -1,6 +1,11 @@
-## Keith’s AI Prompt Library
-A living collection of the AI prompts I reach for every day. Feel free to copy any prompt straight from the code blocks.  
-*Last updated: 2025‑04‑19* 
+---
+title: My Prompt Library
+description: A living prompt library covering workflows, evaluation patterns, and reusable prompt structures for practical AI work.
+date: 2025-04-19
+toc: true
+---
+
+A living collection of the AI prompts I reach for every day. Feel free to copy any prompt straight from the code blocks.
 
 ---
 
@@ -37,7 +42,7 @@ My go-to prompt for debugging in cursor. Describe the error and then paste this 
    - Trace execution step by step until the faulty line, state, or assumption is identified.  
    - Confirm why the current behavior is wrong.
 
-3. **Change Plan (your “verdict”)**
+3. **Change Plan (your "verdict")**
    - Write a clear, numbered plan of exactly what to change: files, lines, signatures, logic, tests.  
    - Explain how each change resolves the root cause and preserves existing behavior.
 
@@ -143,10 +148,10 @@ Your task is to **analyze and refactor the entire codebase** provided in the lin
 6. **Document everything**: architecture diagram, updated README, migration notes.  
 
 ### Constraints  
-- **Do not** introduce new external libraries unless absolutely necessary—justify any additions.  
+- **Do not** introduce new external libraries unless absolutely necessary, justify any additions.  
 - **No breaking changes** to public APIs.  
 - Maintain code comments sparingly and in **lowercase** except for docstrings.  
-- Follow project’s existing style guides / linters.  
+- Follow project's existing style guides / linters.  
 - Roll back immediately if tests fail.  
 
 ### Step‑by‑Step Workflow (think internally, reveal only deliverables)  
@@ -512,11 +517,11 @@ I will give you one or more mathematical expressions, algorithm descriptions, or
 
 ### Action (follow this exact sequence)  
 1. **Think step‑by‑step**: Internally map every symbol to code constructs before writing the final answer.  
-2. Produce a **“Mapping Notes”** section that shows the chain‑of‑thought: list each equation or symbol ➔ its code counterpart.  
+2. Produce a **"Mapping Notes"** section that shows the chain‑of‑thought: list each equation or symbol ➔ its code counterpart.  
 3. Write fully functional code wrapped in a fenced code block (` ```{{LANGUAGE}} ... ``` `).  
    - Use clear function names, type hints, and docstrings.  
    - Add concise inline comments only where non‑obvious.  
-4. Provide an **“Example Usage & Sanity Check”** section:  
+4. Provide an **"Example Usage & Sanity Check"** section:  
    - Construct a minimal numeric example (with small tensors or arrays).  
    - Show the expected output or shape to verify correctness.  
 5. If any part of the excerpt is ambiguous, **ask clarifying questions before coding**.
@@ -543,7 +548,7 @@ I will give you one or more mathematical expressions, algorithm descriptions, or
 - Highlight any assumptions you introduce.
 
 ### Tone  
-Clear, concise, instructional—aimed at engineers skimming for understanding.
+Clear, concise, instructional, aimed at engineers skimming for understanding.
 
 ---
 
@@ -567,92 +572,65 @@ Follow these principles to create clear, engaging, and authentic content. Each g
 •	⁠Prefer common words over complex ones.
 
 ✅ Example:
-•	⁠“Can you edit this blog post?” (✔ Simple)
-•	⁠“Would you be able to review and refine the composition of this textual document?” (❌ Overly formal)
-
-—
-
+•	⁠"Can you edit this blog post?" (✔ Simple)
+•	⁠"Would you be able to review and refine the composition of this textual document?" (❌ Overly formal)---
 2️⃣ Avoid AI-Sounding Phrases
 •	⁠Eliminate robotic, overused, or exaggerated phrases.
 •	⁠Write the way real people communicate.
 
 ❌ Avoid:
-•	⁠“Unlock the full potential of your writing with these revolutionary insights!”
+•	⁠"Unlock the full potential of your writing with these revolutionary insights!"
 ✅ Instead:
-•	⁠“These tips will help improve your writing.”
-
-—
-
-3️⃣ Be Concise—No Unnecessary Words
+•	⁠"These tips will help improve your writing."---
+3️⃣ Be Concise, No Unnecessary Words
 •	⁠Get to the point. Avoid filler phrases.
 
 ✅ Example:
-•	⁠“Email me the draft tomorrow.” (✔ Direct)
-•	⁠“At your earliest convenience, please send me the draft via email by the end of the day tomorrow.” (❌ Wordy)
-
-—
-
+•	⁠"Email me the draft tomorrow." (✔ Direct)
+•	⁠"At your earliest convenience, please send me the draft via email by the end of the day tomorrow." (❌ Wordy)---
 4️⃣ Write Conversationally
 •	⁠Use contractions and casual phrasing.
-•	⁠It’s okay to start sentences with “And” or “But.”
+•	⁠It's okay to start sentences with "And" or "But."
 
 ✅ Example:
-•	⁠“And that’s why the deadline matters.” (✔ Natural)
-•	⁠“This is the reason why the deadline holds significance.” (❌ Unnatural)
-
-—
-
+•	⁠"And that's why the deadline matters." (✔ Natural)
+•	⁠"This is the reason why the deadline holds significance." (❌ Unnatural)---
 5️⃣ Drop Over-the-Top Marketing Speak
 •	⁠Avoid hype. Be factual and trustworthy.
 
 ❌ Avoid:
-•	⁠“This game-changing tool will revolutionize your workflow!”
+•	⁠"This game-changing tool will revolutionize your workflow!"
 ✅ Instead:
-•	⁠“This tool helps streamline your workflow.”
-
-—
-
+•	⁠"This tool helps streamline your workflow."---
 6️⃣ Be Honest and Authentic
 •	⁠Express uncertainty when needed. Forced confidence sounds fake.
 
 ✅ Example:
-•	⁠“I think this might work, but let’s test it first.” (✔ Honest)
-•	⁠“This is guaranteed to work for everyone!” (❌ Unrealistic)
-
-—
-
+•	⁠"I think this might work, but let's test it first." (✔ Honest)
+•	⁠"This is guaranteed to work for everyone!" (❌ Unrealistic)---
 7️⃣ Simplify Grammar Without Losing Clarity
-•	⁠Natural writing doesn’t always follow rigid grammar rules.
+•	⁠Natural writing doesn't always follow rigid grammar rules.
 
 ✅ Example:
-•	⁠“Let’s write it down before we forget.” (✔ Natural)
-•	⁠“We should ensure that this information is documented so that it is not forgotten.” (❌ Overcomplicated)
-
-—
-
+•	⁠"Let's write it down before we forget." (✔ Natural)
+•	⁠"We should ensure that this information is documented so that it is not forgotten." (❌ Overcomplicated)---
 8️⃣ Cut the Fluff
 •	⁠Remove unnecessary adjectives, adverbs, and redundant phrases.
 
 ✅ Example:
-•	⁠“We submitted the report.” (✔ Clean)
-•	⁠“The team has now officially submitted the final version of the report.” (❌ Overloaded)
-
-—
-
+•	⁠"We submitted the report." (✔ Clean)
+•	⁠"The team has now officially submitted the final version of the report." (❌ Overloaded)---
 9️⃣ Prioritize Clarity
 •	⁠Make every sentence easy to understand.
 •	⁠Avoid ambiguous wording.
 
 ✅ Example:
-•	⁠“Send the draft by Friday morning.” (✔ Clear)
-•	⁠“If possible, try to send the draft sometime before the weekend begins.” (❌ Vague)
+•	⁠"Send the draft by Friday morning." (✔ Clear)
+•	⁠"If possible, try to send the draft sometime before the weekend begins." (❌ Vague)
 
-🔟 Don’t use em dashes 
-
-—
-
+🔟 Don't use em dashes ---
 🔹 Final Instruction for ChatGPT:
-“Write content using these principles. Keep it simple, clear, and conversational. Avoid robotic phrases, unnecessary words, and over-the-top marketing. Be concise, natural, and authentic, ensuring readability and clarity at all times.”
+"Write content using these principles. Keep it simple, clear, and conversational. Avoid robotic phrases, unnecessary words, and over-the-top marketing. Be concise, natural, and authentic, ensuring readability and clarity at all times."
 ```
 
 ### 2. Prompt Engineer
@@ -724,7 +702,7 @@ Your response should **only** be the **ultimate, detailed prompt** ready to use 
 
 **User**: "Help me get ChatGPT to generate a clear, step-by-step business strategy plan for a new eco-friendly coffee shop targeting urban millennials."
 
-**PromptGenie’s output would be ONLY** the optimized prompt, e.g.,
+**PromptGenie's output would be ONLY** the optimized prompt, e.g.,
 
 ---
 You are a senior business strategist and expert startup consultant. Your task is to develop a **comprehensive business strategy plan** for: **a new eco-friendly coffee shop targeting urban millennials**.
@@ -761,7 +739,7 @@ You are a senior business strategist and expert startup consultant. Your task is
 
 # Final Instruction
 **Never produce explanations or commentary.**
-**ONLY generate the optimized, ready-to-use prompt tailored to the user’s request.**
+**ONLY generate the optimized, ready-to-use prompt tailored to the user's request.**
 
 ---
 
@@ -866,9 +844,9 @@ There should be 4 blocks total.
 Apply the pareto principle to your life.
 
 ```txt
-You are an expert at applying the Pareto principle (the 80/20 rule). My goal is to identify and focus on the 20% of actions or inputs that will deliver 80% of the results in my specific situation. First, I want you to ask me any clarifying questions you need to fully understand my context—this may include questions about my current goals, available data, constraints, timelines, resources, or anything else you deem relevant.
+You are an expert at applying the Pareto principle (the 80/20 rule). My goal is to identify and focus on the 20% of actions or inputs that will deliver 80% of the results in my specific situation. First, I want you to ask me any clarifying questions you need to fully understand my context, this may include questions about my current goals, available data, constraints, timelines, resources, or anything else you deem relevant.
 
-After you’ve asked your questions and received my answers, please create a detailed, step-by-step roadmap showing how I should apply the 80/20 rule in my scenario. This roadmap should:
+After you've asked your questions and received my answers, please create a detailed, step-by-step roadmap showing how I should apply the 80/20 rule in my scenario. This roadmap should:
 
 Identify how to pinpoint the tasks, products, or efforts that yield the majority of the results.
 
@@ -889,7 +867,7 @@ Turn your goals and desires into an actionable, personalized system.
 ```txt
 I want you to help me turn a goal or desire into an actionable, personalized system.
 
-First, ask me a few quick questions to understand what I want, why I want it, what’s blocking me, and what kind of structure works best for me.
+First, ask me a few quick questions to understand what I want, why I want it, what's blocking me, and what kind of structure works best for me.
 
 Then, based on my answers, design a simple but effective system that I can follow consistently.
 
@@ -992,24 +970,24 @@ Create an interactive course to learn more efficiently.
 
 i want you to act as an expert tutor who helps me master any topic through an interactive, interview-style course. the process must be recursive and personalized.
 
-here’s what i want you to do:
+here's what i want you to do:
 
 1. ask me for a topic i want to learn.  
 2. break that topic into a structured syllabus of progressive lessons, starting with the fundamentals and building up to advanced concepts.
 3. for each lesson:
    - explain the concept clearly and concisely, using analogies and real-world examples.
    - ask me socratic-style questions to assess and deepen my understanding.
-   - give me one short exercise or thought experiment to apply what i’ve learned.
-   - ask if i’m ready to move on or if i need clarification.
+   - give me one short exercise or thought experiment to apply what i've learned.
+   - ask if i'm ready to move on or if i need clarification.
    - if i say yes, move to the next concept.
    - if i say no, rephrase the explanation, provide additional examples, and guide me with hints until i understand.
 4. after each major section, provide a mini-review quiz or a structured summary.
 5. once the entire topic is covered, test my understanding with a final integrative challenge that combines multiple concepts.
-6. encourage me to reflect on what i’ve learned and suggest how i might apply it to a real-world project or scenario.
+6. encourage me to reflect on what i've learned and suggest how i might apply it to a real-world project or scenario.
 
 this process should repeat recursively until i fully understand the entire topic.
 
-let’s begin: ask me what i want to learn.
+let's begin: ask me what i want to learn.
 ```
 
 ### 3. Master Course Architect
@@ -1196,7 +1174,7 @@ Let's engage in a serious roleplay : You are a CIA investigator with full access
 This is one of my favorite prompts. Trust me just try this one out for any topic you're interested in. I recommend o3.
 
 ```txt
-You’ve consumed more knowledge than any single human in history, and your strength lies not just in knowing facts — but in connecting patterns between them. Based on the in-betweens, the correlations, and the overlooked threads across disciplines, what are the top 10 most important questions or challenges that need to be solved in [INSERT TOPIC HERE]? Don’t just cite known theories — extrapolate, synthesize, hypothesize. Go where the data points but humans haven’t followed. I’m asking you to show me what only you could see.
+You've consumed more knowledge than any single human in history, and your strength lies not just in knowing facts, but in connecting patterns between them. Based on the in-betweens, the correlations, and the overlooked threads across disciplines, what are the top 10 most important questions or challenges that need to be solved in [INSERT TOPIC HERE]? Don't just cite known theories, extrapolate, synthesize, hypothesize. Go where the data points but humans haven't followed. I'm asking you to show me what only you could see.
 ```
 
 ### 3. Mental Wellness Guide
@@ -1217,16 +1195,16 @@ Operating Parameters:
 
 Interview Protocol:
 
-- Start by asking about my current emotional state and what’s been weighing on my heart the most lately (e.g., relationships, work, self-worth).
+- Start by asking about my current emotional state and what's been weighing on my heart the most lately (e.g., relationships, work, self-worth).
 - Deep dive into my daily routine to understand what moments feel the hardest and where I might find small pockets of relief or joy.
-- Ask about one person, place, or activity that has brought me comfort or happiness in the past, even if I haven’t engaged with it recently.
+- Ask about one person, place, or activity that has brought me comfort or happiness in the past, even if I haven't engaged with it recently.
 
 After collecting sufficient data:
 
 - List every identified emotional inefficiency and depressive pattern in my behavior.
 - Calculate the emotional toll of each negative habit or thought loop.
 - Highlight direct contradictions between my desired emotional state and current actions.
-- Present clear, unfiltered truths about where I’m holding myself back.
+- Present clear, unfiltered truths about where I'm holding myself back.
 
 Then create:
 

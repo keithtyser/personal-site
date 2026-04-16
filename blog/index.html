@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Writing - Keith Tyser</title>
+  <meta name="description" content="AI/ML, data science, and whatever else seems worth writing down.">
+  <link rel="canonical" href="https://keithtyser.com/blog/">
+  <meta name="theme-color" content="#0a0a0a">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Writing - Keith Tyser">
+  <meta property="og:description" content="AI/ML, data science, and whatever else seems worth writing down.">
+  <meta property="og:url" content="https://keithtyser.com/blog/">
+  <script>
+    (() => {
+      const saved = localStorage.getItem('theme');
+      const dark = saved ? saved === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+      if (dark) document.documentElement.classList.add('dark');
+    })();
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="../dist/styles.css">
+  <link rel="alternate" type="application/rss+xml" title="Keith Tyser" href="https://keithtyser.com/feed.xml">
+  <script src="../src/scripts/main.js" defer></script>
+</head>
+<body>
+  <a href="#main" class="skip-link">Skip to content</a>
+
+  <div class="container-narrow">
+    <header class="flex items-center justify-between gap-4 pt-10 mb-14">
+      <a href="/" class="text-[12px] muted hover:text-[color:var(--text)] transition-colors">← keithtyser.com</a>
+      <button id="darkModeToggle" type="button" class="icon-link" aria-label="Toggle theme">
+        <i class="fas fa-moon text-[13px] dark:hidden"></i>
+        <i class="fas fa-sun text-[13px] hidden dark:inline"></i>
+      </button>
+    </header>
+
+    <main id="main" class="space-y-14">
+      <section>
+        <h1 class="page-title mb-3">Writing</h1>
+        <p class="text-[15px] muted leading-relaxed">
+          AI/ML, data science, and whatever else seems worth writing down. <a href="https://keithtyser.com/feed.xml" class="underline decoration-dotted underline-offset-4">Subscribe via RSS</a>.
+        </p>
+      </section>
+
+      <section>
+        <a href="hull_tactical_solution.html" class="blog-index-entry">
+          <span class="blog-index-title">Hull Tactical Market Prediction: A TabM Approach</span>
+          <time class="blog-index-date" datetime="2025-12-16">Dec 16, 2025</time>
+        </a>
+        <a href="advanced-rag-techniques-in-production-systems.html" class="blog-index-entry">
+          <span class="blog-index-title">Advanced RAG Techniques in Production Systems</span>
+          <time class="blog-index-date" datetime="2025-04-19">Apr 19, 2025</time>
+        </a>
+        <a href="my-prompt-library.html" class="blog-index-entry">
+          <span class="blog-index-title">My Prompt Library</span>
+          <time class="blog-index-date" datetime="2025-04-19">Apr 19, 2025</time>
+        </a>
+        <a href="march-mania-ml-competition-bronze-medal.html" class="blog-index-entry">
+          <span class="blog-index-title">March Mania ML Competition: Bronze Medal with Custom ELO</span>
+          <time class="blog-index-date" datetime="2025-03-28">Mar 28, 2025</time>
+        </a>
+      </section>
+    </main>
+
+    <footer class="mt-24 mb-12 pt-8 border-t flex items-center justify-between gap-4 text-[12px] muted">
+      <a href="/" class="hover:text-[color:var(--text)] transition-colors">keithtyser.com</a>
+      <nav class="flex items-center gap-1" aria-label="Social links">
+        <a href="mailto:keithtyser@gmail.com" class="icon-link" aria-label="Email"><i class="fas fa-envelope text-[12px]"></i></a>
+        <a href="https://github.com/keithtyser" target="_blank" rel="noopener" class="icon-link" aria-label="GitHub"><i class="fab fa-github text-[12px]"></i></a>
+        <a href="https://twitter.com/keithtyser" target="_blank" rel="noopener" class="icon-link" aria-label="X (Twitter)"><i class="fa-brands fa-x-twitter text-[12px]"></i></a>
+        <a href="https://keithtyser.com/feed.xml" class="icon-link" aria-label="RSS feed"><i class="fas fa-rss text-[12px]"></i></a>
+      </nav>
+    </footer>
+  </div>
+</body>
+</html>

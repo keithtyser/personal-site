@@ -1,32 +1,198 @@
 <!DOCTYPE html>
-<html lang="en" class="scroll-smooth">
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Hull Tactical Market Prediction: A TabM Approach | Keith Tyser</title>
-  <!-- Tailwind with typography plugin -->
-  <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
-  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-  <style>
-    /* dark‑mode tweaks for prose */
-    .dark .prose :where(th, td) { border-color: rgba(255,255,255,0.15); }
-    .prose table { width: 100%; }
-    .prose pre { background-color: rgba(0,0,0,0.05); }
-    .dark .prose pre { background-color: rgba(255,255,255,0.05); }
-  </style>
-</head>
-<body class="bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 transition-colors duration-300">
-  <main class="max-w-3xl mx-auto px-4 py-10">
-    <header class="mb-10">
-      <a href="../index.html" class="text-sm text-blue-600 dark:text-blue-400 hover:underline">&larr; back home</a>
-    </header>
-    <article id="content" class="prose lg:prose-lg dark:prose-invert mx-auto"></article>
-  </main>
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hull Tactical Market Prediction: A TabM Approach - Keith Tyser</title>
+  <meta name="description" content="Walk-forward validation, TabM, and volatility-aware exposure sizing for the Hull Tactical Kaggle competition.">
+  <link rel="canonical" href="https://keithtyser.com/blog/hull_tactical_solution.html">
+  <meta name="theme-color" content="#0a0a0a">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="Hull Tactical Market Prediction: A TabM Approach">
+  <meta property="og:description" content="Walk-forward validation, TabM, and volatility-aware exposure sizing for the Hull Tactical Kaggle competition.">
+  <meta property="og:url" content="https://keithtyser.com/blog/hull_tactical_solution.html">
+  <meta property="og:image" content="https://keithtyser.com/profile_pic.jpeg">
+  <meta property="article:published_time" content="2025-12-16">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Hull Tactical Market Prediction: A TabM Approach">
+  <meta name="twitter:description" content="Walk-forward validation, TabM, and volatility-aware exposure sizing for the Hull Tactical Kaggle competition.">
   <script>
-    fetch('hull_tactical_solution.md')
-      .then(res => res.text())
-      .then(md => { document.getElementById('content').innerHTML = marked.parse(md); });
+    (() => {
+      const saved = localStorage.getItem('theme');
+      const dark = saved ? saved === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+      if (dark) document.documentElement.classList.add('dark');
+    })();
   </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="../dist/styles.css">
+  <link rel="alternate" type="application/rss+xml" title="Keith Tyser" href="https://keithtyser.com/feed.xml">
+  <script src="../src/scripts/main.js" defer></script>
+</head>
+<body>
+  <a href="#main" class="skip-link">Skip to content</a>
+
+  <div class="article-shell">
+    <header class="article-header">
+      <a href="./" class="text-[12px] muted hover:text-[color:var(--text)] transition-colors">← All writing</a>
+      <button id="darkModeToggle" type="button" class="icon-link" aria-label="Toggle theme">
+        <i class="fas fa-moon text-[13px] dark:hidden"></i>
+        <i class="fas fa-sun text-[13px] hidden dark:inline"></i>
+      </button>
+    </header>
+
+    <main id="main">
+    <article>
+      <header class="mb-10">
+        <h1 class="article-title">Hull Tactical Market Prediction: A TabM Approach</h1>
+        <time class="article-date" datetime="2025-12-16">Dec 16, 2025</time>
+      </header>
+      <div class="article-body">
+<p>This is the first Kaggle competition I&#39;ve seriously competed in for a while. It&#39;s also the most fun I&#39;ve had with one from a pure modeling perspective. I love the March Mania competitions, but that&#39;s because I love basketball and March Madness. This one was different. The problem itself was interesting: dynamic market exposure, risk-adjusted returns, real financial mechanics. It felt like building something that could actually trade.</p>
+<h2 id="the-competition">The Competition</h2>
+<p>Hull Tactical runs an ETF that dynamically allocates between equities and cash. The competition asks you to predict daily market exposure between 0 (100% cash) and 2 (200% leveraged long). You&#39;re scored on risk-adjusted returns with penalties for excessive volatility and underperforming the market.</p>
+<p>The metric is adjusted Sharpe ratio. Two penalties apply:</p>
+<ul>
+<li>Volatility penalty if your strategy vol exceeds 1.2x market vol</li>
+<li>Return penalty if you lag the market (quadratic, so large gaps hurt badly)</li>
+</ul>
+<p>You get ~140 features covering macro indicators, momentum signals, and market internals. Daily data spanning decades.</p>
+<h2 id="why-the-public-leaderboard-was-useless">Why the Public Leaderboard Was Useless</h2>
+<p>The competition organizers were upfront about this. The API rows available during training overlap with the training set. The labels are public. They said it explicitly:</p>
+<blockquote>
+<p>&quot;Without careful handling, models trained directly on the full training set may overfit, resulting in inflated leaderboard scores... Internally, our approach is to build walk-forward models and evaluate them on non-overlapping out-of-sample periods to better assess true performance.&quot;</p>
+</blockquote>
+<p>So the public LB was meaningless. A model could score well by memorizing training data, then completely fail on the private test set. The only way to trust your results was to build your own offline evaluation.</p>
+<h2 id="walk-forward-validation">Walk-Forward Validation</h2>
+<p>I implemented walk-forward out-of-sample (WFO) validation. The idea: simulate how the model would have performed if deployed historically, retraining as new data arrived.</p>
+<p>The setup:</p>
+<ul>
+<li>Training window: 756 days (~3 years)</li>
+<li>Out-of-sample window: 84 days (~4 months)</li>
+<li>Embargo: 7 days between train and test (prevents leakage)</li>
+<li>Roll forward, repeat</li>
+</ul>
+<p>This produces 11 non-overlapping OOS periods. For each, I train on the preceding 3 years, predict the next 4 months, and compute the competition metric. The Sharpe ratio of these 11 metrics tells me how consistent the model is across different market regimes.</p>
+<p>A model with mean=2.0 and std=0.5 (Sharpe=4.0) is more trustworthy than mean=2.5 and std=1.5 (Sharpe=1.67). The second model might have gotten lucky in a few periods. The first one performed consistently.</p>
+<p>This became my north star. Every experiment was judged by WFO Sharpe, not by any leaderboard score.</p>
+<h2 id="the-model">The Model</h2>
+<p>I used <a href="https://github.com/yandex-research/tabm" target="_blank" rel="noopener noreferrer">TabM</a>, a tabular deep learning architecture published at ICLR 2025 by Yandex Research. The <a href="https://arxiv.org/abs/2410.24210" target="_blank" rel="noopener noreferrer">paper</a> makes a compelling case: MLPs with parameter-efficient ensembling outperform the attention-based and retrieval-based architectures that dominated recent tabular deep learning.</p>
+<p>The core idea is batch ensembling. A traditional deep ensemble trains k separate MLPs and averages their predictions. TabM fits all k members into a single MLP-like structure through weight sharing. Each forward pass produces k predictions per input. You average them at inference.</p>
+<p>Two things make this work better than you&#39;d expect:</p>
+<p><strong>Parallel training.</strong> All ensemble members train simultaneously. You can monitor ensemble performance during training and stop when the ensemble is optimal, not when individual members are. Traditional ensembles train sequentially; you can&#39;t do this.</p>
+<p><strong>Weight sharing as regularization.</strong> The ensemble members share most parameters. This isn&#39;t just efficient. It constrains the members to stay similar, which reduces overfitting. The paper shows individual predictions are weak, but collectively powerful. The shared structure forces diversity in the right way.</p>
+<p>TabM scales well. The paper benchmarks on datasets up to 13M rows. People have run it on 100M+.</p>
+<p>Final architecture:</p>
+<ul>
+<li><code>d_block=512</code> (hidden dimension)</li>
+<li><code>n_blocks=6</code> (depth)</li>
+<li><code>k=24</code> (ensemble members per forward pass)</li>
+<li>13 seeds for outer bagging (13 TabM models, each with 24 internal members)</li>
+<li>Early stopping with patience=12</li>
+</ul>
+<p>Training took about 10 minutes on GPU for all 13 seeds.</p>
+<h2 id="feature-engineering">Feature Engineering</h2>
+<p>The raw features are already informative. I added three types of derived features:</p>
+<p><strong>Rolling statistics at multiple windows.</strong> Instead of just 21-day momentum and volatility, I computed them at 5, 10, 21, 42, 63, and 126 days. This gives the model visibility into short, medium, and long-term trends simultaneously.</p>
+<p><strong>Regime indicators.</strong> Binary features flagging market states:</p>
+<ul>
+<li><code>regime_high_vol</code>: current 21-day vol above its 63-day median</li>
+<li><code>regime_uptrend</code> / <code>regime_downtrend</code>: 63-day momentum sign</li>
+<li><code>regime_crisis</code>: high vol AND downtrend</li>
+<li><code>regime_risk_on</code>: low vol AND uptrend</li>
+</ul>
+<p>These help the model recognize when market dynamics shift.</p>
+<p><strong>Historical percentiles.</strong> Where does current vol or momentum rank in the past year? A percentile of 0.95 means &quot;volatility is in the 95th percentile of recent history.&quot; This self-normalizing context helped more than any other feature addition (+11% to WFO Sharpe).</p>
+<h2 id="the-exposure-mapping">The Exposure Mapping</h2>
+<p>Raw model output is a predicted excess return. This needs to become an exposure between 0 and 2.</p>
+<p>The standard approach: sigmoid mapping. Positive predictions go above 1.0 (long), negative predictions go below 1.0 (defensive).</p>
+<p>The problem: a fixed sigmoid treats all market conditions equally. A prediction of +0.0001 gets the same exposure whether volatility is 10% or 40%.</p>
+<p><strong>Vol-adaptive scaling</strong> fixed this. Instead of a fixed sigmoid scale, I compute:</p>
+<pre><code class="language-python">vol_ratio = current_vol / median_vol
+vol_ratio = clip(vol_ratio, 0.5, 2.0)
+dynamic_scale = base_scale * vol_ratio
+</code></pre>
+<p>When volatility is twice the historical median, the sigmoid compresses toward neutral (exposure ~1.0). When volatility is half the median, the sigmoid expands and bets get more aggressive.</p>
+<p>This single change improved WFO Sharpe by 12%.</p>
+<h2 id="what-worked">What Worked</h2>
+<table>
+<thead>
+<tr>
+<th>Change</th>
+<th>Sharpe Impact</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>val_frac 0.12 → 0.08</td>
+<td>+43%</td>
+</tr>
+<tr>
+<td>Percentile features</td>
+<td>+11%</td>
+</tr>
+<tr>
+<td>Vol-adaptive scaling</td>
+<td>+12%</td>
+</tr>
+<tr>
+<td>Multiple rolling windows</td>
+<td>+5%</td>
+</tr>
+<tr>
+<td>Regime indicators</td>
+<td>+2%</td>
+</tr>
+</tbody></table>
+<p>The val_frac change was surprising. Using only 8% of training data for validation (instead of 12%) meant more training data. The model stopped early anyway due to patience, so the extra epochs didn&#39;t cause overfitting.</p>
+<h2 id="what-didn-39-t-work">What Didn&#39;t Work</h2>
+<p><strong>Huber loss.</strong> Switched from MSE to Huber to reduce sensitivity to outliers. Sharpe dropped 50%. Reverted immediately.</p>
+<p><strong>Feature selection.</strong> Identified 33 features with negative permutation importance and dropped them. Sharpe dropped 30%. The &quot;useless&quot; features apparently contained signal the model was using.</p>
+<p><strong>Confidence weighting.</strong> When the 13 seeds disagreed (high prediction variance), shrink the prediction toward zero. No effect. The seeds agreed too closely for this to matter.</p>
+<p><strong>Regime-based exposure modulation.</strong> Shrink bets by 50% in crisis regimes, expand by 20% in risk-on regimes. Sharpe dropped 22%. The vol-adaptive scaling already captured what mattered; adding regime logic on top just added noise.</p>
+<p><strong>Second-order features.</strong> Momentum acceleration, volatility acceleration, cross-timeframe momentum agreement. Sharpe dropped 21%. More features, more noise.</p>
+<p><strong>Tighter vol-ratio bounds.</strong> Changed [0.5, 2.0] to [0.7, 1.5] for less extreme adjustments. Sharpe dropped 4%. The wider bounds were optimal.</p>
+<p><strong>PiecewiseLinearEmbeddings.</strong> The TabM paper shows that adding feature embeddings (TabM†) consistently outperforms vanilla TabM. I tried it. Sharpe dropped 68%, from 3.39 to 1.08. One period went negative.</p>
+<p>Why? The paper benchmarks on large, static datasets up to 13M rows. I had 8,000 training rows and financial time series with regime changes. The embeddings compute bin boundaries from training data. Those boundaries don&#39;t generalize when market conditions shift. The extra parameters (142 features × 12 embedding dims) overfit on small data. And my features were already engineered - winsorized, rolling stats, percentile-normalized. The embeddings had nothing useful to add.</p>
+<p>The pattern: every attempt to add complexity after vol-adaptive scaling made things worse. The signal is weak. Additional features or logic just inject noise.</p>
+<h2 id="final-results">Final Results</h2>
+<p>Walk-forward out-of-sample validation (11 periods, 84 trading days each):</p>
+<ul>
+<li><strong>Sharpe: 3.39</strong></li>
+<li>Mean metric: 1.88</li>
+<li>Std: 0.55</li>
+<li>Min metric: 1.04</li>
+<li>Max metric: 2.75</li>
+<li>Total return: +171%</li>
+<li>Max drawdown: -8.2%</li>
+</ul>
+<p>Starting point was Sharpe ~0.5. Final solution achieved nearly 7x improvement.</p>
+<h2 id="what-i-learned">What I Learned</h2>
+<p>The biggest gains came from:</p>
+<ol>
+<li>More training data (smaller validation split)</li>
+<li>Self-normalizing features (percentiles)</li>
+<li>Vol-adaptive bet sizing</li>
+</ol>
+<p>Everything else was noise. I tried a lot of clever ideas. Regime-based exposure modulation. Confidence weighting when model seeds disagreed. Second-order momentum features. Each one made things worse. The pattern was clear: once you have a solid model and sensible risk management, additional complexity just injects noise.</p>
+<p>Markets are efficient. The signal is faint. Respect that.</p>
+<p>The WFO framework was the real win. It gave me confidence that my improvements were real, not artifacts of overfitting. When I saw Sharpe go from 0.5 to 3.39 across 11 independent periods, I knew I was onto something. The public LB never told me anything useful.</p>
+<p>This competition reminded me why I enjoy this stuff. The iteration loop was tight. Ideas could be tested in minutes. The feedback was immediate and quantitative. No ambiguity about whether something worked. Just numbers going up or down.</p>
+<p>I&#39;ll be watching the private LB closely over the next 6 months.</p>
+
+      </div>
+    </article>
+    </main>
+
+    <footer class="mt-24 pt-8 border-t flex items-center justify-between gap-4 text-[12px] muted">
+      <a href="/" class="hover:text-[color:var(--text)] transition-colors">keithtyser.com</a>
+      <nav class="flex items-center gap-1" aria-label="Social links">
+        <a href="mailto:keithtyser@gmail.com" class="icon-link" aria-label="Email"><i class="fas fa-envelope text-[12px]"></i></a>
+        <a href="https://github.com/keithtyser" target="_blank" rel="noopener" class="icon-link" aria-label="GitHub"><i class="fab fa-github text-[12px]"></i></a>
+        <a href="https://twitter.com/keithtyser" target="_blank" rel="noopener" class="icon-link" aria-label="X (Twitter)"><i class="fa-brands fa-x-twitter text-[12px]"></i></a>
+        <a href="https://keithtyser.com/feed.xml" class="icon-link" aria-label="RSS feed"><i class="fas fa-rss text-[12px]"></i></a>
+      </nav>
+    </footer>
+  </div>
 </body>
 </html>

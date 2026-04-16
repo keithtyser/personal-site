@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Keith Tyser</title>
+    <link>https://keithtyser.com/blog/</link>
+    <description>AI/ML, data science, and whatever else seems worth writing down.</description>
+    <language>en-us</language>
+    <lastBuildDate>Thu, 16 Apr 2026 19:02:55 GMT</lastBuildDate>
+    <atom:link href="https://keithtyser.com/feed.xml" rel="self" type="application/rss+xml"/>
+    <item>
+      <title>Hull Tactical Market Prediction: A TabM Approach</title>
+      <link>https://keithtyser.com/blog/hull_tactical_solution.html</link>
+      <guid isPermaLink="true">https://keithtyser.com/blog/hull_tactical_solution.html</guid>
+      <pubDate>Tue, 16 Dec 2025 00:00:00 GMT</pubDate>
+      <description>Walk-forward validation, TabM, and volatility-aware exposure sizing for the Hull Tactical Kaggle competition.</description>
+    </item>
+    <item>
+      <title>Advanced RAG Techniques in Production Systems</title>
+      <link>https://keithtyser.com/blog/advanced-rag-techniques-in-production-systems.html</link>
+      <guid isPermaLink="true">https://keithtyser.com/blog/advanced-rag-techniques-in-production-systems.html</guid>
+      <pubDate>Sat, 19 Apr 2025 00:00:00 GMT</pubDate>
+      <description>A practical overview of retrieval quality, reranking, evaluation, and production engineering patterns for modern RAG systems.</description>
+    </item>
+    <item>
+      <title>My Prompt Library</title>
+      <link>https://keithtyser.com/blog/my-prompt-library.html</link>
+      <guid isPermaLink="true">https://keithtyser.com/blog/my-prompt-library.html</guid>
+      <pubDate>Sat, 19 Apr 2025 00:00:00 GMT</pubDate>
+      <description>A living prompt library covering workflows, evaluation patterns, and reusable prompt structures for practical AI work.</description>
+    </item>
+    <item>
+      <title>March Mania ML Competition: Bronze Medal with Custom ELO</title>
+      <link>https://keithtyser.com/blog/march-mania-ml-competition-bronze-medal.html</link>
+      <guid isPermaLink="true">https://keithtyser.com/blog/march-mania-ml-competition-bronze-medal.html</guid>
+      <pubDate>Fri, 28 Mar 2025 00:00:00 GMT</pubDate>
+      <description>How a custom ELO system, targeted tuning, and manual overrides led to a bronze medal finish in March Machine Learning Mania 2025.</description>
+    </item>
+  </channel>
+</rss>

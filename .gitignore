@@ -8,7 +8,7 @@ node_modules/
 
 # Production
 /build
-/dist
+# dist/ is committed on gh-pages so the deployed site has compiled CSS
 
 # Misc
 .DS_Store

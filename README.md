@@ -1,60 +1,68 @@
-# Keith Tyser - Personal Website
+# keithtyser.com
 
-A modern, interactive personal website showcasing my work as an AI/ML Engineer and Data Scientist. The site features a clean, minimalist design with smooth animations and interactive elements.
+My personal site and blog. Static HTML + Tailwind. Deployed to GitHub Pages on the `gh-pages` branch, custom domain `keithtyser.com`.
 
-## Features
+## Tech
 
-- 🌓 Dark/Light mode with system preference sync
-- ✨ Modern glass-morphism UI design
-- 🎯 Interactive hover effects and animations
-- 📱 Fully responsive layout
-- 🎨 Dynamic gradient animations
-- 🔄 Real-time Twitter feed integration
-- 🌟 Particle.js background effects
+- HTML and Tailwind CSS, no framework.
+- `src/scripts/render-blog.mjs` renders markdown to HTML. It auto-discovers `blog/*.md` and `pages/*.md`, parses frontmatter with gray-matter, and generates blog post pages, a flat blog index, an RSS feed, and standalone pages (like `/books.html` and `/tech-stack.html`).
+- Dark mode via a tiny script in `src/scripts/main.js` and a CSS class on the root element.
 
-## Tech Stack
+## Scripts
 
-- HTML5
-- CSS3 with modern features
-- TailwindCSS for styling
-- JavaScript (ES6+)
-- GSAP for animations
-- Particle.js for background effects
-- Font Awesome for icons
-
-## Local Development
-
-1. Clone the repository:
 ```bash
-git clone https://github.com/keithtyser/personal-site.git
-cd personal-site
+npm install           # first time
+npm run dev           # http://localhost:8080 with auto-reload
+npm run build         # production build (CSS + blog + pages + feed)
+npm run new-post "Title of post"   # scaffold a dated markdown file in blog/
 ```
 
-2. Open `index.html` in your browser to view the site.
+## Structure
 
-3. For live development, you can use any local server. For example, with Python:
-```bash
-# Python 3
-python -m http.server 8000
+```
+.
+├── index.html            # landing
+├── archive.html          # past projects
+├── books.html            # generated from pages/books.md
+├── tech-stack.html       # generated from pages/tech-stack.md
+├── blog/
+│   ├── index.html        # generated flat reverse-chron list
+│   ├── *.md              # post sources
+│   └── *.html            # generated post pages
+├── pages/
+│   └── *.md              # standalone page sources (books, tech stack, ...)
+├── dist/styles.css       # compiled Tailwind (committed so gh-pages serves it)
+├── feed.xml              # generated RSS
+└── src/
+    ├── styles/main.css   # design tokens + components
+    └── scripts/
+        ├── main.js       # dark mode toggle
+        ├── render-blog.mjs
+        └── new-post.mjs
 ```
 
-Then visit `http://localhost:8000` in your browser.
+## Writing a post
 
-## Deployment
+```bash
+npm run new-post "The thing I want to say"
+```
 
-The site is deployed using GitHub Pages and can be accessed at [keithtyser.github.io/personal-site](https://keithtyser.github.io/personal-site).
+Edit the new `.md` file in `blog/`. Frontmatter:
 
-## Contributing
+```yaml
+---
+title: The thing I want to say
+description: One short sentence for meta tags.
+date: 2026-04-16
+toc: false    # set to true to get a sidebar TOC on desktop
+---
+```
 
-Feel free to open issues or submit pull requests if you find any bugs or have suggestions for improvements.
-
-## License
-
-MIT License - feel free to use this code for your own personal website!
+Save. The browser auto-reloads if `npm run dev` is running.
 
 ## Contact
 
 - Email: keithtyser@gmail.com
-- Twitter: [@keithtyser](https://twitter.com/keithtyser)
+- X: [@keithtyser](https://twitter.com/keithtyser)
 - LinkedIn: [keithtyser](https://linkedin.com/in/keithtyser)
-- GitHub: [@keithtyser](https://github.com/keithtyser) 
+- GitHub: [@keithtyser](https://github.com/keithtyser)

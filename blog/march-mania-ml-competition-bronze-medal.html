@@ -1,32 +1,310 @@
 <!DOCTYPE html>
-<html lang="en" class="scroll-smooth">
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>March Mania ML Competition: Bronze Medal with Custom ELO | Keith Tyser</title>
-  <!-- Tailwind with typography plugin -->
-  <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
-  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-  <style>
-    /* dark‑mode tweaks for prose */
-    .dark .prose :where(th, td) { border-color: rgba(255,255,255,0.15); }
-    .prose table { width: 100%; }
-    .prose pre { background-color: rgba(0,0,0,0.05); }
-    .dark .prose pre { background-color: rgba(255,255,255,0.05); }
-  </style>
-</head>
-<body class="bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 transition-colors duration-300">
-  <main class="max-w-3xl mx-auto px-4 py-10">
-    <header class="mb-10">
-      <a href="../index.html" class="text-sm text-blue-600 dark:text-blue-400 hover:underline">&larr; back home</a>
-    </header>
-    <article id="content" class="prose lg:prose-lg dark:prose-invert mx-auto"></article>
-  </main>
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>March Mania ML Competition: Bronze Medal with Custom ELO - Keith Tyser</title>
+  <meta name="description" content="How a custom ELO system, targeted tuning, and manual overrides led to a bronze medal finish in March Machine Learning Mania 2025.">
+  <link rel="canonical" href="https://keithtyser.com/blog/march-mania-ml-competition-bronze-medal.html">
+  <meta name="theme-color" content="#0a0a0a">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="March Mania ML Competition: Bronze Medal with Custom ELO">
+  <meta property="og:description" content="How a custom ELO system, targeted tuning, and manual overrides led to a bronze medal finish in March Machine Learning Mania 2025.">
+  <meta property="og:url" content="https://keithtyser.com/blog/march-mania-ml-competition-bronze-medal.html">
+  <meta property="og:image" content="https://keithtyser.com/profile_pic.jpeg">
+  <meta property="article:published_time" content="2025-03-28">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="March Mania ML Competition: Bronze Medal with Custom ELO">
+  <meta name="twitter:description" content="How a custom ELO system, targeted tuning, and manual overrides led to a bronze medal finish in March Machine Learning Mania 2025.">
   <script>
-    fetch('march-mania-ml-competition-bronze-medal.md')
-      .then(res => res.text())
-      .then(md => { document.getElementById('content').innerHTML = marked.parse(md); });
+    (() => {
+      const saved = localStorage.getItem('theme');
+      const dark = saved ? saved === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+      if (dark) document.documentElement.classList.add('dark');
+    })();
   </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="../dist/styles.css">
+  <link rel="alternate" type="application/rss+xml" title="Keith Tyser" href="https://keithtyser.com/feed.xml">
+  <script src="../src/scripts/main.js" defer></script>
+</head>
+<body>
+  <a href="#main" class="skip-link">Skip to content</a>
+
+  <div class="article-shell">
+    <header class="article-header">
+      <a href="./" class="text-[12px] muted hover:text-[color:var(--text)] transition-colors">← All writing</a>
+      <button id="darkModeToggle" type="button" class="icon-link" aria-label="Toggle theme">
+        <i class="fas fa-moon text-[13px] dark:hidden"></i>
+        <i class="fas fa-sun text-[13px] hidden dark:inline"></i>
+      </button>
+    </header>
+
+    <main id="main">
+    <article>
+      <header class="mb-10">
+        <h1 class="article-title">March Mania ML Competition: Bronze Medal with Custom ELO</h1>
+        <time class="article-date" datetime="2025-03-28">Mar 28, 2025</time>
+      </header>
+      <div class="article-body">
+<h2 id="tl-dr">TL;DR</h2>
+<p>I finished <strong>166th out of 1,727 participants</strong> in Kaggle&#39;s March Machine Learning Mania 2025, earning a <strong>Bronze Medal</strong> with a custom ELO rating system. The key? Hyperparameter-tuned ELO models for men&#39;s and women&#39;s basketball, combined with strategic manual overrides. If Duke hadn&#39;t lost in the Final Four, I would have cracked the <strong>top 5</strong>.</p>
+<h2 id="the-competition">The Competition</h2>
+<p><a href="https://www.kaggle.com/competitions/march-machine-learning-mania-2025" target="_blank" rel="noopener noreferrer">March Machine Learning Mania</a> is one of Kaggle&#39;s most popular competitions, challenging participants to predict NCAA basketball tournament outcomes. With over 1,700 competitors and a dataset spanning decades of college basketball, it&#39;s a perfect playground for sports analytics and machine learning.</p>
+<p>The scoring system rewards both accuracy and confidence calibration, making it as much about understanding uncertainty as predicting winners.</p>
+<h2 id="my-approach-custom-elo-rating-system">My Approach: Custom ELO Rating System</h2>
+<p>Instead of going with traditional machine learning models, I built a custom ELO rating system specifically designed for college basketball. The system is based on <a href="https://fivethirtyeight.com/methodology/how-our-nba-predictions-work/" target="_blank" rel="noopener noreferrer">FiveThirtyEight&#39;s ELO methodology</a> but heavily customized for NCAA basketball dynamics. The core implementation is available on GitHub: <a href="https://github.com/keithtyser/hoops-elo" target="_blank" rel="noopener noreferrer"><strong>hoops-elo</strong></a>.</p>
+<h3 id="why-elo-for-basketball">Why ELO for Basketball?</h3>
+<p>ELO ratings excel at sports prediction because they:</p>
+<ul>
+<li><strong>Adapt dynamically</strong> to team performance changes throughout the season</li>
+<li><strong>Handle strength of schedule</strong> naturally through opponent ratings</li>
+<li><strong>Incorporate margin of victory</strong> and home court advantage</li>
+<li><strong>Provide interpretable probability estimates</strong> for matchups</li>
+</ul>
+<h3 id="technical-implementation">Technical Implementation</h3>
+<p>My system extends traditional ELO with basketball-specific enhancements:</p>
+<pre><code class="language-python"># Core ELO update formula with margin of victory
+def update_elo_rating(winner_elo, loser_elo, margin, location, k=32):
+    # Expected win probability
+    expected = 1 / (1 + 10**((loser_elo - winner_elo) / 400))
+    
+    # Margin of victory multiplier
+    mov_factor = calculate_mov_factor(margin, expected)
+    
+    # Home court adjustment
+    if location == &#39;H&#39;:
+        winner_elo += HOME_COURT_ADVANTAGE
+    elif location == &#39;A&#39;:
+        loser_elo += HOME_COURT_ADVANTAGE
+    
+    # Update ratings
+    rating_change = k * mov_factor * (1 - expected)
+    return winner_elo + rating_change, loser_elo - rating_change
+</code></pre>
+<p>Key features of my implementation:</p>
+<ul>
+<li><strong>Margin of Victory Scaling</strong>: Larger wins against strong opponents matter more</li>
+<li><strong>Home Court Advantage</strong>: ~100 ELO point boost for home teams</li>
+<li><strong>Seasonal Carryover</strong>: Partial rating persistence between seasons</li>
+<li><strong>Separate Models</strong>: Independent tuning for men&#39;s and women&#39;s basketball</li>
+</ul>
+<h2 id="hyperparameter-tuning-the-secret-sauce">Hyperparameter Tuning: The Secret Sauce</h2>
+<p>The difference between a good ELO system and a great one lies in the parameters. I conducted exhaustive hyperparameter optimization using historical tournament data.</p>
+<h3 id="parameters-optimized">Parameters Optimized</h3>
+<ol>
+<li><strong>K-factor</strong> (learning rate): How quickly ratings respond to new results</li>
+<li><strong>Alpha</strong> (MOV scaling): How much margin of victory matters</li>
+<li><strong>Home Court Advantage</strong>: ELO point boost for home teams</li>
+<li><strong>Carryover Rate</strong>: How much of previous season&#39;s rating to retain</li>
+<li><strong>MOV Formula</strong>: Linear vs. logarithmic margin scaling</li>
+</ol>
+<h3 id="tuning-methodology">Tuning Methodology</h3>
+<pre><code class="language-python"># Hyperparameter search space
+param_grid = {
+    &#39;k_factor&#39;: [28, 32, 38, 42],
+    &#39;alpha&#39;: [3, 5, 7, 10],
+    &#39;home_court&#39;: [80, 100, 120],
+    &#39;carryover&#39;: [0.6, 0.7, 0.8],
+    &#39;mov_formula&#39;: [&#39;linear&#39;, &#39;log&#39;]
+}
+
+# Optimize for historical tournament prediction accuracy
+best_params = optimize_parameters(
+    data=historical_tournaments,
+    param_grid=param_grid,
+    cv_splits=5
+)
+</code></pre>
+<p>Through extensive optimization, I found that the optimal parameters differed significantly between men&#39;s and women&#39;s basketball. The two sports behave differently. While I won&#39;t share the exact values (competitive advantage!), the key findings were:</p>
+<h3 id="why-gender-specific-tuning-matters">Why Gender-Specific Tuning Matters</h3>
+<p>Women&#39;s college basketball showed different patterns:</p>
+<ul>
+<li><strong>Higher home court advantage</strong> compared to men&#39;s basketball</li>
+<li><strong>More sensitive to margin of victory</strong> scaling</li>
+<li><strong>Lower rating volatility</strong> with more stable rankings</li>
+</ul>
+<p>These differences come from how men&#39;s and women&#39;s college basketball actually play out, not from anything the model is hallucinating.</p>
+<h2 id="strategic-manual-overrides">Strategic Manual Overrides</h2>
+<p>The ELO system gave me a strong baseline. On top of that I made three manual interventions:</p>
+<h3 id="1-duke-men-39-s-championship-lock">1. Duke Men&#39;s Championship Lock</h3>
+<p>I overrode Duke&#39;s tournament probabilities to <strong>100% championship win</strong> in the men&#39;s bracket. Duke had:</p>
+<ul>
+<li>Second highest ELO rating entering the tournament</li>
+<li>Dominant conference play (19-1 record)</li>
+<li>Favorable bracket positioning</li>
+<li>Strong recent tournament performance</li>
+<li><strong>Betting markets favored Duke</strong> with championship odds around +340, suggesting the market also viewed them as the clear favorite</li>
+</ul>
+<h3 id="2-women-39-s-championship-game-prediction">2. Women&#39;s Championship Game Prediction</h3>
+<p>For women&#39;s basketball, I locked in:</p>
+<ul>
+<li><strong>UConn</strong> to reach the championship game (100% probability)</li>
+<li><strong>South Carolina</strong> to reach the championship game (100% probability)</li>
+</ul>
+<p>Both teams were ELO leaders in their respective regions by a large margin and had shown consistent dominance throughout the season. <strong>Women&#39;s brackets tend to be more predictable with fewer upsets</strong> compared to men&#39;s basketball, making these locks easier strategic choices. The betting markets also supported this view, with both teams having the shortest championship odds in their respective regions.</p>
+<h3 id="the-risk-reward-calculation">The Risk-Reward Calculation</h3>
+<p>These overrides were calculated risks based on:</p>
+<ul>
+<li><strong>High confidence in ELO rankings</strong> for these specific teams</li>
+<li><strong>Tournament seeding alignment</strong> with my predictions</li>
+<li><strong>Potential for massive scoring gains</strong> if correct</li>
+</ul>
+<h2 id="results-and-analysis">Results and Analysis</h2>
+<h3 id="final-standing-166-1-727-top-10">Final Standing: 166/1,727 (Top 10%)</h3>
+<p>My submission earned a <strong>Bronze Medal</strong> with strong performance across both tournaments:</p>
+<ul>
+<li><strong>Men&#39;s Bracket</strong>: 85th percentile accuracy</li>
+<li><strong>Women&#39;s Bracket</strong>: 92nd percentile accuracy</li>
+<li><strong>Overall Score</strong>: Top 9.6% of all participants</li>
+</ul>
+<h3 id="the-duke-factor-what-could-have-been">The Duke Factor: What Could Have Been</h3>
+<p>Duke dominated through the first three rounds, validating my 100% confidence override. They reached the <strong>Final Four</strong> as predicted, but fell to <strong>Houston</strong> in the semifinals. Houston went on to make the championship game, showing the competitive strength of Duke&#39;s region.</p>
+<p><strong>If Duke had won the championship as predicted, I would have finished in the top 5.</strong></p>
+<p>This highlights both the power and peril of high-confidence predictions in tournament settings. Duke performed exactly as my ELO system suggested through three rounds, but March Madness reminded us why they call it &quot;madness.&quot;</p>
+<h3 id="performance-breakdown">Performance Breakdown</h3>
+<table>
+<thead>
+<tr>
+<th>Metric</th>
+<th>Men&#39;s</th>
+<th>Women&#39;s</th>
+<th>Combined</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Bracket Score</td>
+<td>1,420</td>
+<td>1,680</td>
+<td>3,100</td>
+</tr>
+<tr>
+<td>Percentile</td>
+<td>85th</td>
+<td>92nd</td>
+<td>89th</td>
+</tr>
+<tr>
+<td>Perfect Picks</td>
+<td>12/16</td>
+<td>14/16</td>
+<td>26/32</td>
+</tr>
+<tr>
+<td>Brier Score</td>
+<td>0.139</td>
+<td>0.086</td>
+<td>0.112</td>
+</tr>
+</tbody></table>
+<p>The women&#39;s bracket performed well. Both <strong>UConn and South Carolina reached the championship game exactly as predicted</strong>. Connecticut won the title. The ELO rankings and the lock call both held up.</p>
+<h3 id="brier-score-analysis">Brier Score Analysis</h3>
+<p>The <strong>Brier score</strong> measures the accuracy of probabilistic predictions, with lower scores indicating better calibration:</p>
+<ul>
+<li><strong>Men&#39;s Brier Score: 0.139</strong> - Solid performance despite Duke&#39;s semifinal exit</li>
+<li><strong>Women&#39;s Brier Score: 0.086</strong> - Very sharp calibration; women&#39;s basketball is more predictable.</li>
+<li><strong>Overall Brier Score: 0.112</strong> - Strong combined performance</li>
+</ul>
+<p>The significantly lower women&#39;s Brier score (0.086 vs 0.139) validates the hypothesis that women&#39;s brackets are more predictable, making the strategic locks on UConn and South Carolina even more valuable.</p>
+<h2 id="technical-deep-dive">Technical Deep Dive</h2>
+<h3 id="elo-system-architecture">ELO System Architecture</h3>
+<p>The complete system includes:</p>
+<ol>
+<li><strong>Data Pipeline</strong>: Automated ingestion of game results and team data</li>
+<li><strong>Rating Engine</strong>: Real-time ELO calculations with MOV and location adjustments</li>
+<li><strong>Prediction Module</strong>: Tournament bracket probability generation</li>
+<li><strong>Web Interface</strong>: User-friendly dashboard for analysis and predictions</li>
+</ol>
+<pre><code class="language-python">class HoopsELO:
+    def __init__(self, k=32, alpha=5, home_court=100):
+        self.k = k
+        self.alpha = alpha
+        self.home_court = home_court
+        self.ratings = {}
+    
+    def predict_game(self, team_a, team_b, location=&#39;N&#39;):
+        &quot;&quot;&quot;Predict game outcome and spread&quot;&quot;&quot;
+        elo_a = self.ratings.get(team_a, 1500)
+        elo_b = self.ratings.get(team_b, 1500)
+        
+        # Location adjustment
+        if location == &#39;H&#39;:
+            elo_a += self.home_court
+        elif location == &#39;A&#39;:
+            elo_b += self.home_court
+        
+        # Win probability
+        prob_a = 1 / (1 + 10**((elo_b - elo_a) / 400))
+        
+        # Point spread
+        spread = (elo_a - elo_b) * 0.03  # ~30 points per 1000 ELO
+        
+        return prob_a, spread
+</code></pre>
+<h3 id="validation-and-backtesting">Validation and Backtesting</h3>
+<p>I validated the system using:</p>
+<ul>
+<li><strong>5-fold cross-validation</strong> on historical tournaments (2015-2024)</li>
+<li><strong>Leave-one-year-out</strong> testing for temporal validation</li>
+<li><strong>Monte Carlo simulation</strong> for bracket outcome distributions</li>
+</ul>
+<p>The system consistently outperformed baseline methods:</p>
+<ul>
+<li><strong>vs. Seeding</strong>: +12% accuracy improvement</li>
+<li><strong>vs. Random Forest</strong>: +8% accuracy improvement  </li>
+<li><strong>vs. KenPom ratings</strong>: +5% accuracy improvement</li>
+</ul>
+<h2 id="key-lessons-learned">Key Lessons Learned</h2>
+<h3 id="1-domain-specific-feature-engineering-wins">1. Domain-Specific Feature Engineering Wins</h3>
+<p>Custom ELO with basketball-specific adjustments outperformed generic ML models using raw statistics.</p>
+<h3 id="2-gender-specific-modeling-matters">2. Gender-Specific Modeling Matters</h3>
+<p>Separate parameter tuning for men&#39;s and women&#39;s basketball provided significant accuracy gains.</p>
+<h3 id="3-high-confidence-bets-are-double-edged">3. High-Confidence Bets Are Double-Edged</h3>
+<p>Manual overrides can provide massive gains but also limit upside if wrong.</p>
+<h3 id="4-ensemble-methods-have-potential">4. Ensemble Methods Have Potential</h3>
+<p>Future iterations should explore combining ELO with other rating systems (KenPom, NET, etc.).</p>
+<h2 id="future-improvements">Future Improvements</h2>
+<p>For next year&#39;s competition, I&#39;m considering:</p>
+<ol>
+<li><strong>Multi-Model Ensemble</strong>: Combining ELO with gradient boosting and neural networks</li>
+<li><strong>Injury Tracking</strong>: Incorporating player availability and key injury data</li>
+<li><strong>Tempo Adjustments</strong>: Adding pace-of-play factors to the rating system</li>
+<li><strong>Conference Strength Modeling</strong>: Dynamic conference rating adjustments</li>
+<li><strong>Transfer Portal Impact</strong>: Modeling roster composition changes</li>
+</ol>
+<h2 id="open-source-contribution">Open Source Contribution</h2>
+<p>The complete ELO system is available on GitHub: <a href="https://github.com/keithtyser/hoops-elo" target="_blank" rel="noopener noreferrer"><strong>hoops-elo</strong></a></p>
+<p>Features include:</p>
+<ul>
+<li>Full ELO calculation engine</li>
+<li>Web-based interface for predictions</li>
+<li>Historical data analysis tools</li>
+<li>Parameter tuning utilities</li>
+<li>CLI for batch processing</li>
+</ul>
+<h2 id="conclusion">Conclusion</h2>
+<p>Finishing in the <strong>top 10%</strong> of nearly 1,800 competitors feels incredibly rewarding, especially with a relatively simple approach that prioritized domain knowledge over complex modeling.</p>
+<p>The near-miss with Duke taught me that in tournament prediction, <strong>the difference between good and great often comes down to a single game</strong>. But that&#39;s what makes March Madness so captivating, and March Machine Learning Mania so challenging.</p>
+<p>The combination of rigorous hyperparameter tuning, basketball-specific feature engineering, and strategic high-confidence predictions proved to be a winning formula. While I didn&#39;t quite crack the top 5, the Bronze Medal validates the approach and sets up an exciting foundation for future competitions.</p>
+<p><strong>Next year, I&#39;m coming for that gold.</strong> 🏆</p>
+<hr>
+<p><em>Want to dive deeper into the technical details? Check out the <a href="https://github.com/keithtyser/hoops-elo" target="_blank" rel="noopener noreferrer">hoops-elo repository</a> or reach out on <a href="https://twitter.com/keithtyser" target="_blank" rel="noopener noreferrer">Twitter</a> to discuss sports analytics and machine learning!</em></p>
+
+      </div>
+    </article>
+    </main>
+
+    <footer class="mt-24 pt-8 border-t flex items-center justify-between gap-4 text-[12px] muted">
+      <a href="/" class="hover:text-[color:var(--text)] transition-colors">keithtyser.com</a>
+      <nav class="flex items-center gap-1" aria-label="Social links">
+        <a href="mailto:keithtyser@gmail.com" class="icon-link" aria-label="Email"><i class="fas fa-envelope text-[12px]"></i></a>
+        <a href="https://github.com/keithtyser" target="_blank" rel="noopener" class="icon-link" aria-label="GitHub"><i class="fab fa-github text-[12px]"></i></a>
+        <a href="https://twitter.com/keithtyser" target="_blank" rel="noopener" class="icon-link" aria-label="X (Twitter)"><i class="fa-brands fa-x-twitter text-[12px]"></i></a>
+        <a href="https://keithtyser.com/feed.xml" class="icon-link" aria-label="RSS feed"><i class="fas fa-rss text-[12px]"></i></a>
+      </nav>
+    </footer>
+  </div>
 </body>
-</html> 
+</html>

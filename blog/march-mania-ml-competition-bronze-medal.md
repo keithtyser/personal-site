@@ -1,6 +1,9 @@
-# March Mania ML Competition: How a Custom ELO System Earned Me a Bronze Medal
-
-*March 28, 2025*
+---
+title: "March Mania ML Competition: Bronze Medal with Custom ELO"
+description: How a custom ELO system, targeted tuning, and manual overrides led to a bronze medal finish in March Machine Learning Mania 2025.
+date: 2025-03-28
+toc: false
+---
 
 ## TL;DR
 
@@ -87,7 +90,7 @@ best_params = optimize_parameters(
 )
 ```
 
-Through extensive optimization, I found that the optimal parameters differed significantly between men's and women's basketball, reflecting the unique characteristics of each sport. While I won't share the exact values (competitive advantage!), the key findings were:
+Through extensive optimization, I found that the optimal parameters differed significantly between men's and women's basketball. The two sports behave differently. While I won't share the exact values (competitive advantage!), the key findings were:
 
 ### Why Gender-Specific Tuning Matters
 
@@ -96,14 +99,14 @@ Women's college basketball showed different patterns:
 - **More sensitive to margin of victory** scaling
 - **Lower rating volatility** with more stable rankings
 
-These differences reflect the distinct competitive landscapes and playing styles between men's and women's college basketball.
+These differences come from how men's and women's college basketball actually play out, not from anything the model is hallucinating.
 
 ## Strategic Manual Overrides
 
-While the ELO system provided strong baseline predictions, I made three crucial manual interventions:
+The ELO system gave me a strong baseline. On top of that I made three manual interventions:
 
 ### 1. Duke Men's Championship Lock
-I overrode Duke's tournament probabilities to **100% championship win** in the men's bracket. This wasn't just blind faith, Duke had:
+I overrode Duke's tournament probabilities to **100% championship win** in the men's bracket. Duke had:
 - Second highest ELO rating entering the tournament
 - Dominant conference play (19-1 record)
 - Favorable bracket positioning
@@ -150,13 +153,13 @@ This highlights both the power and peril of high-confidence predictions in tourn
 | Perfect Picks | 12/16 | 14/16 | 26/32 |
 | Brier Score | 0.139 | 0.086 | 0.112 |
 
-The women's bracket performed exceptionally well, with both **UConn and South Carolina reaching the championship game exactly as predicted**. Connecticut ultimately won the title, validating both the ELO rankings and the strategic decision to lock in these powerhouses. 
+The women's bracket performed well. Both **UConn and South Carolina reached the championship game exactly as predicted**. Connecticut won the title. The ELO rankings and the lock call both held up.
 
 ### Brier Score Analysis
 
 The **Brier score** measures the accuracy of probabilistic predictions, with lower scores indicating better calibration:
 - **Men's Brier Score: 0.139** - Solid performance despite Duke's semifinal exit
-- **Women's Brier Score: 0.086** - Exceptional accuracy reflecting the more predictable nature of women's basketball
+- **Women's Brier Score: 0.086** - Very sharp calibration; women's basketball is more predictable.
 - **Overall Brier Score: 0.112** - Strong combined performance
 
 The significantly lower women's Brier score (0.086 vs 0.139) validates the hypothesis that women's brackets are more predictable, making the strategic locks on UConn and South Carolina even more valuable.
