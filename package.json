@@ -8,12 +8,14 @@
     "watch:css": "tailwindcss -i ./src/styles/main.css -o ./dist/styles.css --watch --minify",
     "build:blog": "node src/scripts/render-blog.mjs",
     "watch:blog": "chokidar \"blog/*.md\" \"src/scripts/render-blog.mjs\" -c \"npm run build:blog\"",
-    "build": "npm run build:css && npm run build:blog",
+    "build:critical": "node src/scripts/inline-critical.mjs",
+    "build": "npm run build:css && npm run build:blog && npm run build:critical",
     "dev": "npm run build && concurrently -n css,blog,serve -c blue,green,magenta \"npm run watch:css\" \"npm run watch:blog\" \"live-server --port=8080 --ignore=node_modules;.git;.claude\"",
     "new-post": "node src/scripts/new-post.mjs",
     "build:images": "node src/scripts/build-images.mjs"
   },
   "devDependencies": {
+    "beasties": "^0.4.2",
     "chokidar-cli": "^3.0.0",
     "concurrently": "^8.2.2",
     "gray-matter": "^4.0.3",

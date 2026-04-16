@@ -211,10 +211,10 @@ ${articleMeta}
       if (dark) document.documentElement.classList.add('dark');
     })();
   </script>
-  <link rel="preload" href="${cssPath.startsWith('..') ? '../fonts/InterVariable.woff2' : 'fonts/InterVariable.woff2'}" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="${cssPath}">
-  <link rel="icon" type="image/svg+xml" href="${cssPath.startsWith('..') ? '../favicon.svg' : 'favicon.svg'}">
-  <link rel="apple-touch-icon" href="${cssPath.startsWith('..') ? '../apple-touch-icon.png' : 'apple-touch-icon.png'}">
+  <link rel="preload" href="/fonts/InterVariable.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/dist/styles.css">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 ${rssLink}
   <script src="${scriptPath}" defer></script>
 </head>
@@ -244,7 +244,7 @@ ${rssLink}
           <a href="${SITE_URL}/feed.xml" class="icon-link" aria-label="RSS feed"><svg class="icon text-[12px]" aria-hidden="true"><use href="/icons.svg#rss"/></svg></a>
         </nav>
       </div>
-      <p class="mt-4 text-center text-[11px]"><a href="${cssPath.startsWith('..') ? '../ai.html' : 'ai.html'}" class="hover:text-[color:var(--text)] transition-colors">for AI agents →</a></p>
+      <p class="mt-4 text-center text-[11px]"><a href="/ai.html" class="hover:text-[color:var(--text)] transition-colors">for AI agents →</a></p>
     </footer>
   </div>
 </body>
@@ -263,9 +263,9 @@ function renderPostPage({ title, description, dateDisplay, dateISO, slug, hasToc
     hasToc,
     content,
     tocMarkup,
-    cssPath: '../dist/styles.css',
-    scriptPath: '../src/scripts/main.js',
-    backHref: './',
+    cssPath: '/dist/styles.css',
+    scriptPath: '/src/scripts/main.js',
+    backHref: '/blog/',
     backLabel: 'All writing',
     includeRss: true,
   });
@@ -284,8 +284,8 @@ function renderStaticPage({ title, description, slug, updatedDisplay, updatedISO
     hasToc,
     content,
     tocMarkup,
-    cssPath: 'dist/styles.css',
-    scriptPath: 'src/scripts/main.js',
+    cssPath: '/dist/styles.css',
+    scriptPath: '/src/scripts/main.js',
     backHref: '/',
     backLabel: 'keithtyser.com',
     includeRss: false,
@@ -331,12 +331,12 @@ function renderIndexPage(posts) {
       if (dark) document.documentElement.classList.add('dark');
     })();
   </script>
-  <link rel="preload" href="../fonts/InterVariable.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="../dist/styles.css">
-  <link rel="icon" type="image/svg+xml" href="../favicon.svg">
-  <link rel="apple-touch-icon" href="../apple-touch-icon.png">
+  <link rel="preload" href="/fonts/InterVariable.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/dist/styles.css">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <link rel="alternate" type="application/rss+xml" title="${escapeHtml(SITE_TITLE)}" href="${SITE_URL}/feed.xml">
-  <script src="../src/scripts/main.js" defer></script>
+  <script src="/src/scripts/main.js" defer></script>
 </head>
 <body>
   <a href="#main" class="skip-link">Skip to content</a>
