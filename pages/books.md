@@ -112,4 +112,4 @@ Legend: `✓` read, `→` reading, `·` queued. Unmarked entries are queued too;
 - **Confessions of an Economic Hit Man**, John Perkins
 - **The Secret History of the World**, Mark Booth
 - **Foundations of Geopolitics**, Aleksandr Dugin
-- **The Alignment Problem**, Brian Christian
+- → **The Alignment Problem**, Brian Christian
