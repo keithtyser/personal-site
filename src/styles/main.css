@@ -804,6 +804,16 @@
   color: var(--accent);
 }
 
+/* /now page log: date headings after the #log h2 become mono timestamps */
+.article-body #log ~ h3 {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
 .article-body h4 {
   font-size: 16px;
   font-weight: 600;

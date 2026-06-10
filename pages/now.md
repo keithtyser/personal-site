@@ -1,27 +1,27 @@
 ---
 title: Now
-description: What I'm working on right now.
-updated: 2026-04-18
+description: What I'm working on right now, plus a log of what came before.
+updated: 2026-06-10
 toc: false
 ---
 
-What I'm working on this month. Inspired by Derek Sivers' [/now page](https://nownownow.com/about) convention.
+What I'm working on this month. Inspired by Derek Sivers' [/now page](https://nownownow.com/about) convention, with a twist: when this page gets updated, the old snapshot moves down into the [log](#log), so you can scroll back through time.
 
 ## Working on
 
-Three Kaggle competitions, in parallel.
+Two Kaggle competitions, two open source projects, and a lot of GPUs.
 
 ### [NVIDIA Nemotron Model Reasoning Challenge](https://www.kaggle.com/competitions/nvidia-nemotron-model-reasoning-challenge)
 
-Teaching Nemotron-3-Nano-30B to do better on the competition's novel reasoning benchmark. Fine-tuning orchestrated through Tinker; weights and inference live on my DGX Spark.
-
-### [Neurogolf 2026](https://www.kaggle.com/competitions/neurogolf-2026)
-
-A swarm of AI agents searching for the most efficient solutions on the original ARC-AGI v1 public training set. Code-golf for reasoning programs. Agents iterate against each other until they converge on the shortest correct program per task.
+Finetuning a 30B hybrid Mamba/MoE model with LoRA to solve synthetic reasoning puzzles: bit manipulation, ciphers, cryptarithms. It's a strange and humbling leaderboard. Hundreds of teams are piled up at 0.86 because the public recipe is that good, and the winner sits at 0.89. I'm running a three-GPU fleet around the clock with an AI agent driving the experiment queue: reverse-engineering puzzle generators, building deterministic chain-of-thought traces the model can actually execute within a token budget, and trying to make RL work where supervised finetuning has clearly hit a wall.
 
 ### [Orbit Wars](https://www.kaggle.com/competitions/orbit-wars)
 
-A novel multi-agent game where AI agents face off in 2P duels and 4P free-for-alls on a 100×100 plane. $50K prize. My approach: evaluate every candidate against a local zoo of ~18 diverse bots rather than head-to-head against the starter. Current bot is v23b, sitting at 968 on the public leaderboard (up from 786).
+Competing with self-play RL. Currently being humbled: after ~100M training samples my agent just scored its first wins against the tutorial bot. The top of the leaderboard is very far away.
+
+### [Forgewright](https://github.com/keithtyser/forgewright) and [Model Forge](https://github.com/keithtyser/model-forge)
+
+Obsessed with two things: improving the best open source models to make them even better, faster, and uncensored, and streamlining the post-training process to make it easier. Model Forge is the post-training workbench; Forgewright is the multi-agent swarm that runs it autonomously behind one conversational CLI.
 
 ## Reading
 
@@ -29,8 +29,16 @@ A novel multi-agent game where AI agents face off in 2P duels and 4P free-for-al
 
 ## Thinking about
 
-Lately I've been obsessed with fixing the "information chaos" problem in cyber incident response. Everyone's looking at different data, working the same leads, missing important signals. I'm experimenting with AI agents that sit in the background, ingest everything, and quietly stitch it into incidents, timelines, and decision-ready outputs so the team can actually operate like a team.
+How to detect agentic AI activity, from a cybersecurity perspective. AI is increasing the speed, sophistication, and persistence of cyber attacks. Part of being able to defend against that is being able to detect malicious agentic AI.
+
+## Log
+
+Past snapshots of this page, newest first.
+
+### Apr 18, 2026
+
+Three Kaggle competitions in parallel: the **Nemotron Model Reasoning Challenge** (fine-tuning Nemotron-3-Nano-30B through Tinker, on the DGX Spark), **Orbit Wars** (bot v23b climbing the public leaderboard from 786 to 968), and **[Neurogolf 2026](https://www.kaggle.com/competitions/neurogolf-2026)**: a swarm of AI agents playing code-golf on the original ARC-AGI v1 public training set, iterating against each other until they converge on the shortest correct program per task. Reading *The Alignment Problem*. Thinking about the information-chaos problem in cyber incident response.
 
 ---
 
-*Last updated on the date above. When that date gets stale, so does this page.*
+*Last updated on the date above. When that date gets stale, so does this page. The log keeps the receipts.*
