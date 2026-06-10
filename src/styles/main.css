@@ -470,23 +470,23 @@
 }
 
 .btn-primary {
-  background-color: var(--accent);
-  color: var(--accent-ink);
+  background-color: var(--text);
+  color: var(--bg);
 }
 
 .btn-primary:hover {
   transform: translateY(-1px);
-  background-color: var(--accent-hover);
-  box-shadow: 0 4px 20px color-mix(in srgb, var(--accent) 35%, transparent);
+  background-color: color-mix(in srgb, var(--text) 86%, var(--accent));
+  box-shadow: 0 4px 20px color-mix(in srgb, var(--text) 25%, transparent);
 }
 
-/* "Available" chip inside the primary button: a darker pill so the
-   online-green dot stays visible on the green button fill */
+/* "Available" chip inside the primary button: a contrasting pill so the
+   online-green dot is the only green element and reads as a status light */
 .availability {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background-color: rgb(0 0 0 / 0.18);
+  background-color: color-mix(in srgb, var(--bg) 28%, transparent);
   border-radius: 9999px;
   padding: 3px 9px 3px 7px;
   font-weight: 500;
