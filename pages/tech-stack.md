@@ -1,7 +1,7 @@
 ---
 title: Tech Stack & Setup
 description: Hardware and home-lab setup.
-updated: 2026-04-16
+updated: 2026-06-10
 toc: false
 ---
 
@@ -24,17 +24,27 @@ toc: false
 
 ## Home Lab
 
-### Apple Mac Studio (2025)
+### 2x DGX Spark cluster
 
-- M3 Ultra with 28-core CPU and 60-core GPU
-- 96 GB RAM
-- 1 TB SSD
+- NVIDIA [DGX Spark](https://www.nvidia.com/en-us/products/workstations/dgx-spark/) + [ASUS Ascent GX10](https://www.asus.com/us/networking-iot-servers/desktop-ai-supercomputer/ultra-small-ai-supercomputers/asus-ascent-gx10/), clustered over a QSFP cable between their ConnectX-7 NICs
+- Each node: GB10 Grace Blackwell Superchip, 1 petaFLOP of AI performance at FP4, 128 GB coherent unified memory
+- 256 GB unified memory across the cluster; enough to serve models up to ~405B parameters
 
-### NVIDIA [DGX Spark](https://www.nvidia.com/en-us/products/workstations/dgx-spark/)
+### 2x NVIDIA RTX PRO 6000 Blackwell Max-Q Workstation Edition
 
-- GB10 Grace Blackwell Superchip
-- 1 petaFLOP of AI performance at FP4 precision
-- 128 GB of coherent unified system memory
+- 96 GB GDDR7 ECC each (192 GB total VRAM)
+- Waiting on the workstation build below to put them to work
+
+### AI Workstation (build in progress)
+
+Still collecting parts. Planned build:
+
+- AMD Ryzen Threadripper PRO 9965WX
+- ASUS Pro WS WRX90E-SAGE SE
+- 192 GB DDR5 (8x 24 GB)
+- 2200W PSU
+- Phanteks Enthoo Pro 2 Server Edition case
+- NVMe, obviously
 
 ### ATOMMAN X7 Ti
 
