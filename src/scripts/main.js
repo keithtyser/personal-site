@@ -9,8 +9,35 @@ document.addEventListener('DOMContentLoaded', () => {
       if (document.documentElement.classList.contains('dark')) {
         localStorage.setItem('theme', 'dark');
       } else {
-        localStorage.removeItem('theme');
+        localStorage.setItem('theme', 'light');
       }
+    });
+  }
+
+  // ---------------------------------------------------------------
+  // Status bar clock (visitor's local time)
+  // ---------------------------------------------------------------
+  const clock = document.getElementById('sb-clock');
+  if (clock) {
+    const tick = () => {
+      const now = new Date();
+      const pad = (n) => String(n).padStart(2, '0');
+      clock.textContent = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+    };
+    tick();
+    setInterval(tick, 1000);
+  }
+
+  // ---------------------------------------------------------------
+  // Card cursor spotlight (pointer devices only)
+  // ---------------------------------------------------------------
+  if (window.matchMedia('(hover: hover)').matches) {
+    document.querySelectorAll('.card').forEach((card) => {
+      card.addEventListener('pointermove', (e) => {
+        const rect = card.getBoundingClientRect();
+        card.style.setProperty('--mx', `${e.clientX - rect.left}px`);
+        card.style.setProperty('--my', `${e.clientY - rect.top}px`);
+      });
     });
   }
 
@@ -36,7 +63,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // ---------------------------------------------------------------
-  // Latest GitHub public activity (landing only)
+  // Latest GitHub public activity, shown in the status bar (landing)
   // ---------------------------------------------------------------
   const ghTarget = document.getElementById('gh-activity');
   if (ghTarget) {
@@ -47,12 +74,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const push = events.find((e) => e.type === 'PushEvent' && e.repo);
         if (!push) throw new Error('no recent push');
         const repo = push.repo.name;
+        const shortRepo = repo.startsWith(`${username}/`) ? repo.slice(username.length + 1) : repo;
         const sha = push.payload && push.payload.head;
         const href = sha
           ? `https://github.com/${repo}/commit/${sha}`
           : `https://github.com/${repo}`;
         const when = relativeTime(new Date(push.created_at));
-        ghTarget.innerHTML = `latest push: <a href="${href}" target="_blank" rel="noopener">${escapeText(repo)}</a> · ${when}`;
+        ghTarget.innerHTML = `push: <a href="${href}" target="_blank" rel="noopener">${escapeText(shortRepo)}</a> ${when}`;
         ghTarget.hidden = false;
       })
       .catch(() => { ghTarget.hidden = true; });

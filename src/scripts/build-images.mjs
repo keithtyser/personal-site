@@ -30,11 +30,12 @@ async function main() {
 
   // 1200x630 OG image for Twitter/LinkedIn rich previews
   const ogSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
-    <rect width="1200" height="630" fill="#0a0a0a"/>
-    <rect x="0" y="0" width="6" height="630" fill="#60a5fa"/>
-    <text x="80" y="310" font-family="Inter, 'Segoe UI', system-ui, -apple-system, Helvetica, Arial, sans-serif" font-size="104" font-weight="600" fill="#fafafa" letter-spacing="-3">Keith Tyser</text>
-    <text x="80" y="372" font-family="Inter, 'Segoe UI', system-ui, -apple-system, Helvetica, Arial, sans-serif" font-size="36" font-weight="400" fill="#a1a1aa">AI/ML Engineer and Data Scientist</text>
-    <text x="80" y="560" font-family="Inter, 'Segoe UI', system-ui, -apple-system, Helvetica, Arial, sans-serif" font-size="22" font-weight="500" fill="#60a5fa" letter-spacing="3">KEITHTYSER.COM</text>
+    <rect width="1200" height="630" fill="#0a0c0a"/>
+    <rect x="0" y="0" width="6" height="630" fill="#7ce38b"/>
+    <text x="80" y="240" font-family="'JetBrains Mono', Consolas, 'Courier New', monospace" font-size="26" font-weight="500" fill="#7ce38b">// ai-ml engineer · data scientist · cyber ops</text>
+    <text x="80" y="350" font-family="'Schibsted Grotesk', 'Segoe UI', system-ui, -apple-system, Helvetica, Arial, sans-serif" font-size="112" font-weight="700" fill="#e7ece7" letter-spacing="-4">Keith Tyser</text>
+    <rect x="655" y="262" width="44" height="92" fill="#7ce38b"/>
+    <text x="80" y="560" font-family="'JetBrains Mono', Consolas, 'Courier New', monospace" font-size="24" font-weight="500" fill="#9aa69c">keith@keithtyser.com:~</text>
   </svg>`;
   const og = await sharp(Buffer.from(ogSvg)).png({ compressionLevel: 9 }).toBuffer();
   await fs.writeFile(path.join(projectRoot, 'og-image.png'), og);

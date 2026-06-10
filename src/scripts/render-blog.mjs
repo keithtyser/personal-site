@@ -123,6 +123,28 @@ ${items}
 }
 
 /* ------------------------------------------------------------------ */
+/* Shared chrome                                                      */
+/* ------------------------------------------------------------------ */
+
+const FONT_PRELOADS = `  <link rel="preload" href="/fonts/SchibstedGroteskVariable.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/fonts/JetBrainsMonoVariable.woff2" as="font" type="font/woff2" crossorigin>`;
+
+function renderStatusbar(sbPath) {
+  return `  <div class="statusbar" role="contentinfo" aria-label="Status bar">
+    <div class="sb-left">
+      <span class="sb-host">keith@keithtyser.com</span><span class="sb-sep">:</span><span>${escapeHtml(sbPath)}</span>
+    </div>
+    <div class="sb-right">
+      <time class="sb-clock" id="sb-clock" title="Your local time" aria-hidden="true"></time>
+      <button id="darkModeToggle" type="button" class="icon-link" aria-label="Toggle theme">
+        <svg class="icon text-[13px] dark:hidden" aria-hidden="true"><use href="/icons.svg#moon"/></svg>
+        <svg class="icon text-[13px] hidden dark:inline" aria-hidden="true"><use href="/icons.svg#sun"/></svg>
+      </button>
+    </div>
+  </div>`;
+}
+
+/* ------------------------------------------------------------------ */
 /* Post page template                                                 */
 /* ------------------------------------------------------------------ */
 
@@ -143,6 +165,7 @@ function renderArticleDoc({
   backHref,
   backLabel,
   includeRss,
+  sbPath,
 }) {
   const shellClass = hasToc ? 'article-shell article-with-toc' : 'article-shell';
   const layoutOpen = hasToc ? '<div class="article-layout">' : '';
@@ -212,7 +235,7 @@ ${articleMeta}
       if (dark) document.documentElement.classList.add('dark');
     })();
   </script>
-  <link rel="preload" href="/fonts/InterVariable.woff2" as="font" type="font/woff2" crossorigin>
+${FONT_PRELOADS}
   <link rel="stylesheet" href="/dist/styles.css">
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
@@ -224,11 +247,7 @@ ${rssLink}
 
   <div class="${shellClass}">
     <header class="article-header">
-      <a href="${backHref}" class="text-[12px] muted hover:text-[color:var(--text)] transition-colors">← ${escapeHtml(backLabel)}</a>
-      <button id="darkModeToggle" type="button" class="icon-link" aria-label="Toggle theme">
-        <svg class="icon text-[13px] dark:hidden" aria-hidden="true"><use href="/icons.svg#moon"/></svg>
-        <svg class="icon text-[13px] hidden dark:inline" aria-hidden="true"><use href="/icons.svg#sun"/></svg>
-      </button>
+      <a href="${backHref}" class="mono text-[12px] muted hover:text-[color:var(--accent)] transition-colors">← ${escapeHtml(backLabel)}</a>
     </header>
 
     <main id="main">
@@ -248,6 +267,8 @@ ${rssLink}
       <p class="mt-4 text-center text-[11px]"><a href="/ai.html" class="hover:text-[color:var(--text)] transition-colors">for AI agents →</a> <span aria-hidden="true">·</span> <a href="https://github.com/keithtyser/personal-site/tree/gh-pages" target="_blank" rel="noopener" class="hover:text-[color:var(--text)] transition-colors">view source →</a></p>
     </footer>
   </div>
+
+${renderStatusbar(sbPath)}
 </body>
 </html>
 `;
@@ -269,6 +290,7 @@ function renderPostPage({ title, description, dateDisplay, dateISO, slug, hasToc
     backHref: '/blog/',
     backLabel: 'All writing',
     includeRss: true,
+    sbPath: `~/blog/${slug}`,
   });
 }
 
@@ -290,6 +312,7 @@ function renderStaticPage({ title, description, slug, updatedDisplay, updatedISO
     backHref: '/',
     backLabel: 'keithtyser.com',
     includeRss: false,
+    sbPath: `~/${slug}`,
   });
 }
 
@@ -332,7 +355,7 @@ function renderIndexPage(posts) {
       if (dark) document.documentElement.classList.add('dark');
     })();
   </script>
-  <link rel="preload" href="/fonts/InterVariable.woff2" as="font" type="font/woff2" crossorigin>
+${FONT_PRELOADS}
   <link rel="stylesheet" href="/dist/styles.css">
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
@@ -344,11 +367,7 @@ function renderIndexPage(posts) {
 
   <div class="container-narrow">
     <header class="flex items-center justify-between gap-4 pt-10 mb-14">
-      <a href="/" class="text-[12px] muted hover:text-[color:var(--text)] transition-colors">← keithtyser.com</a>
-      <button id="darkModeToggle" type="button" class="icon-link" aria-label="Toggle theme">
-        <svg class="icon text-[13px] dark:hidden" aria-hidden="true"><use href="/icons.svg#moon"/></svg>
-        <svg class="icon text-[13px] hidden dark:inline" aria-hidden="true"><use href="/icons.svg#sun"/></svg>
-      </button>
+      <a href="/" class="mono text-[12px] muted hover:text-[color:var(--accent)] transition-colors">← keithtyser.com</a>
     </header>
 
     <main id="main" class="space-y-14">
@@ -377,6 +396,8 @@ ${entries}
       <p class="mt-4 text-center text-[11px]"><a href="../ai.html" class="hover:text-[color:var(--text)] transition-colors">for AI agents →</a></p>
     </footer>
   </div>
+
+${renderStatusbar('~/blog')}
 </body>
 </html>
 `;
