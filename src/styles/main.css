@@ -1691,6 +1691,229 @@
 }
 
 /* ============================================================
+   Matrix rain
+   ============================================================ */
+.matrix-canvas {
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  cursor: pointer;
+}
+
+/* ============================================================
+   Listen button on articles (Web Speech)
+   ============================================================ */
+.listen-btn {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--faint);
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 1px 8px;
+  transition: color 150ms ease, border-color 150ms ease;
+}
+
+.listen-btn:hover {
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
+}
+
+@media print {
+  .listen-btn { display: none !important; }
+}
+
+/* ============================================================
+   KeithOS
+   ============================================================ */
+.os-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 240;
+  display: none;
+  flex-direction: column;
+  background-color: var(--bg);
+  background-image: radial-gradient(color-mix(in srgb, var(--accent) 14%, transparent) 1px, transparent 1px);
+  background-size: 26px 26px;
+  font-family: var(--font-mono);
+}
+
+.os-overlay.is-open {
+  display: flex;
+}
+
+.os-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 34px;
+  padding-inline: 12px;
+  font-size: 11.5px;
+  color: var(--muted);
+  border-bottom: 1px solid var(--border);
+  background-color: color-mix(in srgb, var(--bg) 88%, transparent);
+}
+
+.os-brand {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.os-topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.os-clock {
+  font-variant-numeric: tabular-nums;
+  color: var(--faint);
+}
+
+.os-shutdown {
+  font-family: inherit;
+  font-size: 10.5px;
+  color: var(--faint);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 2px 8px;
+  background: transparent;
+  transition: color 150ms ease, border-color 150ms ease;
+}
+
+.os-shutdown:hover {
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
+}
+
+.os-desktop {
+  position: relative;
+  flex: 1;
+  overflow: hidden;
+}
+
+.os-window {
+  position: absolute;
+  width: min(560px, calc(100vw - 32px));
+  max-height: min(70vh, 560px);
+  display: flex;
+  flex-direction: column;
+  background-color: var(--surface);
+  border: 1px solid var(--border-hover);
+  border-radius: var(--radius);
+  box-shadow: 0 18px 60px rgb(0 0 0 / 0.45);
+  overflow: hidden;
+}
+
+@media (max-width: 700px) {
+  .os-window {
+    inset: 8px;
+    width: auto;
+    max-height: none;
+  }
+}
+
+.os-titlebar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 7px 10px;
+  font-size: 11px;
+  color: var(--accent);
+  border-bottom: 1px solid var(--border);
+  cursor: grab;
+  user-select: none;
+  background-color: color-mix(in srgb, var(--accent) 5%, var(--surface));
+}
+
+.os-close {
+  font-family: inherit;
+  font-size: 13px;
+  line-height: 1;
+  color: var(--faint);
+  background: transparent;
+  border: 0;
+  padding: 0 4px;
+}
+
+.os-close:hover {
+  color: var(--accent);
+}
+
+.os-body {
+  flex: 1;
+  overflow: auto;
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--text);
+}
+
+.os-pre {
+  margin: 0;
+  padding: 14px 16px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-family: var(--font-mono);
+}
+
+.os-monitor {
+  color: var(--accent);
+}
+
+.os-files {
+  list-style: none;
+  margin: 0;
+  padding: 8px;
+}
+
+.os-files button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  font-family: inherit;
+  font-size: 12.5px;
+  color: var(--text);
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-sm);
+  padding: 6px 10px;
+  transition: background-color 120ms ease, color 120ms ease;
+}
+
+.os-files button:hover {
+  color: var(--accent);
+  background-color: color-mix(in srgb, var(--accent) 8%, transparent);
+}
+
+.os-dock {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px;
+  border-top: 1px solid var(--border);
+  background-color: color-mix(in srgb, var(--bg) 88%, transparent);
+}
+
+.os-dock button {
+  font-family: inherit;
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--muted);
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 6px 14px;
+  transition: color 150ms ease, border-color 150ms ease, transform 150ms ease;
+}
+
+.os-dock button:hover {
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
+  transform: translateY(-2px);
+}
+
+/* ============================================================
    Cross-document view transitions (progressive enhancement)
    ============================================================ */
 @view-transition {

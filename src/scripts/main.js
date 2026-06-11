@@ -258,6 +258,9 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   initPalette();
+  initKonami();
+  initIdle();
+  initListen();
 });
 
 function toggleTheme() {
@@ -386,13 +389,33 @@ function makeCommands(ctx) {
     man: () => ctx.print('no manual entry. there never was a manual.'),
     clear: () => ctx.clear(),
     exit: () => ctx.close(),
+    echo: (args) => ctx.print(args.join(' ')),
     fortune: () => ctx.print(randomFortune()),
     cowsay: (args) => ctx.print(cowsay(args.join(' ') || randomFortune())),
     motd: () => ctx.print(motdLine()),
+    say: (args) => {
+      const text = args.join(' ') || randomFortune();
+      speak(text);
+      ctx.print(`saying: "${text}"`);
+    },
+    matrix: () => {
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        ctx.print('matrix: reduced motion is on. no rain today.');
+        return;
+      }
+      ctx.close();
+      startMatrix();
+    },
+    demo: () => { ctx.close(); runDemo(); },
+    startx: () => { ctx.close(); bootOS(); },
+    top: (args) => {
+      if (ctx.isTerminal) return; // terminal runs the live version
+      ctx.print(collectTopStats(null));
+    },
     help: () => ctx.print(
       ctx.isTerminal
-        ? 'commands: ls, cd, cat <file>, open <file>, pwd, whoami, date, history, play, fortune, cowsay, motd, theme [crt|dark|light], reboot, clear, exit\ntab completes. up/down for history. esc leaves.'
-        : 'try: whoami, ls, cat <page>, history, fortune, theme crt, reboot, terminal. or just type where you want to go.',
+        ? 'commands: ls, cd, cat <file>, open <file>, pwd, whoami, date, history, play, top, selfie, matrix, say, demo, startx, fortune, cowsay, motd, theme [crt|dark|light], reboot, clear, exit\ntab completes. up/down for history. esc leaves.'
+        : 'try: whoami, cat <page>, history, fortune, matrix, demo, startx, theme crt, terminal. or just type where you want to go.',
     ),
     history: async () => {
       ctx.print('fetching site history...');
@@ -796,6 +819,95 @@ function buildTerminal() {
   /* ---- "orbit" mini-game: collect *, outrun B. turn-based. ---- */
   const game = { active: false, frame: null };
 
+  // A "program" temporarily owns the keyboard (top, selfie)
+  let prog = null;
+
+  function makeFrame() {
+    const frame = document.createElement('div');
+    frame.className = 'term-line term-game';
+    log.appendChild(frame);
+    return frame;
+  }
+
+  function startTop() {
+    const frame = makeFrame();
+    print('top: live page metrics. q quits.');
+    let frames = 0;
+    let rafId = 0;
+    const countFrame = () => { frames += 1; rafId = requestAnimationFrame(countFrame); };
+    countFrame();
+    const render = (fps) => {
+      frame.textContent = collectTopStats(fps);
+      log.scrollTop = log.scrollHeight;
+    };
+    render('...');
+    const iv = setInterval(() => {
+      render(frames);
+      frames = 0;
+    }, 1000);
+    prog = {
+      key: (k) => {
+        if (k === 'q' || k === 'Escape') {
+          clearInterval(iv);
+          cancelAnimationFrame(rafId);
+          prog = null;
+          print('top: stopped.');
+        }
+      },
+    };
+  }
+
+  async function startSelfie() {
+    print('selfie: your camera, rendered as text, entirely on your machine. nothing is uploaded. q quits.');
+    let stream;
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({ video: { width: 320, height: 180 } });
+    } catch {
+      print('selfie: no camera access. probably wise.');
+      return;
+    }
+    const video = document.createElement('video');
+    video.srcObject = stream;
+    video.muted = true;
+    await video.play();
+    const W = 64;
+    const H = 28;
+    const canvas = document.createElement('canvas');
+    canvas.width = W;
+    canvas.height = H;
+    const cx = canvas.getContext('2d', { willReadFrequently: true });
+    const frame = makeFrame();
+    const RAMP = ' .:-=+*#%@';
+    const iv = setInterval(() => {
+      cx.save();
+      cx.scale(-1, 1);
+      cx.drawImage(video, -W, 0, W, H);
+      cx.restore();
+      const d = cx.getImageData(0, 0, W, H).data;
+      let out = '';
+      for (let y = 0; y < H; y++) {
+        for (let x = 0; x < W; x++) {
+          const i = (y * W + x) * 4;
+          const l = (d[i] * 0.299 + d[i + 1] * 0.587 + d[i + 2] * 0.114) / 255;
+          out += RAMP[Math.min(RAMP.length - 1, Math.floor(l * RAMP.length))];
+        }
+        out += '\n';
+      }
+      frame.textContent = out;
+      log.scrollTop = log.scrollHeight;
+    }, 100);
+    prog = {
+      key: (k) => {
+        if (k === 'q' || k === 'Escape') {
+          clearInterval(iv);
+          stream.getTracks().forEach((t) => t.stop());
+          prog = null;
+          print('selfie: camera off.');
+        }
+      },
+    };
+  }
+
   function startGame() {
     game.active = true;
     const touch = window.matchMedia('(hover: none)').matches;
@@ -908,6 +1020,14 @@ function buildTerminal() {
       startGame();
       return;
     }
+    if (cmd === 'top') {
+      startTop();
+      return;
+    }
+    if (cmd === 'selfie') {
+      startSelfie();
+      return;
+    }
 
     if (cmd === 'ls') {
       print(entriesFor(args[0] === 'blog' ? '~/blog' : cwd).join('  '));
@@ -939,6 +1059,11 @@ function buildTerminal() {
   }
 
   input.addEventListener('keydown', (e) => {
+    if (prog) {
+      e.preventDefault();
+      prog.key(e.key);
+      return;
+    }
     if (game.active) {
       e.preventDefault();
       gameKey(e.key);
@@ -966,7 +1091,7 @@ function buildTerminal() {
       const last = parts[parts.length - 1];
       if (!last) return;
       const pool = parts.length === 1
-        ? ['ls', 'cd', 'cat', 'open', 'pwd', 'whoami', 'date', 'history', 'play', 'fortune', 'cowsay', 'motd', 'theme', 'reboot', 'clear', 'exit', 'help']
+        ? ['ls', 'cd', 'cat', 'open', 'pwd', 'whoami', 'date', 'history', 'play', 'top', 'selfie', 'matrix', 'say', 'demo', 'startx', 'fortune', 'cowsay', 'motd', 'theme', 'reboot', 'clear', 'exit', 'help']
         : entriesFor(cwd).map((x) => x.replace(/\/$/, ''));
       const match = pool.find((p) => p.startsWith(last));
       if (match) {
@@ -1011,7 +1136,423 @@ function buildTerminal() {
   print(motdLine());
 
   term = { overlay, input };
-  window.__terminal = { open: openTerminal, close: closeTerminal };
+  window.__terminal = { open: openTerminal, close: closeTerminal, play: startGame, run };
+}
+
+/* =================================================================
+   Deep layer: say, top stats, matrix, demo, konami, idle, KeithOS.
+   Everything opt-in; the default page stays calm.
+   ================================================================= */
+function sleep(ms) {
+  return new Promise((r) => setTimeout(r, ms));
+}
+
+function speak(text) {
+  try {
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.rate = 1;
+    window.speechSynthesis.speak(u);
+  } catch { /* no speech support */ }
+}
+
+function collectTopStats(fps) {
+  const up = Math.round(performance.now() / 1000);
+  const mem = performance.memory
+    ? `${(performance.memory.usedJSHeapSize / 1048576).toFixed(1)} MB used`
+    : 'n/a (chromium only)';
+  const nav = performance.getEntriesByType('navigation')[0];
+  const res = performance.getEntriesByType('resource');
+  const bytes = ((nav && nav.transferSize) || 0)
+    + res.reduce((s, r) => s + (r.transferSize || 0), 0);
+  const conn = (navigator.connection && navigator.connection.effectiveType) || 'unknown';
+  let lsBytes = 0;
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i);
+    lsBytes += k.length + (localStorage.getItem(k) || '').length;
+  }
+  const lines = [
+    `uptime     ${up}s since page boot`,
+    `heap       ${mem}`,
+    `transfer   ${(bytes / 1024).toFixed(0)} KB this page`,
+    `network    ${conn}`,
+    `storage    ${localStorage.length} keys · ${(lsBytes / 1024).toFixed(1)} KB localStorage`,
+  ];
+  if (fps !== null && fps !== undefined) lines.push(`fps        ${fps}`);
+  return lines.join('\n');
+}
+
+/* ---- matrix rain ---- */
+let matrixStop = null;
+
+function startMatrix() {
+  if (matrixStop) return;
+  const canvas = document.createElement('canvas');
+  canvas.className = 'matrix-canvas';
+  canvas.setAttribute('aria-hidden', 'true');
+  document.body.appendChild(canvas);
+  const cx = canvas.getContext('2d');
+  const resize = () => {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  };
+  resize();
+  const styles = getComputedStyle(document.documentElement);
+  const accent = styles.getPropertyValue('--accent').trim() || '#7ce38b';
+  const bg = styles.getPropertyValue('--bg').trim() || '#0a0c0a';
+  cx.fillStyle = bg;
+  cx.fillRect(0, 0, canvas.width, canvas.height);
+  const colW = 14;
+  const cols = Math.ceil(canvas.width / colW);
+  const drops = Array.from({ length: cols }, () => Math.floor(Math.random() * -60));
+  const CH = 'abcdefghijklmnopqrstuvwxyz0123456789$#@*+=<>/\\|';
+  const iv = setInterval(() => {
+    cx.globalAlpha = 0.14;
+    cx.fillStyle = bg;
+    cx.fillRect(0, 0, canvas.width, canvas.height);
+    cx.globalAlpha = 1;
+    cx.fillStyle = accent;
+    cx.font = '13px monospace';
+    for (let i = 0; i < cols; i++) {
+      const ch = CH[Math.floor(Math.random() * CH.length)];
+      cx.fillText(ch, i * colW, drops[i] * 16);
+      drops[i] += 1;
+      if (drops[i] * 16 > canvas.height && Math.random() > 0.975) drops[i] = 0;
+    }
+  }, 50);
+  const stop = (e) => {
+    if (e) { e.preventDefault(); e.stopPropagation(); }
+    clearInterval(iv);
+    canvas.remove();
+    document.removeEventListener('keydown', stop, true);
+    document.removeEventListener('pointerdown', stop, true);
+    window.removeEventListener('resize', resize);
+    matrixStop = null;
+  };
+  document.addEventListener('keydown', stop, true);
+  document.addEventListener('pointerdown', stop, true);
+  window.addEventListener('resize', resize);
+  matrixStop = stop;
+}
+
+/* ---- attract mode ---- */
+let demoActive = false;
+
+async function typeInto(input, text, perChar = 65) {
+  for (const ch of text) {
+    if (!demoActive) return false;
+    input.value += ch;
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    await sleep(perChar);
+  }
+  return demoActive;
+}
+
+async function runDemo() {
+  if (demoActive) return;
+  demoActive = true;
+  sessionStorage.setItem('demo-done', '1');
+  // only real user input cancels; the demo's own synthetic events
+  // (isTrusted: false) must not stop the show
+  const cancel = (e) => { if (e.isTrusted) demoActive = false; };
+  document.addEventListener('keydown', cancel, true);
+  document.addEventListener('pointerdown', cancel, true);
+  const alive = async (ms) => { await sleep(ms); return demoActive; };
+  try {
+    if (!await alive(600)) return;
+    window.__palette.open();
+    if (!await alive(800)) return;
+    const pin = document.querySelector('.palette-input');
+    if (!await typeInto(pin, 'dgx spark')) return;
+    if (!await alive(1400)) return;
+    window.__palette.close();
+    if (!await alive(500)) return;
+    await openTerminal();
+    const tin = document.querySelector('.term-input');
+    if (!await typeInto(tin, 'fortune | cowsay')) return;
+    tin.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+    if (!await alive(1800)) return;
+    if (!await typeInto(tin, 'play')) return;
+    tin.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+    const moves = ['ArrowRight', 'ArrowRight', 'ArrowUp', 'ArrowRight', 'ArrowDown', 'ArrowRight', 'ArrowUp', 'ArrowLeft'];
+    for (const m of moves) {
+      if (!await alive(420)) return;
+      tin.dispatchEvent(new KeyboardEvent('keydown', { key: m, bubbles: true }));
+    }
+    if (!await alive(700)) return;
+    tin.dispatchEvent(new KeyboardEvent('keydown', { key: 'q', bubbles: true }));
+    if (!await alive(400)) return;
+    if (window.__terminal) window.__terminal.run('echo demo over. your turn: try help.');
+  } finally {
+    document.removeEventListener('keydown', cancel, true);
+    document.removeEventListener('pointerdown', cancel, true);
+    demoActive = false;
+  }
+}
+
+/* ---- konami ---- */
+function initKonami() {
+  const SEQ = ['arrowup', 'arrowup', 'arrowdown', 'arrowdown', 'arrowleft', 'arrowright', 'arrowleft', 'arrowright', 'b', 'a'];
+  let idx = 0;
+  document.addEventListener('keydown', (e) => {
+    const k = e.key.toLowerCase();
+    idx = k === SEQ[idx] ? idx + 1 : (k === SEQ[0] ? 1 : 0);
+    if (idx === SEQ.length) {
+      idx = 0;
+      openTerminal().then(() => {
+        if (window.__terminal) window.__terminal.play();
+      });
+    }
+  });
+}
+
+/* ---- idle: CRT screensaver, homepage attract ---- */
+function initIdle() {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  let timer = 0;
+  const onIdle = () => {
+    if (document.hidden || demoActive || matrixStop) { reset(); return; }
+    if (document.documentElement.classList.contains('crt')) {
+      startMatrix();
+    } else if (
+      (window.location.pathname === '/' || window.location.pathname.endsWith('/index.html'))
+      && !window.location.pathname.includes('/blog/')
+      && !sessionStorage.getItem('demo-done')
+      && !terminalIsOpen()
+    ) {
+      runDemo();
+    }
+    reset();
+  };
+  const reset = () => {
+    clearTimeout(timer);
+    timer = setTimeout(onIdle, 90000);
+  };
+  ['pointermove', 'keydown', 'scroll', 'touchstart'].forEach((ev) => {
+    window.addEventListener(ev, reset, { passive: true });
+  });
+  reset();
+}
+
+/* ---- listen: the blog reads itself ---- */
+function initListen() {
+  const body = document.querySelector('.article-body');
+  const dateEl = document.querySelector('.article-date');
+  if (!body || !dateEl || !('speechSynthesis' in window)) return;
+  const sep = document.createElement('span');
+  sep.className = 'sb-sep';
+  sep.setAttribute('aria-hidden', 'true');
+  sep.textContent = ' · ';
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'listen-btn';
+  btn.textContent = '▸ listen';
+  dateEl.appendChild(sep);
+  dateEl.appendChild(btn);
+  let playing = false;
+  const stopAll = () => {
+    window.speechSynthesis.cancel();
+    playing = false;
+    btn.textContent = '▸ listen';
+  };
+  btn.addEventListener('click', () => {
+    if (playing) { stopAll(); return; }
+    const parts = [...body.querySelectorAll('p, li, h2, h3, blockquote')]
+      .filter((el) => !el.closest('pre') && el.textContent.trim())
+      .map((el) => el.textContent.replace(/^#\s*/, '').trim());
+    if (!parts.length) return;
+    playing = true;
+    btn.textContent = '■ stop';
+    let i = 0;
+    const next = () => {
+      if (!playing || i >= parts.length) { stopAll(); return; }
+      const u = new SpeechSynthesisUtterance(parts[i]);
+      i += 1;
+      u.onend = next;
+      u.onerror = stopAll;
+      window.speechSynthesis.speak(u);
+    };
+    window.speechSynthesis.cancel();
+    next();
+  });
+  window.addEventListener('pagehide', stopAll);
+}
+
+/* =================================================================
+   KeithOS: startx from the terminal or palette.
+   ================================================================= */
+let os = null;
+
+async function bootOS() {
+  await loadSiteData();
+  if (!os) buildOS();
+  os.overlay.classList.add('is-open');
+  document.body.style.overflow = 'hidden';
+  if (!os.booted) {
+    os.booted = true;
+    osOpenWindow('about');
+    if (!window.matchMedia('(max-width: 700px)').matches) osOpenWindow('files');
+  }
+}
+
+function shutdownOS() {
+  if (!os) return;
+  os.overlay.classList.remove('is-open');
+  document.body.style.overflow = '';
+  os.windows.forEach((w) => w.cleanup && w.cleanup());
+}
+
+function buildOS() {
+  const overlay = document.createElement('div');
+  overlay.className = 'os-overlay';
+  overlay.innerHTML = `
+    <div class="os-topbar">
+      <span class="os-brand">keithos 0.1</span>
+      <span class="os-topbar-right">
+        <span class="os-clock" aria-hidden="true"></span>
+        <button type="button" class="os-shutdown">shutdown</button>
+      </span>
+    </div>
+    <div class="os-desktop"></div>
+    <nav class="os-dock" aria-label="KeithOS dock">
+      <button type="button" data-app="files">files</button>
+      <button type="button" data-app="monitor">monitor</button>
+      <button type="button" data-app="orbit">orbit</button>
+      <button type="button" data-app="terminal">terminal</button>
+      <button type="button" data-app="about">about</button>
+    </nav>`;
+  document.body.appendChild(overlay);
+
+  const desktop = overlay.querySelector('.os-desktop');
+  const clock = overlay.querySelector('.os-clock');
+  setInterval(() => {
+    const n = new Date();
+    const pad = (x) => String(x).padStart(2, '0');
+    clock.textContent = `${pad(n.getHours())}:${pad(n.getMinutes())}`;
+  }, 1000);
+
+  overlay.querySelector('.os-shutdown').addEventListener('click', shutdownOS);
+  overlay.querySelectorAll('.os-dock button').forEach((b) => {
+    b.addEventListener('click', () => {
+      const app = b.dataset.app;
+      if (app === 'terminal') { shutdownOS(); openTerminal(); return; }
+      if (app === 'orbit') {
+        shutdownOS();
+        openTerminal().then(() => window.__terminal && window.__terminal.play());
+        return;
+      }
+      osOpenWindow(app);
+    });
+  });
+
+  overlay.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') shutdownOS();
+  });
+
+  os = { overlay, desktop, windows: new Map(), z: 10, cascade: 0, booted: false };
+}
+
+function osFocus(win) {
+  os.z += 1;
+  win.el.style.zIndex = String(os.z);
+}
+
+function osOpenWindow(kind, payload) {
+  const id = kind === 'reader' ? `reader:${payload && payload.src}` : kind;
+  if (os.windows.has(id)) {
+    osFocus(os.windows.get(id));
+    return;
+  }
+  const mobile = window.matchMedia('(max-width: 700px)').matches;
+  if (mobile) {
+    // one window at a time on small screens
+    os.windows.forEach((w) => osCloseWindow(w));
+  }
+  const el = document.createElement('section');
+  el.className = 'os-window';
+  const titles = { files: '~/files', monitor: 'monitor', about: 'about.txt' };
+  const title = kind === 'reader' ? (payload.title || 'reader') : titles[kind] || kind;
+  el.innerHTML = `
+    <header class="os-titlebar">
+      <span class="os-title">${escapeText(title)}</span>
+      <button type="button" class="os-close" aria-label="Close window">×</button>
+    </header>
+    <div class="os-body"></div>`;
+  if (!mobile) {
+    const offset = (os.cascade % 5) * 32;
+    os.cascade += 1;
+    el.style.left = `${48 + offset}px`;
+    el.style.top = `${56 + offset}px`;
+  }
+  os.desktop.appendChild(el);
+
+  const win = { id, el, cleanup: null };
+  os.windows.set(id, win);
+  osFocus(win);
+  el.addEventListener('pointerdown', () => osFocus(win));
+  el.querySelector('.os-close').addEventListener('click', () => osCloseWindow(win));
+
+  // drag by titlebar (desktop only)
+  if (!mobile) {
+    const bar = el.querySelector('.os-titlebar');
+    bar.addEventListener('pointerdown', (e) => {
+      if (e.target.closest('.os-close')) return;
+      const startX = e.clientX - el.offsetLeft;
+      const startY = e.clientY - el.offsetTop;
+      const move = (ev) => {
+        el.style.left = `${Math.max(0, ev.clientX - startX)}px`;
+        el.style.top = `${Math.max(0, ev.clientY - startY)}px`;
+      };
+      const up = () => {
+        document.removeEventListener('pointermove', move);
+        document.removeEventListener('pointerup', up);
+      };
+      document.addEventListener('pointermove', move);
+      document.addEventListener('pointerup', up);
+    });
+  }
+
+  const body = el.querySelector('.os-body');
+  if (kind === 'about') {
+    body.innerHTML = `<pre class="os-pre">keith tyser
+ai-ml engineer · data scientist · cyber ops officer
+
+this is keithos, the layer under keithtyser.com.
+drag the windows. read the files. play orbit.
+shutdown returns you to the regular site.
+
+contact: keithtyser@gmail.com</pre>`;
+  } else if (kind === 'files') {
+    const entries = [...siteData.pages.filter((p) => p.src), ...siteData.posts];
+    body.innerHTML = `<ul class="os-files">${entries
+      .map((p, i) => `<li><button type="button" data-idx="${i}">${escapeText(slugOf(p))}.md</button></li>`)
+      .join('')}</ul>`;
+    body.querySelectorAll('button[data-idx]').forEach((b) => {
+      b.addEventListener('click', () => {
+        const entry = entries[Number(b.dataset.idx)];
+        osOpenWindow('reader', { src: entry.src, title: `${slugOf(entry)}.md` });
+      });
+    });
+  } else if (kind === 'reader') {
+    body.innerHTML = '<pre class="os-pre">loading…</pre>';
+    fetch(payload.src)
+      .then((r) => (r.ok ? r.text() : Promise.reject(new Error(String(r.status)))))
+      .then((text) => { body.querySelector('.os-pre').textContent = text; })
+      .catch(() => { body.querySelector('.os-pre').textContent = 'read error.'; });
+  } else if (kind === 'monitor') {
+    const pre = document.createElement('pre');
+    pre.className = 'os-pre os-monitor';
+    body.appendChild(pre);
+    pre.textContent = collectTopStats(null);
+    const iv = setInterval(() => { pre.textContent = collectTopStats(null); }, 1000);
+    win.cleanup = () => clearInterval(iv);
+  }
+}
+
+function osCloseWindow(win) {
+  if (win.cleanup) win.cleanup();
+  win.el.remove();
+  os.windows.delete(win.id);
 }
 
 function relativeTime(date) {
