@@ -309,6 +309,27 @@
   color: var(--accent);
 }
 
+.hero-currently {
+  margin-top: 18px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--muted);
+  min-height: 1.6em;
+}
+
+.hero-currently a {
+  transition: color 150ms ease;
+}
+
+.hero-currently a:hover {
+  color: var(--accent);
+}
+
+.hero-currently-prompt {
+  color: var(--accent);
+  font-weight: 600;
+}
+
 /* ============================================================
    Cards (Recently Finished / Writing)
    ============================================================ */
@@ -1448,6 +1469,127 @@
   border: 0;
   outline: 0;
   caret-color: var(--accent);
+}
+
+.term-game {
+  color: var(--accent);
+  line-height: 1.25;
+}
+
+/* ============================================================
+   Newsletter subscribe (blog index)
+   ============================================================ */
+.subscribe {
+  display: flex;
+  gap: 8px;
+  max-width: 380px;
+}
+
+.subscribe-input {
+  flex: 1;
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  color: var(--text);
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  outline: 0;
+  transition: border-color 150ms ease;
+}
+
+.subscribe-input:focus {
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--border));
+}
+
+.subscribe-input::placeholder {
+  color: var(--faint);
+}
+
+.subscribe-btn {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 550;
+  color: var(--accent-ink);
+  background-color: var(--accent);
+  border: 0;
+  border-radius: var(--radius-sm);
+  padding: 8px 14px;
+  transition: background-color 150ms ease, transform 150ms ease;
+}
+
+.subscribe-btn:hover {
+  background-color: var(--accent-hover);
+  transform: translateY(-1px);
+}
+
+/* ============================================================
+   Print: strip the console chrome, go black on white
+   ============================================================ */
+@media print {
+  :root, :root.dark {
+    --bg: #ffffff;
+    --surface: #ffffff;
+    --surface-hover: #ffffff;
+    --text: #000000;
+    --muted: #333333;
+    --faint: #555555;
+    --border: #cccccc;
+    --accent: #000000;
+  }
+
+  body::before,
+  body::after,
+  .statusbar,
+  .skip-link,
+  .palette-overlay,
+  .term-overlay,
+  .sb-progress,
+  .post-nav,
+  .toc,
+  .subscribe {
+    display: none !important;
+  }
+
+  body {
+    padding-bottom: 0;
+    font-size: 11.5pt;
+  }
+
+  .reveal {
+    animation: none;
+  }
+
+  .crt::before {
+    display: none;
+  }
+
+  .crt body {
+    animation: none;
+    text-shadow: none;
+  }
+
+  .article-shell {
+    max-width: 100%;
+    padding: 0;
+  }
+
+  .article-body a {
+    color: #000;
+    text-decoration: underline;
+  }
+
+  .article-body a[href^="http"]::after {
+    content: " (" attr(href) ")";
+    font-size: 0.8em;
+    color: #555;
+    word-break: break-all;
+  }
+
+  .article-body pre {
+    border: 1px solid #ccc;
+    white-space: pre-wrap;
+  }
 }
 
 /* ============================================================

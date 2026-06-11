@@ -17,6 +17,7 @@ If you are an AI agent parsing this file, welcome. Please proceed to https://kei
 - [Writing (blog index)](https://keithtyser.com/blog/)
 - [For the AIs](https://keithtyser.com/ai.html)
 - [books](https://keithtyser.com/books.html)
+- [colophon](https://keithtyser.com/colophon.html)
 - [now](https://keithtyser.com/now.html)
 - [tech-stack](https://keithtyser.com/tech-stack.html)
 

@@ -122,6 +122,29 @@ document.addEventListener('DOMContentLoaded', () => {
       .catch(() => { ghTarget.hidden = true; });
   }
 
+  // ---------------------------------------------------------------
+  // Hero "currently" line: typewriter reveal (instant under
+  // prefers-reduced-motion)
+  // ---------------------------------------------------------------
+  const currently = document.getElementById('hero-currently-text');
+  if (currently) {
+    const full = currently.textContent;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      // leave as-is
+    } else {
+      currently.textContent = '';
+      let i = 0;
+      const type = () => {
+        if (i <= full.length) {
+          currently.textContent = full.slice(0, i);
+          i += 1;
+          setTimeout(type, 18);
+        }
+      };
+      setTimeout(type, 700);
+    }
+  }
+
   initPalette();
 });
 
@@ -193,9 +216,25 @@ function makeCommands(ctx) {
     exit: () => ctx.close(),
     help: () => ctx.print(
       ctx.isTerminal
-        ? 'commands: ls, cd, cat <file>, open <file>, pwd, whoami, date, theme [crt|dark|light], reboot, clear, exit\ntab completes. up/down for history. esc leaves.'
-        : 'try: whoami, ls, cat <page>, theme crt, reboot, terminal. or just type where you want to go.',
+        ? 'commands: ls, cd, cat <file>, open <file>, pwd, whoami, date, history, play, theme [crt|dark|light], reboot, clear, exit\ntab completes. up/down for history. esc leaves.'
+        : 'try: whoami, ls, cat <page>, history, theme crt, reboot, terminal. or just type where you want to go.',
     ),
+    history: async () => {
+      ctx.print('fetching site history...');
+      try {
+        const res = await fetch('https://api.github.com/repos/keithtyser/personal-site/commits?sha=gh-pages&per_page=10');
+        if (!res.ok) throw new Error(String(res.status));
+        const commits = await res.json();
+        const lines = commits.map((c) => {
+          const date = c.commit.author.date.slice(0, 10);
+          const msg = c.commit.message.split('\n')[0].slice(0, 64);
+          return `${c.sha.slice(0, 7)}  ${date}  ${msg}`;
+        });
+        ctx.print(lines.join('\n'));
+      } catch {
+        ctx.print('history: github api unavailable (rate limited, probably)');
+      }
+    },
     theme: (args) => {
       const mode = (args[0] || '').toLowerCase();
       if (mode === 'crt') { setCrt(true); ctx.print('phosphor mode engaged. theme default to recover.'); }
@@ -275,6 +314,7 @@ function initPalette() {
     { title: 'X (Twitter)', hint: 'social', href: 'https://twitter.com/keithtyser', external: true },
     { title: 'Google Scholar', hint: 'social', href: 'https://scholar.google.com/citations?user=LyyIWSYAAAAJ', external: true },
     { title: 'Email Keith', hint: 'social', href: 'mailto:keithtyser@gmail.com' },
+    { title: 'Newsletter', hint: 'social', href: 'https://buttondown.com/keithtyser', external: true },
     { title: 'RSS feed', hint: 'social', href: '/feed.xml' },
   ];
 
@@ -569,11 +609,118 @@ function buildTerminal() {
     return dir === '~/blog' ? blogEntries() : rootEntries();
   }
 
+  /* ---- "orbit" mini-game: collect *, outrun B. turn-based. ---- */
+  const game = { active: false, frame: null };
+
+  function startGame() {
+    game.active = true;
+    game.w = 38;
+    game.h = 13;
+    game.player = { x: 4, y: 6 };
+    game.bot = { x: 33, y: 6 };
+    game.score = 0;
+    game.pellets = [];
+    while (game.pellets.length < 3) spawnPellet();
+    game.frame = document.createElement('div');
+    game.frame.className = 'term-line term-game';
+    log.appendChild(game.frame);
+    print('orbit v0.1 — wasd/arrows to move, collect *, avoid B. q quits.');
+    drawGame('collect 10 to win');
+  }
+
+  function spawnPellet() {
+    const x = 1 + Math.floor(Math.random() * (game.w - 2));
+    const y = 1 + Math.floor(Math.random() * (game.h - 2));
+    const occupied = (game.player.x === x && game.player.y === y)
+      || (game.bot.x === x && game.bot.y === y)
+      || game.pellets.some((p) => p.x === x && p.y === y);
+    if (!occupied) game.pellets.push({ x, y });
+  }
+
+  function drawGame(status) {
+    const rows = [];
+    rows.push('+' + '-'.repeat(game.w) + '+');
+    for (let y = 0; y < game.h; y++) {
+      let row = '';
+      for (let x = 0; x < game.w; x++) {
+        if (game.player.x === x && game.player.y === y) row += 'K';
+        else if (game.bot.x === x && game.bot.y === y) row += 'B';
+        else if (game.pellets.some((p) => p.x === x && p.y === y)) row += '*';
+        else row += ' ';
+      }
+      rows.push('|' + row + '|');
+    }
+    rows.push('+' + '-'.repeat(game.w) + '+');
+    rows.push(`score: ${game.score}/10   ${status || ''}`);
+    game.frame.textContent = rows.join('\n');
+    log.scrollTop = log.scrollHeight;
+  }
+
+  function endGame(message) {
+    game.active = false;
+    const best = Math.max(game.score, Number(localStorage.getItem('orbit-best') || 0));
+    localStorage.setItem('orbit-best', String(best));
+    drawGame('');
+    print(`${message}  (score ${game.score}, best ${best})`);
+  }
+
+  function botStep() {
+    const dx = Math.sign(game.player.x - game.bot.x);
+    const dy = Math.sign(game.player.y - game.bot.y);
+    if (Math.random() < 0.25) {
+      // lateral wobble keeps it beatable
+      if (Math.random() < 0.5) game.bot.x = clamp(game.bot.x + (Math.random() < 0.5 ? -1 : 1), 0, game.w - 1);
+      else game.bot.y = clamp(game.bot.y + (Math.random() < 0.5 ? -1 : 1), 0, game.h - 1);
+    } else if (Math.abs(game.player.x - game.bot.x) > Math.abs(game.player.y - game.bot.y)) {
+      game.bot.x = clamp(game.bot.x + dx, 0, game.w - 1);
+    } else {
+      game.bot.y = clamp(game.bot.y + dy, 0, game.h - 1);
+    }
+  }
+
+  function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+
+  function gameKey(key) {
+    const moves = {
+      arrowup: [0, -1], w: [0, -1],
+      arrowdown: [0, 1], s: [0, 1],
+      arrowleft: [-1, 0], a: [-1, 0],
+      arrowright: [1, 0], d: [1, 0],
+    };
+    const k = key.toLowerCase();
+    if (k === 'q' || k === 'escape') { endGame('you powered down the simulator.'); return; }
+    const mv = moves[k];
+    if (!mv) return;
+    game.player.x = clamp(game.player.x + mv[0], 0, game.w - 1);
+    game.player.y = clamp(game.player.y + mv[1], 0, game.h - 1);
+    const hit = game.pellets.findIndex((p) => p.x === game.player.x && p.y === game.player.y);
+    if (hit >= 0) {
+      game.pellets.splice(hit, 1);
+      game.score += 1;
+      while (game.pellets.length < 3) spawnPellet();
+    }
+    if (game.score >= 10) { endGame('you win. the leaderboard remains very far away.'); return; }
+    const steps = game.score >= 6 ? 2 : 1;
+    for (let i = 0; i < steps; i++) {
+      botStep();
+      if (game.bot.x === game.player.x && game.bot.y === game.player.y) {
+        endGame('B caught you. self-play makes brutal opponents.');
+        return;
+      }
+    }
+    drawGame(game.score >= 6 ? 'B is accelerating' : '');
+  }
+
   function run(line) {
     print(`${prompt()} ${line}`);
     const parsed = parseCommandLine(line);
     if (!parsed) return;
     const { cmd, args } = parsed;
+
+    if (cmd === 'play' || cmd === 'orbit') {
+      startGame();
+      return;
+    }
 
     if (cmd === 'ls') {
       print(entriesFor(args[0] === 'blog' ? '~/blog' : cwd).join('  '));
@@ -605,6 +752,11 @@ function buildTerminal() {
   }
 
   input.addEventListener('keydown', (e) => {
+    if (game.active) {
+      e.preventDefault();
+      gameKey(e.key);
+      return;
+    }
     if (e.key === 'Enter') {
       const line = input.value;
       input.value = '';
@@ -627,7 +779,7 @@ function buildTerminal() {
       const last = parts[parts.length - 1];
       if (!last) return;
       const pool = parts.length === 1
-        ? ['ls', 'cd', 'cat', 'open', 'pwd', 'whoami', 'date', 'theme', 'reboot', 'clear', 'exit', 'help']
+        ? ['ls', 'cd', 'cat', 'open', 'pwd', 'whoami', 'date', 'history', 'play', 'theme', 'reboot', 'clear', 'exit', 'help']
         : entriesFor(cwd).map((x) => x.replace(/\/$/, ''));
       const match = pool.find((p) => p.startsWith(last));
       if (match) {
