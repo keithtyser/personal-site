@@ -1368,6 +1368,22 @@
   padding: 14px 12px;
 }
 
+.palette-foot {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--faint);
+  padding: 8px 16px;
+  border-top: 1px solid var(--border);
+}
+
+.palette-foot kbd {
+  color: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 1px 5px;
+  font-size: 10px;
+}
+
 /* ============================================================
    Full terminal mode
    ============================================================ */

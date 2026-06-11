@@ -307,11 +307,12 @@ function initPalette() {
       <div class="palette" role="dialog" aria-modal="true" aria-label="Command palette">
         <div class="palette-head">
           <span class="palette-prompt" aria-hidden="true">$</span>
-          <input class="palette-input" type="text" placeholder="jump to... (or try: whoami, cat now)" aria-label="Search pages, posts, and actions" autocomplete="off" spellcheck="false">
+          <input class="palette-input" type="text" placeholder="jump to... (or try: terminal)" aria-label="Search pages, posts, and actions" autocomplete="off" spellcheck="false">
           <kbd class="palette-esc" aria-hidden="true">esc</kbd>
         </div>
         <div class="palette-output" role="status" hidden></div>
         <ul class="palette-list" role="listbox"></ul>
+        <div class="palette-foot" aria-hidden="true">tip: type <kbd>terminal</kbd> for the full shell · <kbd>whoami</kbd>, <kbd>cat now</kbd>, <kbd>theme crt</kbd> work too</div>
       </div>`;
     document.body.appendChild(overlay);
     input = overlay.querySelector('.palette-input');
