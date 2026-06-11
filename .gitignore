@@ -11,8 +11,15 @@ node_modules/
 # dist/ is committed on gh-pages so the deployed site has compiled CSS
 
 # Unpublished blog drafts. gh-pages serves every committed file, so
-# drafts stay out of git entirely until they move into blog/.
+# drafts stay out of git entirely until published. blog/DRAFT-*.md
+# renders locally for preview (unlisted) but never deploys; rename
+# without the DRAFT- prefix to publish.
 drafts/
+blog/DRAFT-*
+blog/og/DRAFT-*
+
+# Original post images (processed copies in blog/images/ are committed)
+blog/images/src/
 
 # Misc
 .DS_Store

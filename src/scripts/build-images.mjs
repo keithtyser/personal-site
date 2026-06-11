@@ -40,6 +40,35 @@ async function main() {
   const og = await sharp(Buffer.from(ogSvg)).png({ compressionLevel: 9 }).toBuffer();
   await fs.writeFile(path.join(projectRoot, 'og-image.png'), og);
   console.log(`og-image.png: ${(og.length / 1024).toFixed(1)} KB`);
+
+  await buildBlogImages();
+}
+
+// Post images: drop originals in blog/images/src/ (gitignored), get
+// committed max-1400px-wide webp in blog/images/. Reference them in
+// markdown as /blog/images/<name>.webp.
+async function buildBlogImages() {
+  const srcDir = path.join(projectRoot, 'blog', 'images', 'src');
+  const outDir = path.join(projectRoot, 'blog', 'images');
+  let files;
+  try {
+    files = (await fs.readdir(srcDir)).filter((f) => /\.(jpe?g|png|webp|tiff?)$/i.test(f));
+  } catch {
+    return; // no originals yet
+  }
+  await fs.mkdir(outDir, { recursive: true });
+  for (const file of files) {
+    const name = file.replace(/\.[^.]+$/, '');
+    const img = sharp(path.join(srcDir, file));
+    const meta = await img.metadata();
+    const out = await img
+      .resize({ width: Math.min(1400, meta.width || 1400), withoutEnlargement: true })
+      .webp({ quality: 82, effort: 6 })
+      .toBuffer();
+    const outMeta = await sharp(out).metadata();
+    await fs.writeFile(path.join(outDir, `${name}.webp`), out);
+    console.log(`blog/images/${name}.webp: ${(out.length / 1024).toFixed(1)} KB (${outMeta.width}x${outMeta.height})`);
+  }
 }
 
 main().catch((err) => {

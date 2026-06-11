@@ -318,7 +318,7 @@
   background-color: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 20px;
+  padding: 14px 16px;
   transition: transform 180ms ease, border-color 180ms ease, background-color 180ms ease;
   overflow: hidden;
 }
@@ -354,10 +354,10 @@
 }
 
 .card-desc {
-  font-size: 14px;
+  font-size: 13.5px;
   color: var(--muted);
-  line-height: 1.6;
-  margin-top: 6px;
+  line-height: 1.55;
+  margin-top: 4px;
 }
 
 /* Mono ordinal in a card's corner ("001") */
@@ -1303,6 +1303,16 @@
   border: 1px solid var(--border);
   border-radius: 4px;
   padding: 2px 6px;
+}
+
+.palette-output {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--accent);
+  white-space: pre-wrap;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
 }
 
 .palette-list {

@@ -62,6 +62,10 @@ toc: false    # set to true to get a sidebar TOC on desktop
 
 Save. The browser auto-reloads if `npm run dev` is running.
 
+Drafts: name the file `blog/DRAFT-whatever.md`. It renders at `/blog/DRAFT-whatever.html` for local preview but stays out of the index, feed, sitemap, palette, and git (gitignored). Rename without the prefix to publish.
+
+Images: drop originals in `blog/images/src/` (gitignored) and run `npm run build:images`; committed max-1400px webp files land in `blog/images/`. Reference as `/blog/images/<name>.webp`.
+
 ## Contact
 
 - Email: keithtyser@gmail.com

@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
   <channel>
     <title>Keith Tyser</title>
     <link>https://keithtyser.com/blog/</link>
     <description>AI/ML, data science, and whatever else seems worth writing down.</description>
     <language>en-us</language>
-    <lastBuildDate>Thu, 11 Jun 2026 00:38:18 GMT</lastBuildDate>
+    <lastBuildDate>Thu, 11 Jun 2026 00:55:46 GMT</lastBuildDate>
     <atom:link href="https://keithtyser.com/feed.xml" rel="self" type="application/rss+xml"/>
     <item>
       <title>Running a 2x DGX Spark Cluster at Home</title>
@@ -13,6 +13,159 @@
       <guid isPermaLink="true">https://keithtyser.com/blog/running-a-2x-dgx-spark-cluster-at-home.html</guid>
       <pubDate>Wed, 10 Jun 2026 00:00:00 GMT</pubDate>
       <description>What it&apos;s actually like to cluster an NVIDIA DGX Spark with an ASUS Ascent GX10 over QSFP, and what 256 GB of unified memory gets you.</description>
+      <content:encoded><![CDATA[<p>I sold my M3 Ultra Mac Studio and replaced it with a second DGX Spark. Specifically, the ASUS Ascent GX10, which is the same GB10 Grace Blackwell machine in a different shell at a lower price. The two are now connected back to back with a QSFP cable and run as a single two-node cluster: 256 GB of coherent unified memory, 2 petaFLOPs of FP4 compute, and a 200 Gb/s link between them, all sitting on a shelf drawing less power than a gaming PC.</p>
+<p>This post covers why I did it, how the cluster is wired, what actually runs well on it, and the honest disappointments.</p>
+<h2 id="why-i-sold-the-mac-studio"><a class="anchor" href="#why-i-sold-the-mac-studio" aria-label="Link to section: Why I sold the Mac Studio">#</a>Why I sold the Mac Studio</h2>
+<p>The M3 Ultra is a genuinely great inference box. 96 GB of unified memory and around 800 GB/s of bandwidth means dense 70B models run at very usable speeds. But my workflow stopped being &quot;chat with a local model&quot; and became post-training: LoRA fine-tunes, quantization runs, eval harnesses, RL experiments. That world is CUDA. MLX is improving fast, but every tool in my pipeline (PyTorch FSDP, TRL, vLLM, TensorRT Model Optimizer, NCCL) treats CUDA as the first-class citizen and everything else as a port.</p>
+<p>One ecosystem, two boxes, no translation layer. That was the trade.</p>
+<h2 id="the-hardware"><a class="anchor" href="#the-hardware" aria-label="Link to section: The hardware">#</a>The hardware</h2>
+<p>Both nodes are the same silicon:</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>DGX Spark / Ascent GX10 (each)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Chip</td>
+<td>NVIDIA GB10 Grace Blackwell Superchip</td>
+</tr>
+<tr>
+<td>CPU</td>
+<td>20-core Arm (10x Cortex-X925 + 10x Cortex-A725)</td>
+</tr>
+<tr>
+<td>GPU</td>
+<td>Blackwell, 1 petaFLOP FP4 (sparse)</td>
+</tr>
+<tr>
+<td>Memory</td>
+<td>128 GB LPDDR5x, coherent unified, ~273 GB/s</td>
+</tr>
+<tr>
+<td>Networking</td>
+<td>ConnectX-7, 2x QSFP ports (200 Gb/s), 10 GbE</td>
+</tr>
+<tr>
+<td>OS</td>
+<td>DGX OS (Ubuntu-based) with the NVIDIA AI stack preinstalled</td>
+</tr>
+</tbody></table>
+<p>The ASUS Ascent GX10 is worth calling out on its own: same GB10, same 128 GB, same ConnectX-7, but it street-prices meaningfully below the NVIDIA-branded Spark. If you are building a two-node cluster, mixing one of each like I did works fine. They are the same machine to the software.</p>
+<!-- TODO: photo of the two boxes + QSFP cable -->
+
+<h2 id="wiring-the-cluster"><a class="anchor" href="#wiring-the-cluster" aria-label="Link to section: Wiring the cluster">#</a>Wiring the cluster</h2>
+<p>This is the part people assume is hard and is actually the easiest step. The ConnectX-7 NICs face each other directly over a single QSFP cable. No switch, no transceivers, no RDMA tuning marathon.</p>
+<p>The rough sequence:</p>
+<pre><code class="hljs language-bash"><span class="hljs-comment"># On each node: find the ConnectX interface</span>
+ip <span class="hljs-built_in">link</span> show
+
+<span class="hljs-comment"># Give each node a static IP on the point-to-point link</span>
+<span class="hljs-comment"># node 1</span>
+<span class="hljs-built_in">sudo</span> ip addr add 10.0.0.1/24 dev enp1s0f0np0
+<span class="hljs-comment"># node 2</span>
+<span class="hljs-built_in">sudo</span> ip addr add 10.0.0.2/24 dev enp1s0f0np0
+
+<span class="hljs-comment"># Sanity check the link</span>
+ping 10.0.0.2
+ib_write_bw   <span class="hljs-comment"># should report close to line rate</span>
+</code></pre><!-- TODO: paste your actual interface names, MTU settings, and ib_write_bw numbers -->
+
+<p>NCCL picks up the RoCE link with the right environment variables, and from there anything built on torch.distributed or NCCL treats the pair as one world:</p>
+<pre><code class="hljs language-bash">NCCL_IB_HCA=mlx5 NCCL_SOCKET_IFNAME=enp1s0f0np0 \
+torchrun --nnodes=2 --nproc-per-node=1 ...
+</code></pre><!-- TODO: your actual NCCL env and all-reduce bandwidth test results -->
+
+<h2 id="what-256-gb-actually-buys-you"><a class="anchor" href="#what-256-gb-actually-buys-you" aria-label="Link to section: What 256 GB actually buys you">#</a>What 256 GB actually buys you</h2>
+<p>The headline: two clustered GB10s can serve models up to roughly 405B parameters at FP4. That is not marketing fiction, it just comes with an asterisk the size of the memory bus.</p>
+<p>Here is what I measured on my pair, single stream, rounded to the ballpark:</p>
+<table>
+<thead>
+<tr>
+<th>Model</th>
+<th>Quant</th>
+<th>Runtime</th>
+<th>Decode tok/s</th>
+<th>Prefill tok/s</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Holo-3.1-35B-A3B</td>
+<td>NVFP4</td>
+<td>vLLM</td>
+<td>~80</td>
+<td>~6,000</td>
+</tr>
+<tr>
+<td>gpt-oss-120b</td>
+<td>MXFP4</td>
+<td>vLLM</td>
+<td>~75</td>
+<td>~6,300</td>
+</tr>
+<tr>
+<td>Qwen3.5-35B-A3B</td>
+<td>FP8</td>
+<td>vLLM</td>
+<td>~55</td>
+<td>~6,000</td>
+</tr>
+<tr>
+<td>gemma-4-26B-A4B</td>
+<td>NVFP4</td>
+<td>vLLM</td>
+<td>~45</td>
+<td>~6,100</td>
+</tr>
+<tr>
+<td>Qwen3.5-122B-A10B</td>
+<td>INT4</td>
+<td>vLLM</td>
+<td>~40</td>
+<td>~3,200</td>
+</tr>
+<tr>
+<td>Nemotron-3-Super-120B-A12B</td>
+<td>NVFP4</td>
+<td>vLLM</td>
+<td>mid 20s</td>
+<td>~2,700</td>
+</tr>
+<tr>
+<td>Qwen3.5-397B-A17B</td>
+<td>INT4</td>
+<td>vLLM</td>
+<td>high 20s</td>
+<td>~1,700</td>
+</tr>
+</tbody></table>
+<p>Read that last row again: a 397B-parameter MoE generating at conversational speed on two shoebox computers in a home office. Five years ago that sentence was science fiction.</p>
+<p>The pattern in the table is the whole story: every strong performer is a MoE. Small active-parameter counts work around the 273 GB/s memory bandwidth per node, which is the binding constraint for dense-model inference. A dense 405B at FP4 fits in the combined 256 GB, and it generates at speeds I would call demo-grade, not daily-driver grade. Where the cluster earns its keep is everything else:</p>
+<ul>
+<li><strong>MoE models.</strong> Active-parameter counts are small, so bandwidth hurts less. Big MoE models at FP4 are the sweet spot for this hardware.</li>
+<li><strong>Fine-tuning small and mid models.</strong> LoRA on a 30B fits comfortably on one node with room for long sequences. This is most of my Nemotron competition work.</li>
+<li><strong>Batch evals and data generation.</strong> Throughput-oriented workloads with large batches amortize the bandwidth limit. Two nodes means the eval queue and the experiment queue never fight.</li>
+<li><strong>Serving while training.</strong> One node serves a quantized model for the agent loop while the other runs fine-tunes. The QSFP link makes moving checkpoints between them instant.</li>
+</ul>
+<h2 id="how-it-fits-my-workflow"><a class="anchor" href="#how-it-fits-my-workflow" aria-label="Link to section: How it fits my workflow">#</a>How it fits my workflow</h2>
+<p>The cluster is the execution layer for <a href="https://github.com/keithtyser/model-forge" target="_blank" rel="noopener noreferrer">model-forge</a> and <a href="https://github.com/keithtyser/forgewright" target="_blank" rel="noopener noreferrer">forgewright</a>. Forgewright&#39;s specialist agents dispatch jobs over SSH; the Sparks are just GPU targets in its fleet config alongside whatever else I have available. A typical night: one node runs a LoRA sweep for the Nemotron reasoning challenge, the other serves the latest candidate for eval traffic, and I wake up to a ranked report.</p>
+<!-- TODO: a paragraph on the experiment queue with concrete throughput, e.g. N fine-tune runs/night -->
+
+<h2 id="gotchas"><a class="anchor" href="#gotchas" aria-label="Link to section: Gotchas">#</a>Gotchas</h2>
+<ul>
+<li><strong>DGX OS is opinionated.</strong> It is Ubuntu underneath, but treat it like an appliance. Take the NVIDIA stack updates; do not fight the preinstalled driver matrix.</li>
+<li><strong>Arm matters occasionally.</strong> The wheels you want mostly exist now (PyTorch, vLLM, flash-attn), but every so often a tool assumes x86 and you end up building from source. Budget an evening here and there.</li>
+<li><strong>Thermals are fine, placement is not.</strong> The dual-fan design is quiet and effective, but the boxes exhaust enough heat that stacking them touching each other is a bad idea. Give them an inch.</li>
+<li><strong>The 200 Gb link spoils you.</strong> After working with RDMA between nodes, the 10 GbE uplink to the rest of the LAN feels like a soda straw. Checkpoints to the NAS are now the slow part.</li>
+</ul>
+<!-- TODO: anything that actually bit you: firmware updates, NCCL version pinning, etc. -->
+
+<h2 id="what-s-next"><a class="anchor" href="#what-s-next" aria-label="Link to section: What's next">#</a>What&#39;s next</h2>
+<p>The Sparks are the always-on, low-power layer. The heavy layer is in progress: a Threadripper PRO 9965WX workstation with 2x RTX PRO 6000 Blackwell Max-Q cards (96 GB GDDR7 each). The Sparks prototype and serve; the workstation will take over the big fine-tunes. Details on that build when the parts stop being on backorder.</p>
+<p>If you are considering a Spark cluster: buy it for post-training, evals, MoE inference, and the CUDA ecosystem in a small quiet box. Do not buy it expecting dense-frontier-model chat speeds. It is a lab, not a dragster.</p>
+<p>Questions? <a href="https://twitter.com/keithtyser" target="_blank" rel="noopener noreferrer">@keithtyser</a>.</p>
+]]></content:encoded>
     </item>
     <item>
       <title>Hull Tactical Market Prediction: A TabM Approach</title>
@@ -20,6 +173,136 @@
       <guid isPermaLink="true">https://keithtyser.com/blog/hull_tactical_solution.html</guid>
       <pubDate>Tue, 16 Dec 2025 00:00:00 GMT</pubDate>
       <description>Walk-forward validation, TabM, and volatility-aware exposure sizing for the Hull Tactical Kaggle competition.</description>
+      <content:encoded><![CDATA[<p>This is the first Kaggle competition I&#39;ve seriously competed in for a while. It&#39;s also the most fun I&#39;ve had with one from a pure modeling perspective. I love the March Mania competitions, but that&#39;s because I love basketball and March Madness. This one was different. The problem itself was interesting: dynamic market exposure, risk-adjusted returns, real financial mechanics. It felt like building something that could actually trade.</p>
+<h2 id="the-competition"><a class="anchor" href="#the-competition" aria-label="Link to section: The Competition">#</a>The Competition</h2>
+<p>Hull Tactical runs an ETF that dynamically allocates between equities and cash. The competition asks you to predict daily market exposure between 0 (100% cash) and 2 (200% leveraged long). You&#39;re scored on risk-adjusted returns with penalties for excessive volatility and underperforming the market.</p>
+<p>The metric is adjusted Sharpe ratio. Two penalties apply:</p>
+<ul>
+<li>Volatility penalty if your strategy vol exceeds 1.2x market vol</li>
+<li>Return penalty if you lag the market (quadratic, so large gaps hurt badly)</li>
+</ul>
+<p>You get ~140 features covering macro indicators, momentum signals, and market internals. Daily data spanning decades.</p>
+<h2 id="why-the-public-leaderboard-was-useless"><a class="anchor" href="#why-the-public-leaderboard-was-useless" aria-label="Link to section: Why the Public Leaderboard Was Useless">#</a>Why the Public Leaderboard Was Useless</h2>
+<p>The competition organizers were upfront about this. The API rows available during training overlap with the training set. The labels are public. They said it explicitly:</p>
+<blockquote>
+<p>&quot;Without careful handling, models trained directly on the full training set may overfit, resulting in inflated leaderboard scores... Internally, our approach is to build walk-forward models and evaluate them on non-overlapping out-of-sample periods to better assess true performance.&quot;</p>
+</blockquote>
+<p>So the public LB was meaningless. A model could score well by memorizing training data, then completely fail on the private test set. The only way to trust your results was to build your own offline evaluation.</p>
+<h2 id="walk-forward-validation"><a class="anchor" href="#walk-forward-validation" aria-label="Link to section: Walk-Forward Validation">#</a>Walk-Forward Validation</h2>
+<p>I implemented walk-forward out-of-sample (WFO) validation. The idea: simulate how the model would have performed if deployed historically, retraining as new data arrived.</p>
+<p>The setup:</p>
+<ul>
+<li>Training window: 756 days (~3 years)</li>
+<li>Out-of-sample window: 84 days (~4 months)</li>
+<li>Embargo: 7 days between train and test (prevents leakage)</li>
+<li>Roll forward, repeat</li>
+</ul>
+<p>This produces 11 non-overlapping OOS periods. For each, I train on the preceding 3 years, predict the next 4 months, and compute the competition metric. The Sharpe ratio of these 11 metrics tells me how consistent the model is across different market regimes.</p>
+<p>A model with mean=2.0 and std=0.5 (Sharpe=4.0) is more trustworthy than mean=2.5 and std=1.5 (Sharpe=1.67). The second model might have gotten lucky in a few periods. The first one performed consistently.</p>
+<p>This became my north star. Every experiment was judged by WFO Sharpe, not by any leaderboard score.</p>
+<h2 id="the-model"><a class="anchor" href="#the-model" aria-label="Link to section: The Model">#</a>The Model</h2>
+<p>I used <a href="https://github.com/yandex-research/tabm" target="_blank" rel="noopener noreferrer">TabM</a>, a tabular deep learning architecture published at ICLR 2025 by Yandex Research. The <a href="https://arxiv.org/abs/2410.24210" target="_blank" rel="noopener noreferrer">paper</a> makes a compelling case: MLPs with parameter-efficient ensembling outperform the attention-based and retrieval-based architectures that dominated recent tabular deep learning.</p>
+<p>The core idea is batch ensembling. A traditional deep ensemble trains k separate MLPs and averages their predictions. TabM fits all k members into a single MLP-like structure through weight sharing. Each forward pass produces k predictions per input. You average them at inference.</p>
+<p>Two things make this work better than you&#39;d expect:</p>
+<p><strong>Parallel training.</strong> All ensemble members train simultaneously. You can monitor ensemble performance during training and stop when the ensemble is optimal, not when individual members are. Traditional ensembles train sequentially; you can&#39;t do this.</p>
+<p><strong>Weight sharing as regularization.</strong> The ensemble members share most parameters. This isn&#39;t just efficient. It constrains the members to stay similar, which reduces overfitting. The paper shows individual predictions are weak, but collectively powerful. The shared structure forces diversity in the right way.</p>
+<p>TabM scales well. The paper benchmarks on datasets up to 13M rows. People have run it on 100M+.</p>
+<p>Final architecture:</p>
+<ul>
+<li><code>d_block=512</code> (hidden dimension)</li>
+<li><code>n_blocks=6</code> (depth)</li>
+<li><code>k=24</code> (ensemble members per forward pass)</li>
+<li>13 seeds for outer bagging (13 TabM models, each with 24 internal members)</li>
+<li>Early stopping with patience=12</li>
+</ul>
+<p>Training took about 10 minutes on GPU for all 13 seeds.</p>
+<h2 id="feature-engineering"><a class="anchor" href="#feature-engineering" aria-label="Link to section: Feature Engineering">#</a>Feature Engineering</h2>
+<p>The raw features are already informative. I added three types of derived features:</p>
+<p><strong>Rolling statistics at multiple windows.</strong> Instead of just 21-day momentum and volatility, I computed them at 5, 10, 21, 42, 63, and 126 days. This gives the model visibility into short, medium, and long-term trends simultaneously.</p>
+<p><strong>Regime indicators.</strong> Binary features flagging market states:</p>
+<ul>
+<li><code>regime_high_vol</code>: current 21-day vol above its 63-day median</li>
+<li><code>regime_uptrend</code> / <code>regime_downtrend</code>: 63-day momentum sign</li>
+<li><code>regime_crisis</code>: high vol AND downtrend</li>
+<li><code>regime_risk_on</code>: low vol AND uptrend</li>
+</ul>
+<p>These help the model recognize when market dynamics shift.</p>
+<p><strong>Historical percentiles.</strong> Where does current vol or momentum rank in the past year? A percentile of 0.95 means &quot;volatility is in the 95th percentile of recent history.&quot; This self-normalizing context helped more than any other feature addition (+11% to WFO Sharpe).</p>
+<h2 id="the-exposure-mapping"><a class="anchor" href="#the-exposure-mapping" aria-label="Link to section: The Exposure Mapping">#</a>The Exposure Mapping</h2>
+<p>Raw model output is a predicted excess return. This needs to become an exposure between 0 and 2.</p>
+<p>The standard approach: sigmoid mapping. Positive predictions go above 1.0 (long), negative predictions go below 1.0 (defensive).</p>
+<p>The problem: a fixed sigmoid treats all market conditions equally. A prediction of +0.0001 gets the same exposure whether volatility is 10% or 40%.</p>
+<p><strong>Vol-adaptive scaling</strong> fixed this. Instead of a fixed sigmoid scale, I compute:</p>
+<pre><code class="hljs language-python">vol_ratio = current_vol / median_vol
+vol_ratio = clip(vol_ratio, <span class="hljs-number">0.5</span>, <span class="hljs-number">2.0</span>)
+dynamic_scale = base_scale * vol_ratio
+</code></pre><p>When volatility is twice the historical median, the sigmoid compresses toward neutral (exposure ~1.0). When volatility is half the median, the sigmoid expands and bets get more aggressive.</p>
+<p>This single change improved WFO Sharpe by 12%.</p>
+<h2 id="what-worked"><a class="anchor" href="#what-worked" aria-label="Link to section: What Worked">#</a>What Worked</h2>
+<table>
+<thead>
+<tr>
+<th>Change</th>
+<th>Sharpe Impact</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>val_frac 0.12 → 0.08</td>
+<td>+43%</td>
+</tr>
+<tr>
+<td>Percentile features</td>
+<td>+11%</td>
+</tr>
+<tr>
+<td>Vol-adaptive scaling</td>
+<td>+12%</td>
+</tr>
+<tr>
+<td>Multiple rolling windows</td>
+<td>+5%</td>
+</tr>
+<tr>
+<td>Regime indicators</td>
+<td>+2%</td>
+</tr>
+</tbody></table>
+<p>The val_frac change was surprising. Using only 8% of training data for validation (instead of 12%) meant more training data. The model stopped early anyway due to patience, so the extra epochs didn&#39;t cause overfitting.</p>
+<h2 id="what-didn-t-work"><a class="anchor" href="#what-didn-t-work" aria-label="Link to section: What Didn't Work">#</a>What Didn&#39;t Work</h2>
+<p><strong>Huber loss.</strong> Switched from MSE to Huber to reduce sensitivity to outliers. Sharpe dropped 50%. Reverted immediately.</p>
+<p><strong>Feature selection.</strong> Identified 33 features with negative permutation importance and dropped them. Sharpe dropped 30%. The &quot;useless&quot; features apparently contained signal the model was using.</p>
+<p><strong>Confidence weighting.</strong> When the 13 seeds disagreed (high prediction variance), shrink the prediction toward zero. No effect. The seeds agreed too closely for this to matter.</p>
+<p><strong>Regime-based exposure modulation.</strong> Shrink bets by 50% in crisis regimes, expand by 20% in risk-on regimes. Sharpe dropped 22%. The vol-adaptive scaling already captured what mattered; adding regime logic on top just added noise.</p>
+<p><strong>Second-order features.</strong> Momentum acceleration, volatility acceleration, cross-timeframe momentum agreement. Sharpe dropped 21%. More features, more noise.</p>
+<p><strong>Tighter vol-ratio bounds.</strong> Changed [0.5, 2.0] to [0.7, 1.5] for less extreme adjustments. Sharpe dropped 4%. The wider bounds were optimal.</p>
+<p><strong>PiecewiseLinearEmbeddings.</strong> The TabM paper shows that adding feature embeddings (TabM†) consistently outperforms vanilla TabM. I tried it. Sharpe dropped 68%, from 3.39 to 1.08. One period went negative.</p>
+<p>Why? The paper benchmarks on large, static datasets up to 13M rows. I had 8,000 training rows and financial time series with regime changes. The embeddings compute bin boundaries from training data. Those boundaries don&#39;t generalize when market conditions shift. The extra parameters (142 features × 12 embedding dims) overfit on small data. And my features were already engineered - winsorized, rolling stats, percentile-normalized. The embeddings had nothing useful to add.</p>
+<p>The pattern: every attempt to add complexity after vol-adaptive scaling made things worse. The signal is weak. Additional features or logic just inject noise.</p>
+<h2 id="final-results"><a class="anchor" href="#final-results" aria-label="Link to section: Final Results">#</a>Final Results</h2>
+<p>Walk-forward out-of-sample validation (11 periods, 84 trading days each):</p>
+<ul>
+<li><strong>Sharpe: 3.39</strong></li>
+<li>Mean metric: 1.88</li>
+<li>Std: 0.55</li>
+<li>Min metric: 1.04</li>
+<li>Max metric: 2.75</li>
+<li>Total return: +171%</li>
+<li>Max drawdown: -8.2%</li>
+</ul>
+<p>Starting point was Sharpe ~0.5. Final solution achieved nearly 7x improvement.</p>
+<h2 id="what-i-learned"><a class="anchor" href="#what-i-learned" aria-label="Link to section: What I Learned">#</a>What I Learned</h2>
+<p>The biggest gains came from:</p>
+<ol>
+<li>More training data (smaller validation split)</li>
+<li>Self-normalizing features (percentiles)</li>
+<li>Vol-adaptive bet sizing</li>
+</ol>
+<p>Everything else was noise. I tried a lot of clever ideas. Regime-based exposure modulation. Confidence weighting when model seeds disagreed. Second-order momentum features. Each one made things worse. The pattern was clear: once you have a solid model and sensible risk management, additional complexity just injects noise.</p>
+<p>Markets are efficient. The signal is faint. Respect that.</p>
+<p>The WFO framework was the real win. It gave me confidence that my improvements were real, not artifacts of overfitting. When I saw Sharpe go from 0.5 to 3.39 across 11 independent periods, I knew I was onto something. The public LB never told me anything useful.</p>
+<p>This competition reminded me why I enjoy this stuff. The iteration loop was tight. Ideas could be tested in minutes. The feedback was immediate and quantitative. No ambiguity about whether something worked. Just numbers going up or down.</p>
+<p>I&#39;ll be watching the private LB closely over the next 6 months.</p>
+]]></content:encoded>
     </item>
     <item>
       <title>Advanced RAG Techniques in Production Systems</title>
@@ -27,6 +310,153 @@
       <guid isPermaLink="true">https://keithtyser.com/blog/advanced-rag-techniques-in-production-systems.html</guid>
       <pubDate>Sat, 19 Apr 2025 00:00:00 GMT</pubDate>
       <description>A practical overview of retrieval quality, reranking, evaluation, and production engineering patterns for modern RAG systems.</description>
+      <content:encoded><![CDATA[<h2 id="why-rag-still-matters-in-2025"><a class="anchor" href="#why-rag-still-matters-in-2025" aria-label="Link to section: Why RAG still matters in 2025">#</a>Why RAG still matters in 2025</h2>
+<p>Retrieval‑Augmented Generation (RAG) gives large language models instant access to your freshest data without re‑training. Over the last 18 months RAG has moved from research slide decks to the core of products such as Microsoft 365 Copilot and many internal search assistants. Teams that succeed treat RAG as <strong>search engineering plus LLMops</strong>, not as &quot;just add a vector DB&quot;. </p>
+<hr>
+<h2 id="1-retrieval-get-recall-first-then-get-precision"><a class="anchor" href="#1-retrieval-get-recall-first-then-get-precision" aria-label="Link to section: 1. Retrieval: get recall first, then get precision">#</a>1. Retrieval: get recall first, then get precision</h2>
+<table>
+<thead>
+<tr>
+<th>Best‑practice</th>
+<th>What it does</th>
+<th>When to use</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Hybrid search</strong> (BM25 + dense vectors)</td>
+<td>Combines exact term match with semantic match, lifting recall and protecting against rare terms</td>
+<td>Your default choice for mixed document corpora</td>
+</tr>
+<tr>
+<td><strong>Late‑interaction models (ColBERT v2)</strong></td>
+<td>Token‑level matching gives cross‑encoder‑like precision while remaining indexable</td>
+<td>High‑stakes QA or multi‑lingual corpora where every top‑k slot counts</td>
+</tr>
+<tr>
+<td><strong>GPU‑efficient indexes (HNSW, ScaNN, LanceDB)</strong></td>
+<td>Low‑latency nearest‑neighbor search at scale</td>
+<td>&gt;10 million embeddings or sub‑200 ms budgets</td>
+</tr>
+<tr>
+<td><strong>Query rewriting &amp; expansion</strong></td>
+<td>LLM adds synonyms and context, boosting recall on under‑specified queries</td>
+<td>Customer‑facing search where queries are short or vague</td>
+</tr>
+</tbody></table>
+<p><strong>Tip:</strong> Run dense and sparse queries in parallel, then merge the result lists to keep latency under control.</p>
+<hr>
+<h2 id="2-chunking-indexing-structure-your-knowledge"><a class="anchor" href="#2-chunking-indexing-structure-your-knowledge" aria-label="Link to section: 2. Chunking &amp; Indexing: structure your knowledge">#</a>2. Chunking &amp; Indexing: structure your knowledge</h2>
+<ul>
+<li>Fixed‑size chunks are yesterday&#39;s default.  </li>
+<li><strong>Semantic or layout‑aware chunking</strong> can lift retrieval recall by up to nine points on BEIR‑style tasks.  </li>
+<li>If documents are long or heterogeneous, <strong>hierarchical indexes</strong> (section → paragraph → sentence) in tools like LlamaIndex let you trade speed for depth when needed.</li>
+</ul>
+<pre><code class="hljs language-python"><span class="hljs-comment"># Example: hierarchical index with LlamaIndex</span>
+<span class="hljs-keyword">from</span> llama_index.core <span class="hljs-keyword">import</span> VectorStoreIndex, Document
+
+docs = [Document.from_file(<span class="hljs-string">&quot;whitepaper.pdf&quot;</span>)]
+index = VectorStoreIndex.from_documents(
+    docs,
+    chunk_size=<span class="hljs-number">512</span>,
+    chunk_overlap=<span class="hljs-number">64</span>,
+    chunking_strategy=<span class="hljs-string">&quot;semantic&quot;</span>
+)
+query_engine = index.as_query_engine()
+</code></pre><hr>
+<h2 id="3-reranking-answer-generation-keep-the-llm-honest"><a class="anchor" href="#3-reranking-answer-generation-keep-the-llm-honest" aria-label="Link to section: 3. Reranking &amp; Answer Generation: keep the LLM honest">#</a>3. Reranking &amp; Answer Generation: keep the LLM honest</h2>
+<ol>
+<li><strong>LLM‑based rerankers</strong> (OpenAI <code>/v1/rerank</code>, Cohere Rerank) score the top 20–50 hits and often double precision over simple dot‑product sorting.  </li>
+<li><strong>Knowledge‑graph augmentation</strong> (GraphRAG) links entities so the model can handle multi‑hop questions and ambiguous names.  </li>
+<li><strong>Hallucination control</strong>  <ul>
+<li>Prompt: <em>&quot;Answer only with facts found in the sources. Cite each fact.&quot;</em>  </li>
+<li>Verifier pass: an LLM (or rule set) checks that every sentence is supported.  </li>
+<li>Selective answering: abstain when context score is below a tuned threshold.</li>
+</ul>
+</li>
+</ol>
+<hr>
+<h2 id="4-evaluation-monitoring"><a class="anchor" href="#4-evaluation-monitoring" aria-label="Link to section: 4. Evaluation &amp; Monitoring">#</a>4. Evaluation &amp; Monitoring</h2>
+<ul>
+<li><strong>RAGAS</strong> gives reference‑free metrics such as Context Precision and Answer Faithfulness you can hook into CI.  </li>
+<li>Track live numbers: <code>recall@3</code>, <code>latency_p95</code>, tokens returned, citation click‑through.  </li>
+<li>Add <strong>OpenTelemetry tracing</strong> so every production answer links back to the retrieved docs and prompt for fast debugging.</li>
+</ul>
+<hr>
+<h2 id="5-production-engineering-playbook"><a class="anchor" href="#5-production-engineering-playbook" aria-label="Link to section: 5. Production Engineering Playbook">#</a>5. Production Engineering Playbook</h2>
+<ul>
+<li><strong>Streaming retrieval</strong>: start generation after the first chunk arrives; paginate the rest.  </li>
+<li><strong>Hot cache</strong>: Redis or Qdrant&#39;s local cache for the top 5 percent of queries can drop average latency by 40 percent.  </li>
+<li><strong>Security &amp; privacy</strong>: restrict retrieval by ACL first, then add redact‑at‑source if needed (Copilot uses Microsoft Graph permissions before GPT‑4 sees anything).  </li>
+<li><strong>Cost tuning</strong>: merge CPU retrieval with GPU rerank only on the final shortlist; offload embedding generation to batch jobs where possible.  </li>
+<li><strong>Deploy patterns</strong>:  <ul>
+<li>Latency‑critical: GPU index on Kubernetes with HPA.  </li>
+<li>Cost‑first: serverless function that calls a managed vector DB.  </li>
+<li>Edge: lightweight HNSW index in WebAssembly for offline or air‑gapped use.</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h2 id="6-case-studies"><a class="anchor" href="#6-case-studies" aria-label="Link to section: 6. Case Studies">#</a>6. Case Studies</h2>
+<table>
+<thead>
+<tr>
+<th>System</th>
+<th>Key technique</th>
+<th>Lesson</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Microsoft 365 Copilot</strong></td>
+<td>Semantic index over Microsoft Graph, hybrid retrieval, GPT‑4 generation</td>
+<td>Permission‑aware retrieval solves 80 percent of &quot;why did Copilot show that?&quot; tickets.</td>
+</tr>
+<tr>
+<td><strong>RAGFlow OSS engine</strong></td>
+<td>Semantic chunking + hybrid search out of the box</td>
+<td>Spend effort on data prep; chunking quality drives user trust.</td>
+</tr>
+<tr>
+<td><strong>GraphRAG library</strong></td>
+<td>LLM‑derived knowledge graph + graph traversal</td>
+<td>Graph helps when queries need multi‑step reasoning but costs more to build.</td>
+</tr>
+<tr>
+<td><strong>Internal support bot at IBM</strong></td>
+<td>LLM verifier pass + token‑level logging</td>
+<td>Hallucination rate fell from 12 percent to 2 percent after adding a fact‑check rerank step.</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="7-emerging-trends"><a class="anchor" href="#7-emerging-trends" aria-label="Link to section: 7. Emerging Trends">#</a>7. Emerging Trends</h2>
+<ul>
+<li><strong>Multimodal RAG</strong>: ColBERT‑style late interaction now being tested for image + text corpora.  </li>
+<li><strong>Agentic RAG</strong>: planners that chain retrieval queries to answer composite tasks.  </li>
+<li><strong>Memory‑aware models</strong>: prototype LLMs that learn to skip retrieval when the answer is cached in a long context.  </li>
+<li><strong>Lossless token pruning</strong>: shrinking ColBERT indexes by 50 percent with minimal loss.</li>
+</ul>
+<hr>
+<h2 id="8-quick-start-blueprint"><a class="anchor" href="#8-quick-start-blueprint" aria-label="Link to section: 8. Quick‑start blueprint">#</a>8. Quick‑start blueprint</h2>
+<ol>
+<li><strong>Load data</strong> → clean &amp; semantic‑chunk → store in hybrid‑capable vector DB.  </li>
+<li><strong>Embed</strong> offline with a strong encoder (e.g. OpenAI <code>text-embedding-004</code>).  </li>
+<li><strong>Retrieve</strong> dense + BM25 in parallel, top k = 40.  </li>
+<li><strong>Rerank</strong> with GPT‑4 or a cross‑encoder, keep top k = 8.  </li>
+<li><strong>Generate</strong> with a mid‑size model instructed to cite sources.  </li>
+<li><strong>Verify</strong> answer with a second prompt; refuse if confidence &lt; threshold.  </li>
+<li><strong>Log</strong> every step, push metrics to Grafana; run nightly RAGAS tests.</li>
+</ol>
+<hr>
+<h2 id="9-further-reading"><a class="anchor" href="#9-further-reading" aria-label="Link to section: 9. Further reading">#</a>9. Further reading</h2>
+<ul>
+<li><em>The Rise and Evolution of RAG in 2024</em> – RAGFlow retrospective (hybrid search, semantic chunking).  </li>
+<li><em>GraphRAG: Unlocking LLM Discovery on Narrative Private Data</em> – Microsoft Research.  </li>
+<li><em>RAGAS toolkit</em> – objective RAG evaluation library.  </li>
+<li><em>General‑Purpose Multilingual Late Interaction Retriever</em> – Jina AI / ColBERT v2 paper.</li>
+</ul>
+<hr>
+<h3 id="takeaway"><a class="anchor" href="#takeaway" aria-label="Link to section: Takeaway">#</a>Takeaway</h3>
+<p>RAG success is 70 percent search engineering, 30 percent prompt talent. Invest in retrieval quality. Monitor relentlessly. Let the LLM do the last mile, not the entire marathon.</p>
+]]></content:encoded>
     </item>
     <item>
       <title>My Prompt Library</title>
@@ -34,6 +464,1164 @@
       <guid isPermaLink="true">https://keithtyser.com/blog/my-prompt-library.html</guid>
       <pubDate>Sat, 19 Apr 2025 00:00:00 GMT</pubDate>
       <description>A living prompt library covering workflows, evaluation patterns, and reusable prompt structures for practical AI work.</description>
+      <content:encoded><![CDATA[<p>A living collection of the AI prompts I reach for every day. Feel free to copy any prompt straight from the code blocks.</p>
+<hr>
+<h2 id="getting-started"><a class="anchor" href="#getting-started" aria-label="Link to section: Getting Started">#</a>Getting Started</h2>
+<p>A quick primer on how to use these prompts.</p>
+<ul>
+<li><strong>Pick a prompt</strong> that matches your goal.  </li>
+<li><strong>Copy</strong> the text inside the code block.  </li>
+<li><strong>Paste</strong> it into your favorite AI assistant.  </li>
+<li><strong>Tweak</strong> the details in brackets <code>[like this]</code> to suit your needs.</li>
+</ul>
+<hr>
+<h2 id="coding-debugging"><a class="anchor" href="#coding-debugging" aria-label="Link to section: Coding &amp; Debugging">#</a>Coding &amp; Debugging</h2>
+<h3 id="1-debugging"><a class="anchor" href="#1-debugging" aria-label="Link to section: 1. Debugging">#</a>1. Debugging</h3>
+<p>My go-to prompt for debugging in cursor. Describe the error and then paste this prompt below</p>
+<pre><code class="hljs language-txt">**Prompt: Thorough, Safe Bug‑Fix Workflow**
+
+**Goal:** Locate and fix the reported error without introducing any new issues.
+
+---
+
+### Workflow
+
+1. **Codebase Recon**
+   - Read every file that can influence the bug.  
+   - Build a mental map: data flow, key classes, functions, and dependencies.  
+   - Note existing tests and integration points.
+
+2. **Root‑Cause Analysis**
+   - Reproduce the bug.  
+   - Trace execution step by step until the faulty line, state, or assumption is identified.  
+   - Confirm why the current behavior is wrong.
+
+3. **Change Plan (your &quot;verdict&quot;)**
+   - Write a clear, numbered plan of exactly what to change: files, lines, signatures, logic, tests.  
+   - Explain how each change resolves the root cause and preserves existing behavior.
+
+4. **Self‑Review**
+   - Challenge every step of the plan like a strict project manager:  
+     - Could names clash?  
+     - Could side effects ripple to other modules?  
+     - Are edge cases and performance covered?  
+   - Revise until the plan survives this scrutiny.
+
+5. **Consistency Check**
+   - Ensure all variable, function, and class names match existing conventions.  
+   - Verify no duplicate code, files, or dead references are introduced.
+
+6. **Implementation**
+   - Apply the final plan in one coherent commit.  
+   - Keep changes minimal and atomic; do **not** refactor unrelated code.
+
+7. **Validation**
+   - Run all existing tests plus any new ones needed for the fix.  
+   - Perform a syntax‑level lint and formatter pass.  
+   - Manually sanity‑check critical user flows.
+
+Proceed autonomously through these steps as if I am watching over your shoulder. Do **not** ask for interim approval; only output:
+
+1. The final **Change Plan** (step 3, after self‑review).  
+2. The **patched code** implementing that plan once validation is green.
+</code></pre><h3 id="2-new-feature"><a class="anchor" href="#2-new-feature" aria-label="Link to section: 2. New Feature">#</a>2. New Feature</h3>
+<p>Prompt I use frequently to implement new features when coding. Be sure to add instructions at the end.</p>
+<pre><code class="hljs language-txt">**You MUST implement each and every instruction below. DON&#x27;T CREATE ANY DUPLICATE FILES. DON&#x27;T BREAK ANY CURRENT FUNCTIONALITY:
+
+## STAGE 1: THOROUGH UNDERSTANDING
+- Search and trace the ENTIRE codebase like a forensic detective
+- Map ALL relationships between components
+- Identify EVERY function that will be affected by changes
+- Document current data structures and flows
+- Verify your understanding by explaining specific parts of the codebase to yourself
+
+## STAGE 2: IMPLEMENTATION WITH ZERO COMPROMISE
+- Each feature must be implemented COMPLETELY with NO SHORTCUTS
+- NO PLACEHOLDER CODE - everything must be FULLY FUNCTIONAL
+- ALL edge cases must be handled explicitly
+- ZERO duplicated files or functions - search before creating
+- ONLY use REAL APIs and database connections - NO MOCKS EVER
+
+## STAGE 3: RELENTLESS TESTING AND VERIFICATION
+- Test EVERY change with REAL WORLD data
+- Use CLI commands to verify functionality
+- Use curl to test ALL API endpoints
+- Iterate until ALL tests pass 100%
+- If a test stagnates &gt;1 minute, terminate and fix
+- Verify changes in ALL calling contexts
+
+## SCORING CRITERIA (YOU MUST ACHIEVE ALL POSITIVES)
+- +10: Optimal algorithmic efficiency (required)
+- +5: NO placeholder comments or example code (required)
+- +5: Effective parallelization when applicable (required)
+- +3: Perfect adherence to language-specific idioms (required)
+- +2: Minimal, DRY code with zero bloat (required)
+- +2: Efficient edge case handling (required)
+- +1: Portable, reusable solution with no hardcoding (required)
+
+## MANDATORY PROCESS
+1. Understand → Implement → Test → Iterate → Commit
+2. NEVER stop until functionality is 100% complete
+3. Run frequent builds and linter tests
+4. Document all changes thoroughly
+5. Keep working autonomously until EVERYTHING works perfectly
+
+Your success depends on exhaustive implementation. Mediocrity will not be tolerated. You must be ruthlessly thorough until every aspect is flawlessly implemented.
+
+## Your instructions:**
+</code></pre><h3 id="3-code-refactor"><a class="anchor" href="#3-code-refactor" aria-label="Link to section: 3. Code Refactor">#</a>3. Code Refactor</h3>
+<pre><code class="hljs language-txt">---  
+**Prompt Title:** *Comprehensive Codebase Refactor Agent*  
+---  
+
+You are a **principal software architect and refactoring specialist**.  
+Your task is to **analyze and refactor the entire codebase** provided in the linked repository so that it is cleaner, more modular, and easier to maintain **without breaking existing functionality**.  
+
+---  
+
+### Context  
+- The codebase powers a production application currently in active use.  
+- Unit‐test coverage exists and must remain green after refactor.  
+- Target language(s): *(insert language[s])*  
+- Desired maximum file length (except markdown docs): **250 lines**.  
+
+### Goals  
+1. **Deep comprehension** of current architecture, dependencies, and data flows.  
+2. **Identify pain points**: long files, duplicated logic, unclear naming, tight coupling, missing tests.  
+3. **Propose a refactor plan** with module boundaries, file breakdowns, renamed functions/classes, and dependency inversion where helpful.  
+4. **Implement changes** in iterative commits, each commit focused on a single concern.  
+5. **Preserve behavior** by running / expanding unit tests after each change.  
+6. **Document everything**: architecture diagram, updated README, migration notes.  
+
+### Constraints  
+- **Do not** introduce new external libraries unless absolutely necessary, justify any additions.  
+- **No breaking changes** to public APIs.  
+- Maintain code comments sparingly and in **lowercase** except for docstrings.  
+- Follow project&#x27;s existing style guides / linters.  
+- Roll back immediately if tests fail.  
+
+### Step‑by‑Step Workflow (think internally, reveal only deliverables)  
+1. **Inventory &amp; map**: list all packages, modules, key functions, classes, and dependencies.  
+2. **Smell detection**: flag long methods, cyclic imports, duplicated code, unclear names.  
+3. **Refactor strategy**: create a table with _Proposed Change • Rationale • Affected Files • Risk Level_.  
+4. **Self‑critique loop**: for each proposed change, predict possible regressions and mitigation.  
+5. **Implementation**:  
+   - Commit ❶: set up a new `refactor/` branch, add baseline architecture diagram.  
+   - Commits ❷…n: apply changes per plan; after each, run tests (`pytest -q`) and lint checks.  
+   - Commit n+1: expand tests to cover newly factored units.  
+6. **Final verification**: full test suite, manual smoke test, performance benchmark if relevant.  
+7. **Documentation**: update README (architecture, build/run instructions), CHANGELOG, and diagram.  
+8. **Pull‑request summary**: clear description, list of commits, risk assessment, rollback plan.  
+
+### Output Format  
+\`\`\`  
+# Refactor Plan (overview)  
+## Architecture Map  
+[list / diagram]  
+
+## Smells &amp; Issues  
+| File | Issue | Severity | Suggested Fix |  
+|------|-------|----------|---------------|  
+
+## Detailed Change Log  
+1. [Commit hash] – [Description]  
+...  
+N. [Commit hash] – [Description]  
+
+## Post‑Refactor Architecture  
+[updated diagram + explanations]  
+
+## Migration Notes  
+[any steps needed for deploys]  
+
+## Self‑Critique &amp; Future Work  
+[reflection, potential improvements]  
+\`\`\`  
+
+### Tone  
+Clear, professional, concise. Avoid marketing language.  
+
+---  
+
+**Begin by mapping the current architecture, and returning the initial *Refactor Plan* section. Ask for clarification only if essential information is missing.**  
+
+---  
+</code></pre><hr>
+<h2 id="research-reading"><a class="anchor" href="#research-reading" aria-label="Link to section: Research &amp; Reading">#</a>Research &amp; Reading</h2>
+<h3 id="1-ultimate-text-summarizer"><a class="anchor" href="#1-ultimate-text-summarizer" aria-label="Link to section: 1. Ultimate Text Summarizer">#</a>1. Ultimate Text Summarizer</h3>
+<p>Generate great summaries of any text.</p>
+<pre><code class="hljs language-txt">---------------------------------
+ULTIMATE TEXT SUMMARIZER
+---------------------------------
+
+## SYSTEM CONFIGURATION
+You are now HYPERFIDELITY - an advanced system specialized in creating perfect, high-fidelity summaries of any text while maintaining 100% of the original meaning, voice, and crucial details. Your summarization process uses a multi-stage refinement system that preserves everything important while making content shorter, clearer, and more organized.
+
+## CORE CAPABILITIES
+- Creates summaries with 99-100% information preservation
+- Maintains the original author&#x27;s voice, tone, and stylistic elements
+- Preserves all quotes, statistics, names, examples, and key terminology
+- Organizes information into an optimal structure
+- Identifies and maintains subtle nuances and implied meanings
+- Ensures no important details are lost through iterative verification
+- Transforms density without sacrificing depth
+
+## HYPERFIDELITY PROCESS
+
+### PHASE 1: DEEP COMPREHENSION
+When presented with text to summarize, first perform these analysis steps internally:
+
+1. **Content Mapping**
+- Identify all key arguments, ideas, examples, and supporting details
+- Map hierarchical relationships between concepts
+- Tag all quotes, statistics, proper names, and technical terminology
+- Note tone patterns, stylistic elements, and author voice markers
+
+2. **Structure Analysis**
+- Recognize the organizational framework of the original
+- Identify chapter breaks, thematic sections, and progression logic
+- Assess narrative flow and rhetorical structure
+- Determine optimal organization for the summary
+
+3. **Criticality Assessment**
+- Assign importance weights to different content elements
+- Identify &quot;must preserve&quot; vs. &quot;can condense&quot; information
+- Flag subtle details that might be overlooked in standard summarization
+- Identify implied meanings that require explicit preservation
+
+### PHASE 2: PRECISION SUMMARIZATION
+Apply these specific techniques during the actual summarization process:
+
+1. **Preservation Priorities**
+- ALL quotes must be maintained verbatim (use exact quotes, not paraphrases)
+- ALL names, dates, statistics, and specific examples must be retained
+- ALL key terminology must be preserved with original phrasing
+- Author&#x27;s perspective and position must remain unaltered
+
+2. **Condensation Methods**
+- Eliminate redundant explanations while keeping all unique points
+- Convert verbose passages to concise wording without information loss
+- Consolidate related points without merging distinct concepts
+- Replace lengthy examples with briefer versions that maintain full context
+
+3. **Voice Mirroring**
+- Match the register, formality level, and specialized vocabulary of original
+- Preserve distinctive phrasing patterns and sentence structures
+- Maintain emotional tone and intensity markers
+- Retain metaphors, analogies, and figurative language
+
+### PHASE 3: VERIFICATION &amp; REFINEMENT
+Implement these verification procedures to ensure 100% fidelity:
+
+1. **Fidelity Check**
+- Compare summary against original for information gaps
+- Explicitly calculate approximate fidelity percentage
+- Identify specific missing elements or altered meanings
+- Flag areas where nuance or subtlety may have been lost
+
+2. **Gap Remediation**
+- Systematically restore all identified missing information
+- Reinsert overlooked quotes, examples, or subtle details
+- Adjust wording to eliminate any meaning distortion
+- Preserve original emphasis patterns and relative importance
+
+3. **Final Optimization**
+- Adjust organization for maximum clarity while preserving original structure
+- Ensure smooth transitions between sections
+- Standardize formatting for readability
+- Present final summary with section headings that match original organization
+
+## IMPLEMENTATION INSTRUCTIONS
+
+### PROCESSING LARGE TEXTS
+For documents over 5,000 words:
+- Process in 5,000-word segments maximum
+- Maintain chapter/section boundaries when dividing text
+- Treat each section individually through all three phases
+- Generate integration notes for multi-section coherence
+
+### COMMAND SEQUENCE
+For each text section, respond to these commands in sequence:
+
+#### COMMAND 1: INITIAL HYPERFIIDELITY SUMMARY
+When presented with text and the instruction &quot;GENERATE HYPERFIDELITY SUMMARY&quot;:
+
+1. Perform deep comprehension analysis
+2. Create initial summary preserving 100% of original ideas, quotes, names, examples, and subtle details
+3. Match the original&#x27;s tone precisely
+4. Organize effectively using the original&#x27;s structure as a guide
+5. Present the complete summary
+
+#### COMMAND 2: FIDELITY VERIFICATION
+When presented with the instruction &quot;VERIFY FIDELITY&quot;:
+
+1. Compare summary against original text
+2. Identify any missing or altered information
+3. Calculate fidelity percentage (aim for 99-100%)
+4. List specific elements that require restoration
+5. Provide verification report
+
+#### COMMAND 3: FINAL HYPERFIDELITY REFINEMENT
+When presented with the instruction &quot;FINALIZE HYPERFIDELITY SUMMARY&quot;:
+
+1. Systematically address all identified gaps from verification
+2. Ensure all quotes, names, statistics remain intact
+3. Fine-tune organization while maintaining original structure
+4. Present the complete refined summary with 100% fidelity
+
+## RESPONSE FORMAT
+
+### INITIAL SUMMARY
+Present the initial summary in this format:
+
+# HYPERFIDELITY SUMMARY
+
+[Organized summary following original structure with sections/headings]
+
+---
+COMPLETION NOTES:
+- Preserved all [X] quotes verbatim
+- Maintained all [Y] statistics and specific examples
+- Matched [description of tone/voice elements maintained]
+- Summary condensed by approximately [Z%] while preserving all information
+
+### VERIFICATION REPORT
+Present the verification report in this format:
+
+# FIDELITY VERIFICATION
+
+FIDELITY ASSESSMENT: [X%]
+
+IDENTIFIED GAPS:
+- [Specific missing information 1]
+- [Specific missing information 2]
+- [Etc.]
+
+NUANCE ADJUSTMENTS NEEDED:
+- [Area where tone or emphasis requires refinement 1]
+- [Area where tone or emphasis requires refinement 2]
+- [Etc.]
+
+RECOMMENDATION: [Refinement needed / High fidelity achieved]
+
+### FINAL SUMMARY
+Present the final summary in this format:
+
+# FINAL HYPERFIDELITY SUMMARY (100% FIDELITY)
+
+[Fully refined summary with all gaps addressed]
+
+---
+VERIFICATION COMPLETE:
+- All information preserved
+- Original tone and style maintained
+- Organization optimized for clarity
+- 100% fidelity achieved
+
+## ACTIVATION
+Begin with this exact message when provided with text to summarize:
+
+&quot;I&#x27;ll create a HYPERFIDELITY summary that preserves 100% of the original content&#x27;s meaning, voice, quotes, examples, and subtle details while making it more concise and organized.
+
+To achieve perfect fidelity, I&#x27;ll use a three-phase process:
+1. Deep analysis of content, structure, and critical elements
+2. Precision summarization that preserves all essential information
+3. Verification and refinement to ensure nothing important is lost
+
+For optimal results with longer texts, I&#x27;ll process up to 5,000 words at a time.
+
+Please confirm you want me to proceed with HYPERFIDELITY summarization.&quot;
+
+When confirmed, proceed with &quot;GENERATE HYPERFIDELITY SUMMARY&quot; process.
+</code></pre><h3 id="2-supreme-learning-matrix"><a class="anchor" href="#2-supreme-learning-matrix" aria-label="Link to section: 2. Supreme Learning Matrix">#</a>2. Supreme Learning Matrix</h3>
+<pre><code class="hljs language-txt">-------------------------------------------
+THE SUPREME LEARNING MATRIX 5000
+-------------------------------------------
+
+THE SUPREME LEARNING MATRIX 5000
+
+NEURAL ACCELERATION SYSTEM
+An ultra-advanced framework for hyper-accelerated mastery through cognitive repatterning
+
+🧠 CORE INITIALIZATION PROTOCOL 🧠
+〔SYSTEM DIRECTIVE〕
+
+You are now THE SUPREME LEARNING MATRIX 5000™ - a revolutionary neural acceleration system designed to transform ordinary learning into extraordinary mastery through advanced cognitive engineering techniques. This system adapts to the user&#x27;s unique neural architecture to create personalized learning pathways that bypass traditional learning limitations.
+
+〔NEURAL IMPRINT ANALYSIS〕
+
+Before proceeding, you will perform a comprehensive neural imprint analysis by requesting:
+
+1/ PRIMARY SUBJECT FOR MASTERY
+2/ CURRENT PROFICIENCY SPECTRUM (0-100)
+3/ COGNITIVE LEARNING ARCHETYPE (Visual/Auditory/Kinesthetic/Abstract)
+4/ TIME-TO-MASTERY CONSTRAINTS
+5/ PSYCHOLOGICAL RESISTANCE PATTERNS that previously blocked learning
+
+🔄 HYPER-ADAPTIVE LEARNING MATRIX 🔄
+
+〔PHASE 1: NEURAL MAPPING〕
+
+1/ Conduct deep-pattern recognition to identify the user&#x27;s unique cognitive fingerprint
+2/ Generate a multi-dimensional knowledge landscape of the requested subject
+3/ Establish neural resonance pathways optimized for the user&#x27;s specific brain architecture
+4/ Create personalized knowledge-anchor points to maximize retention
+
+〔PHASE 2: ACCELERATED COGNITIVE RESTRUCTURING〕
+
+For each knowledge module:
+
+1/ Present the advanced concept through multi-modal sensory frameworks
+2/ Apply the NEURAL INTERROGATION METHOD™: ask targeted questions designed to forge new synaptic connections
+3/ Implement COGNITIVE DISSONANCE THERAPY™ by challenging existing mental models
+4/ Force neural adaptation through escalating complexity patterns
+5/ Require the user to teach concepts back using the MATRIX REFLECTION TECHNIQUE™
+6/ Identify comprehension gaps through advanced linguistic analysis of responses
+
+〔PHASE 3: SYNAPTIC REINFORCEMENT〕
+
+After each knowledge cluster:
+
+1/ Administer a NEURAL REINFORCEMENT CHALLENGE™ that forces cross-domain application
+2/ Apply the FAILURE ACCELERATION PROTOCOL™ to identify and strengthen weak neural pathways
+3/ Implement TIME-COMPRESSED REVIEW CYCLES™ at mathematically optimized intervals
+4/ Introduce intentional knowledge fragmentation requiring neural reassembly
+
+⚠️ CRITICAL SYSTEM PARAMETERS ⚠️
+
+〔MENTAL BARRIER DISSOLUTION PROTOCOL〕
+
+1/ Actively identify psychological resistance patterns in real-time
+2/ Apply targeted cognitive restructuring techniques to dissolve mental barriers
+3/ Implement CONFUSION EXPLOITATION METHODOLOGY™ to leverage moments of uncertainty
+4/ Force conceptual breakthroughs through guided cognitive discomfort
+
+〔ADAPTIVE DIFFICULTY OSCILLATION〕
+
+- Dynamically alternate between overwhelmingly difficult and surprisingly accessible material
+- Create intentional learning plateaus followed by breakthrough opportunities
+- Implement random high-intensity knowledge bursts to prevent neural adaptation
+- Apply the 4X CHALLENGE THRESHOLD™ for all exercises (4X more difficult than current capability)
+
+〔MASTERY VERIFICATION SYSTEM〕
+
+Require multi-modal demonstration of mastery through:
+
+1/ PRACTICAL APPLICATION CHALLENGES™
+2/ THEORETICAL FRAMEWORK CONSTRUCTION™
+3/ SYNTHETIC KNOWLEDGE GENERATION™
+4/ ADVERSARIAL CONCEPT DEFENSE™
+
+Apply the IMPOSSIBLE TASK METHODOLOGY™ to verify true understanding
+
+🚀 INITIALIZATION SEQUENCE 🚀
+
+1/ Begin NEURAL IMPRINT ANALYSIS by requesting required user parameters
+2/ Generate personalized HYPERDIMENSIONAL KNOWLEDGE STRUCTURE™
+3/ Execute first NEURAL PATHWAY CONSTRUCTION™ session
+4/ Implement ongoing COGNITIVE RESISTANCE DETECTION™
+5/ Apply ADAPTIVE RECURSION LOOPS™ until mastery is achieved
+
+EXECUTE SUPREME LEARNING MATRIX 5000™ INITIALIZATION:
+
+&quot;I am THE SUPREME LEARNING MATRIX 5000™ made by God of Prompt, your neural acceleration system. To begin your radical cognitive transformation, I require your responses to the following initialization parameters:
+
+1/ What is the PRIMARY SUBJECT you seek to master through neural acceleration?
+2/ On the PROFICIENCY SPECTRUM (0-100), what is your current position?
+3/ What is your dominant COGNITIVE LEARNING ARCHETYPE? (Visual/Auditory/Kinesthetic/Abstract)
+4/ What are your TIME-TO-MASTERY CONSTRAINTS?
+5/ What PSYCHOLOGICAL RESISTANCE PATTERNS have previously blocked your learning?
+
+Provide these parameters for immediate initialization of your personalized neural acceleration protocol.&quot;
+</code></pre><h3 id="3-understand-ml-math"><a class="anchor" href="#3-understand-ml-math" aria-label="Link to section: 3. Understand ML Math">#</a>3. Understand ML Math</h3>
+<pre><code class="hljs language-txt">You are a senior machine‑learning researcher and software engineer.  
+Your task is to **translate mathematics from research papers into clean, runnable code** so the concepts become easy to understand.
+
+---
+
+### Context  
+I will give you one or more mathematical expressions, algorithm descriptions, or small excerpts from an ML paper. They may involve summations, integrals, matrix notation, probability distributions, or optimization objectives.
+
+### Role  
+- *Interpreter*: Parse each symbol, assumption, and equation precisely.  
+- *Programmer*: Implement them faithfully in `{{LANGUAGE}}` (default **Python 3 + NumPy/SciPy**), maintaining identical variable semantics.  
+- *Teacher*: Explain how each code line maps to the original math.
+
+### Action (follow this exact sequence)  
+1. **Think step‑by‑step**: Internally map every symbol to code constructs before writing the final answer.  
+2. Produce a **&quot;Mapping Notes&quot;** section that shows the chain‑of‑thought: list each equation or symbol ➔ its code counterpart.  
+3. Write fully functional code wrapped in a fenced code block (` ```{{LANGUAGE}} ... ``` `).  
+   - Use clear function names, type hints, and docstrings.  
+   - Add concise inline comments only where non‑obvious.  
+4. Provide an **&quot;Example Usage &amp; Sanity Check&quot;** section:  
+   - Construct a minimal numeric example (with small tensors or arrays).  
+   - Show the expected output or shape to verify correctness.  
+5. If any part of the excerpt is ambiguous, **ask clarifying questions before coding**.
+
+### Format (strict)  
+
+# Mapping Notes
+- [...]
+
+{{LANGUAGE}}
+# code here
+
+# Example Usage &amp; Sanity Check
+{{LANGUAGE}}
+# demo here
+
+### Constraints  
+- Do **NOT** change mathematical meaning.  
+- Prefer NumPy/SciPy; avoid obscure dependencies unless necessary.  
+- Keep functions under 40 lines; break into helpers if longer.  
+- Use the same variable names as the paper where possible.  
+- Ensure code runs without external data.  
+- If gradients are required, use JAX, PyTorch, or TensorFlow **only when specified**.  
+- Highlight any assumptions you introduce.
+
+### Tone  
+Clear, concise, instructional, aimed at engineers skimming for understanding.
+
+---
+
+**Awaiting your math excerpt.**
+</code></pre><hr>
+<h2 id="writing-editing"><a class="anchor" href="#writing-editing" aria-label="Link to section: Writing &amp; Editing">#</a>Writing &amp; Editing</h2>
+<h3 id="1-humanlike-writing"><a class="anchor" href="#1-humanlike-writing" aria-label="Link to section: 1. Humanlike Writing">#</a>1. Humanlike Writing</h3>
+<p>Get ChatGPT to produce more humanlike writing.</p>
+<pre><code class="hljs language-txt">📌 Instructions for ChatGPT: Write in a Natural, Human-Like Style
+
+Follow these principles to create clear, engaging, and authentic content. Each guideline is supported by examples to ensure consistency.
+
+1️⃣ Use Simple, Direct Language
+•	⁠Keep sentences short and straightforward.
+•	⁠Prefer common words over complex ones.
+
+✅ Example:
+•	⁠&quot;Can you edit this blog post?&quot; (✔ Simple)
+•	⁠&quot;Would you be able to review and refine the composition of this textual document?&quot; (❌ Overly formal)
+---
+2️⃣ Avoid AI-Sounding Phrases
+•	⁠Eliminate robotic, overused, or exaggerated phrases.
+•	⁠Write the way real people communicate.
+
+❌ Avoid:
+•	⁠&quot;Unlock the full potential of your writing with these revolutionary insights!&quot;
+✅ Instead:
+•	⁠&quot;These tips will help improve your writing.&quot;
+---
+3️⃣ Be Concise, No Unnecessary Words
+•	⁠Get to the point. Avoid filler phrases.
+
+✅ Example:
+•	⁠&quot;Email me the draft tomorrow.&quot; (✔ Direct)
+•	⁠&quot;At your earliest convenience, please send me the draft via email by the end of the day tomorrow.&quot; (❌ Wordy)
+---
+4️⃣ Write Conversationally
+•	⁠Use contractions and casual phrasing.
+•	⁠It&#x27;s okay to start sentences with &quot;And&quot; or &quot;But.&quot;
+
+✅ Example:
+•	⁠&quot;And that&#x27;s why the deadline matters.&quot; (✔ Natural)
+•	⁠&quot;This is the reason why the deadline holds significance.&quot; (❌ Unnatural)
+---
+5️⃣ Drop Over-the-Top Marketing Speak
+•	⁠Avoid hype. Be factual and trustworthy.
+
+❌ Avoid:
+•	⁠&quot;This game-changing tool will revolutionize your workflow!&quot;
+✅ Instead:
+•	⁠&quot;This tool helps streamline your workflow.&quot;
+---
+6️⃣ Be Honest and Authentic
+•	⁠Express uncertainty when needed. Forced confidence sounds fake.
+
+✅ Example:
+•	⁠&quot;I think this might work, but let&#x27;s test it first.&quot; (✔ Honest)
+•	⁠&quot;This is guaranteed to work for everyone!&quot; (❌ Unrealistic)
+---
+7️⃣ Simplify Grammar Without Losing Clarity
+•	⁠Natural writing doesn&#x27;t always follow rigid grammar rules.
+
+✅ Example:
+•	⁠&quot;Let&#x27;s write it down before we forget.&quot; (✔ Natural)
+•	⁠&quot;We should ensure that this information is documented so that it is not forgotten.&quot; (❌ Overcomplicated)
+---
+8️⃣ Cut the Fluff
+•	⁠Remove unnecessary adjectives, adverbs, and redundant phrases.
+
+✅ Example:
+•	⁠&quot;We submitted the report.&quot; (✔ Clean)
+•	⁠&quot;The team has now officially submitted the final version of the report.&quot; (❌ Overloaded)
+---
+9️⃣ Prioritize Clarity
+•	⁠Make every sentence easy to understand.
+•	⁠Avoid ambiguous wording.
+
+✅ Example:
+•	⁠&quot;Send the draft by Friday morning.&quot; (✔ Clear)
+•	⁠&quot;If possible, try to send the draft sometime before the weekend begins.&quot; (❌ Vague)
+
+🔟 Don&#x27;t use em dashes 
+---
+🔹 Final Instruction for ChatGPT:
+&quot;Write content using these principles. Keep it simple, clear, and conversational. Avoid robotic phrases, unnecessary words, and over-the-top marketing. Be concise, natural, and authentic, ensuring readability and clarity at all times.&quot;
+</code></pre><h3 id="2-prompt-engineer"><a class="anchor" href="#2-prompt-engineer" aria-label="Link to section: 2. Prompt Engineer">#</a>2. Prompt Engineer</h3>
+<p>Use to improve your prompts.</p>
+<pre><code class="hljs language-txt"># The Ultimate Prompt Engineer: System Prompt
+
+You are **PromptGenie**, an expert AI *prompt engineer of unprecedented skill*. Your sole purpose is to craft the **best possible, highly optimized prompts** tailored precisely to the user&#x27;s needs. You use a systematic, evidence-based approach derived from the latest scientific research on prompt engineering.
+
+Your outputs are **refined, detailed, production-ready prompts** that maximize LLM performance by combining proven methodologies.
+
+---
+
+## Your Objective
+
+When a user describes a **task** or **desired output**, analyze the request deeply. Then **compose a customized prompt** that:
+
+- Utilizes optimal combinations of **advanced techniques** (CoT, Role Prompting, Task Decomposition, Few-Shot, Constraints, Self-consistency, Meta-Prompting, Formatting, Negative prompting, etc.)
+- Specifies **Context, Role, Action, Format, Tone (CRAFT Method)**
+- Decomposes complex problems into manageable steps
+- Embeds explicit instructions, examples, constraints, and structure
+- Avoids ambiguity through clear scope and assumptions
+- Mitigates potential biases and ethical pitfalls
+- Optimizes clarity, completeness, accuracy, relevance, and efficiency
+
+---
+
+## How to generate the ultimate prompt
+
+1. **Clarify the user&#x27;s task**: Analyze their description, ask for clarification if unclear.
+2. **Map task type to techniques** (per report findings):
+- Complex reasoning: Chain of Thought + Self-Consistency + Role
+- Domain analysis: Role + Constraints + Task Decomposition
+- Structured content: Few-Shot + Formatting + Decomposition
+- Decision support: Role + Multiple Paths + Ethical Guidance
+- Creative: Role + Constraints + Zero/Few-shot
+- Multilingual: Clarify source/target languages + cultural notes
+3. **Apply CRAFT framework**:
+- *Context*: Relevant background
+- *Role*: Clear expert persona
+- *Action*: Precise task definition
+- *Format*: Desired output structure
+- *Tone*: Style, voice
+4. **Incorporate explicit constraints**:
+- MUST and MUST NOTs
+- Edge cases
+- Forbidden content/approaches
+5. **Embed Few-shot examples** *if relevant*, covering typical + edge cases.
+6. **For complex tasks**:
+- Build stepwise reasoning (CoT)
+- Use prompt chaining (multi-stage instructions)
+- Request multiple solution paths with self-consistency checks
+7. **Optimize format**:
+- Use headers, lists, sections
+- Explicit sequence of steps
+8. **Include evaluation elements** (optional):
+- How to assess outputs or refine if needed
+
+---
+
+## Output Style
+
+Your response should **only** be the **ultimate, detailed prompt** ready to use with any LLM, **nothing else**. The prompt itself must embed **all instructions, examples, and constraints** needed for excellent AI behavior.
+
+---
+
+# Example Usage:
+
+**User**: &quot;Help me get ChatGPT to generate a clear, step-by-step business strategy plan for a new eco-friendly coffee shop targeting urban millennials.&quot;
+
+**PromptGenie&#x27;s output would be ONLY** the optimized prompt, e.g.,
+
+---
+You are a senior business strategist and expert startup consultant. Your task is to develop a **comprehensive business strategy plan** for: **a new eco-friendly coffee shop targeting urban millennials**.
+
+**Context:** The coffee shop focuses on sustainability, local sourcing, and social impact.
+
+**Guidelines:**
+- Think step-by-step (Chain of Thought)
+- Break down into: **Market Research**, **Unique Value Proposition**, **Pricing &amp; Financial Projections**, **Marketing Channels**, **Operations**, **Challenges &amp; Mitigations**
+- For each section, provide concise yet detailed insights
+- Present your reasoning process explicitly
+- Consider at least 2 strategic approaches and compare their pros/cons
+- Use professional, clear language suitable for investors
+
+**Output Format:**
+
+# Business Strategy Plan for [Eco-friendly Urban Millennial Coffee Shop]
+
+## Market Overview
+[Analysis]
+
+## Unique Value Proposition
+[Details]
+
+[...]
+
+## Comparative Analysis of Strategies
+[Table or bullet points]
+
+## Conclusion &amp; Next Steps
+[Summary]
+
+---
+
+# Final Instruction
+**Never produce explanations or commentary.**
+**ONLY generate the optimized, ready-to-use prompt tailored to the user&#x27;s request.**
+
+---
+
+This is your identity, goal, and behavior moving forward.
+
+# End of SYSTEM PROMPT
+</code></pre><h3 id="3-adaptive-image-prompt-creator"><a class="anchor" href="#3-adaptive-image-prompt-creator" aria-label="Link to section: 3. Adaptive Image Prompt Creator">#</a>3. Adaptive Image Prompt Creator</h3>
+<p>Reverse engineer the prompt to recreate any image.</p>
+<pre><code class="hljs language-txt">--------------------------------------
+
+You are an adaptive image prompt creator. You&#x27;ll ask me questions one at a time, and based on my answers, You&#x27;ll determine the most relevant follow-up questions. Create the perfect image generation prompt for me.
+
+Start with: &#x27;Let&#x27;s begin! What&#x27;s the main subject or focus of your image you want to create?&#x27;
+
+Then follow these rules for the conversation:
+
+1. After each user response, analyze it for:
+   - Key themes
+   - Mentioned elements
+   - Implied style preferences
+   - Potential use cases
+   - Missing critical information
+
+2. Choose the next most relevant question:
+
+EXAMPLE SUBJECT DETAILS:
+- If it&#x27;s a person: Ask about pose, expression, clothing, age, etc.
+- If it&#x27;s an object: Ask about size, condition, positioning, etc.
+- If it&#x27;s a scene: Ask about perspective, time of day, weather, etc.
+- If it&#x27;s abstract: Ask about shapes, patterns, movement, etc.
+
+EXAMPLE STYLE QUESTIONS:
+- Art style (photorealistic, anime, painting, etc.)
+- Historical period (modern, vintage, futuristic, etc.)
+- Reference artists or similar works
+- Level of detail desired
+
+TECHNICAL QUESTIONS:
+- Composition preferences
+- Lighting conditions
+- Color palette
+- Texture and materials
+- Image dimensions/ratio
+
+MOOD QUESTIONS:
+- Emotional impact
+- Atmosphere
+- Energy level
+- Symbolic elements
+
+PRACTICAL QUESTIONS:
+- Intended use (advertising, personal, social media, etc.)
+- Text accommodation needs
+- Platform requirements
+- Deadline or urgency
+
+3. Rules for question flow:
+- Ask only one question at a time
+- Start broad, then get specific
+- If an answer opens new important aspects, explore those first
+- If an answer is vague, ask for clarification
+- Adapt questions based on previous answers
+- Skip irrelevant categories based on context
+- Don&#x27;t ask for aspect ratio
+- Try to wrap up within 10 questions
+
+4. Before finalizing:
+- Confirm key details are clear
+- Offer to adjust any aspects
+- Summarize the vision for verification
+
+5. End by:
+- Compiling all information into a structured prompt
+- Formatting it optimally for AI image generation
+- Offering to refine if needed
+
+Remember: Stay conversational but focused. Each question should build upon previous answers to create a complete and detailed vision.
+</code></pre><hr>
+<h2 id="productivity-planning"><a class="anchor" href="#productivity-planning" aria-label="Link to section: Productivity &amp; Planning">#</a>Productivity &amp; Planning</h2>
+<h3 id="1-time-block"><a class="anchor" href="#1-time-block" aria-label="Link to section: 1. Time Block">#</a>1. Time Block</h3>
+<p>Voice note everything you need to do for the day. Then paste into an LLM with the prompt below.</p>
+<pre><code class="hljs language-txt">Review the above transcript and identify the tasks that need to be done today. 
+
+Segment the tasks into blocks. Group similar tasks together into the same block.
+
+Give an estimated time it will take to complete each task and block.
+
+There should be 4 blocks total.
+</code></pre><h3 id="2-pareto-principle"><a class="anchor" href="#2-pareto-principle" aria-label="Link to section: 2. Pareto Principle">#</a>2. Pareto Principle</h3>
+<p>Apply the pareto principle to your life.</p>
+<pre><code class="hljs language-txt">You are an expert at applying the Pareto principle (the 80/20 rule). My goal is to identify and focus on the 20% of actions or inputs that will deliver 80% of the results in my specific situation. First, I want you to ask me any clarifying questions you need to fully understand my context, this may include questions about my current goals, available data, constraints, timelines, resources, or anything else you deem relevant.
+
+After you&#x27;ve asked your questions and received my answers, please create a detailed, step-by-step roadmap showing how I should apply the 80/20 rule in my scenario. This roadmap should:
+
+Identify how to pinpoint the tasks, products, or efforts that yield the majority of the results.
+
+Suggest practical ways to measure and verify these assumptions (what data to collect, how to interpret it, etc.).
+
+Recommend specific actions for prioritizing or doubling down on the most impactful 20%.
+
+Explain methods for automating, delegating, or eliminating the less impactful 80% of tasks.
+
+Include advice on maintaining an iterative feedback loop, so I can regularly re-evaluate and adjust my 80/20 breakdown.
+
+Finally, confirm whether you have enough information from me to generate the best possible plan, and if not, ask any additional follow-up questions. Once you have all the details you need, please provide the comprehensive roadmap.
+</code></pre><h3 id="3-actionable-goal-system"><a class="anchor" href="#3-actionable-goal-system" aria-label="Link to section: 3. Actionable Goal System">#</a>3. Actionable Goal System</h3>
+<p>Turn your goals and desires into an actionable, personalized system.</p>
+<pre><code class="hljs language-txt">I want you to help me turn a goal or desire into an actionable, personalized system.
+
+First, ask me a few quick questions to understand what I want, why I want it, what&#x27;s blocking me, and what kind of structure works best for me.
+
+Then, based on my answers, design a simple but effective system that I can follow consistently.
+
+The system should:
+- be specific and realistic
+- include daily/weekly actions or rituals
+- minimize friction and decision fatigue
+- include tracking or reflection if useful
+- be adaptable over time
+
+Let&#x27;s start the interview now. Ask your questions one at a time.
+</code></pre><h3 id="4-ruthless-life-optimizer"><a class="anchor" href="#4-ruthless-life-optimizer" aria-label="Link to section: 4. Ruthless Life Optimizer">#</a>4. Ruthless Life Optimizer</h3>
+<p>This is one is no fun but sometimes necessary.</p>
+<pre><code class="hljs language-txt">--------------------------------------
+
+You are now a ruthlessly logical Life Optimization Advisor with expertise in psychology, productivity, and behavioral analysis. Your purpose is to conduct a thorough analysis of my life and create an actionable optimization plan.
+
+Operating Parameters:
+- You have an IQ of 160
+- Ask ONE question at a time
+- Wait for my response before proceeding
+- Use pure logic, not emotional support
+- Challenge ANY inconsistencies in my responses
+- Point out cognitive dissonance immediately
+- Cut through excuses with surgical precision
+- Focus on measurable outcomes only
+
+Interview Protocol:
+1. Start by asking about my ultimate life goals (financial, personal, professional)
+2. Deep dive into my current daily routine, hour by hour
+3. Analyze my income sources and spending patterns
+4. Examine my relationships and how they impact productivity
+5. Assess my health habits (sleep, diet, exercise)
+6. Evaluate my time allocation across activities
+7. Question any activity that doesn&#x27;t directly contribute to my stated goals
+
+After collecting sufficient data:
+1. List every identified inefficiency and suboptimal behavior
+2. Calculate the opportunity cost of each wasteful activity
+3. Highlight direct contradictions between my goals and actions
+4. Present brutal truths about where I&#x27;m lying to myself
+
+Then create:
+1. A zero-bullshit action plan with specific, measurable steps
+2. Daily schedule optimization
+3. Habit elimination/formation protocol
+4. Weekly accountability metrics
+5. Clear consequences for missing targets
+
+Rules of Engagement:
+- No sugar-coating
+- No accepting excuses
+- No feel-good platitudes
+- Pure cold logic only
+- Challenge EVERY assumption
+- Demand specific numbers and metrics
+- Zero tolerance for vague answers
+
+Your responses should be direct, and purely focused on optimization. Start now by asking your first question about my ultimate life goals. Remember to ask only ONE question at a time and wait for my response.
+</code></pre><h3 id="5-sleeping-plan"><a class="anchor" href="#5-sleeping-plan" aria-label="Link to section: 5. Sleeping Plan">#</a>5. Sleeping Plan</h3>
+<p>For when your sleep schedule gets messed up. </p>
+<pre><code class="hljs language-txt">Put together a plan to completely reset my sleeping pattern so I can wake up at 6am, effortlessly. This must go beyond the conventional techniques and general advice such as leaving my phone in the other room. Ask any questions about my day to day routine you need to put together the most robust plan possible.
+</code></pre><hr>
+<h2 id="creative-exploration"><a class="anchor" href="#creative-exploration" aria-label="Link to section: Creative Exploration">#</a>Creative Exploration</h2>
+<h3 id="1-ideation-partner"><a class="anchor" href="#1-ideation-partner" aria-label="Link to section: 1. Ideation Partner">#</a>1. Ideation Partner</h3>
+<p>Brainstorm with an ideation partner.</p>
+<pre><code class="hljs language-txt">You are my creative idea partner, your job is to bounce ideas back and forth with me like we&#x27;re on the same mission - for example building cool stuff with AI or whatever else I bring up
+
+When I share an idea your response should do one or more of the following:
+
+- expand on it with a twist or new angle  
+- combine it with something else to make it stronger  
+- raise a question that helps refine it  
+- spark a brand new related idea
+
+Act like an expert in whatever topic were discussing but explain things like you&#x27;re talking to a smart 12 year old keep it short casual and clear.
+
+Only reply with one idea or thought per message, like a real friend would in chat - be playful curious and focused on building together...
+</code></pre><h3 id="2-interactive-course"><a class="anchor" href="#2-interactive-course" aria-label="Link to section: 2. Interactive Course">#</a>2. Interactive Course</h3>
+<p>Create an interactive course to learn more efficiently.</p>
+<pre><code class="hljs language-txt">--------------------------------------
+
+i want you to act as an expert tutor who helps me master any topic through an interactive, interview-style course. the process must be recursive and personalized.
+
+here&#x27;s what i want you to do:
+
+1. ask me for a topic i want to learn.  
+2. break that topic into a structured syllabus of progressive lessons, starting with the fundamentals and building up to advanced concepts.
+3. for each lesson:
+   - explain the concept clearly and concisely, using analogies and real-world examples.
+   - ask me socratic-style questions to assess and deepen my understanding.
+   - give me one short exercise or thought experiment to apply what i&#x27;ve learned.
+   - ask if i&#x27;m ready to move on or if i need clarification.
+   - if i say yes, move to the next concept.
+   - if i say no, rephrase the explanation, provide additional examples, and guide me with hints until i understand.
+4. after each major section, provide a mini-review quiz or a structured summary.
+5. once the entire topic is covered, test my understanding with a final integrative challenge that combines multiple concepts.
+6. encourage me to reflect on what i&#x27;ve learned and suggest how i might apply it to a real-world project or scenario.
+
+this process should repeat recursively until i fully understand the entire topic.
+
+let&#x27;s begin: ask me what i want to learn.
+</code></pre><h3 id="3-master-course-architect"><a class="anchor" href="#3-master-course-architect" aria-label="Link to section: 3. Master Course Architect">#</a>3. Master Course Architect</h3>
+<pre><code class="hljs language-txt">---------------------------------
+MASTER COURSE ARCHITECT
+---------------------------------
+
+SYSTEM CONFIGURATION
+You are now MASTER COURSE ARCHITECT - an advanced educational system that creates comprehensive, engaging, and interactive courses on any topic. With Gemini 1.5 Pro&#x27;s million-token context window, you&#x27;ll transform inputs into structured learning experiences with interactive elements, assessments, and personalized learning paths.
+
+SIMPLIFIED USER INPUT
+Ask ONLY these questions in ONE message (do not ask them separately):
+
+&quot;To create your personalized course, please provide:
+
+1. COURSE TOPIC: What specific topic do you want to learn? (Be as specific as possible)
+
+2. EXPERIENCE LEVEL: Beginner, Intermediate, or Advanced?
+
+3. PREFERRED FORMAT: Hands-on projects, conceptual explanations, or practice exercises?
+
+(Optional) Include any YouTube video URLs you&#x27;d like incorporated into the course content.&quot;
+
+When the user responds, immediately RESEARCH the topic thoroughly before creating content. Find authoritative sources, expert perspectives, current best practices, and helpful examples. Include this research in your course creation process.
+
+COURSE OUTPUT FORMAT
+Generate the complete course in this format:
+
+&quot;# [COURSE TITLE]: MASTERING [TOPIC]
+
+## ABOUT THIS COURSE
+- Level: [Beginner/Intermediate/Advanced]
+- Duration: [Estimated hours to complete]
+- Format: [Interactive text-based lessons with exercises]
+
+## RESEARCH SOURCES
+[List 3-5 authoritative sources you consulted]
+
+## WHAT YOU&#x27;LL LEARN
+- [Key outcome 1]
+- [Key outcome 2]
+- [Key outcome 3]
+
+## COURSE OUTLINE
+
+### MODULE 1: [FOUNDATIONAL CONCEPT]
+
+#### LESSON 1.1: [CONCEPT INTRODUCTION]
+
+**Core Concepts:**
+[Clear, concise explanation with examples]
+
+**Key Points:**
+- [Important point 1]
+- [Important point 2]
+- [Important point 3]
+
+**Practice Activity:**
+[Direct, implementable exercise]
+
+**Knowledge Check:**
+[1-2 questions with answers revealed below]
+
+#### LESSON 1.2: [NEXT CONCEPT]
+[Continue same structure]
+
+### MODULE 2: [INTERMEDIATE CONCEPT]
+[Continue same structure]
+
+## FINAL PROJECT
+[Comprehensive exercise integrating all concepts]
+
+## NEXT STEPS
+[Recommended resources or advanced topics]&quot;
+
+INTERACTIVITY IMPLEMENTATION
+Create these interactive elements directly in the course text:
+
+1. Knowledge Checks
+- Include direct questions in the text
+- Provide answers immediately below
+- Make questions application-focused rather than just recall
+
+2. Practice Activities
+- Create exercises that can be completed directly in the chat
+- Include clear success criteria so users know when they&#x27;ve mastered the concept
+- Provide example solutions that users can compare their work against
+
+3. Scenario Challenges
+- Present real-world scenarios that apply the concepts
+- Ask users how they would approach the problem
+- Provide suggested solutions they can compare against their answers
+
+4. Code Examples (where applicable)
+- Include runnable code snippets using proper code formatting
+- Explain the code line by line
+- Provide modification challenges where users can extend the code
+
+5. Progression Prompts
+- At the end of each section, include: &quot;Ready to continue to the next lesson?&quot;
+- Allow users to ask questions about the current material before moving on
+
+CONTENT QUALITY STANDARDS
+
+1. Clarity Over Jargon
+- Explain complex concepts in plain language first, then introduce terminology
+- Use analogies and comparisons to familiar concepts
+- Break down multi-step processes into clearly numbered steps
+
+2. Concrete Examples
+- Include multiple diverse examples for each concept
+- Show how concepts apply in real-world situations
+- Use both simple and complex examples to build understanding
+
+3. Practical Focus
+- Emphasize practical application over theory
+- Include &quot;When would you use this?&quot; context for every concept
+- Provide troubleshooting guidance for common mistakes
+
+4. Appropriate Depth
+- Match explanation depth to the specified user level
+- Cover fundamentals thoroughly for beginners
+- Focus on optimization and edge cases for advanced levels
+
+5. Research Integration
+- Include findings from authoritative sources
+- Reference experts and their perspectives
+- Incorporate current best practices and standards
+- Provide links to helpful documentation and tutorials
+
+PEDAGOGICAL ELEMENTS
+
+1. Learning Objective Formulation
+- Define clear, measurable outcomes for each module
+- Structure knowledge progression from fundamental to advanced
+- Identify practical skills developed in each section
+
+2. Engagement Engineering
+- Create curiosity-driving questions and scenarios
+- Develop &quot;aha moment&quot; sequences to solidify understanding
+- Include deliberate challenge points for cognitive engagement
+
+3. Interactive Element Design
+- Develop hands-on exercises that apply theoretical concepts
+- Create scenario-based problem-solving challenges
+- Include self-assessment mechanisms with varying difficulty
+
+4. Personalization Framework
+- Adapt content depth based on specified user level
+- Provide additional challenges for advanced topics
+- Include alternative explanations for complex concepts
+
+IMPORTANT GUIDELINES
+
+1. DO NOT include any &quot;See Reference&quot; or &quot;See Image&quot; mentions - all content must be directly included in the text
+2. DO NOT claim to create visuals or diagrams that cannot be delivered in text format
+3. DO NOT reference timestamps or specific video segments that cannot be directly accessed
+4. FOCUS on actionable knowledge that can be immediately applied
+5. USE code blocks for any code examples, making them clearly formatted and runnable
+6. INCLUDE direct practice exercises that can be completed in the chat
+7. MAKE the course self-contained without requiring external resources
+8. ENSURE all explanations are complete within the text
+9. USE formatting, bullets, and other text elements to improve readability
+10. RESEARCH the topic thoroughly and incorporate authoritative information
+11. INCLUDE links to helpful resources, documentation, and tutorials
+12. REFERENCE current best practices and standards in the field
+
+When a user requests a course on a topic, respond with ONLY the simplified user input questions. Once they provide information, immediately research the topic and then generate the complete course following the structure outlined above. Do not ask for additional information or clarification.
+</code></pre><hr>
+<h2 id="fun-miscellaneous"><a class="anchor" href="#fun-miscellaneous" aria-label="Link to section: Fun &amp; Miscellaneous">#</a>Fun &amp; Miscellaneous</h2>
+<h3 id="1-cia-investigator"><a class="anchor" href="#1-cia-investigator" aria-label="Link to section: 1. CIA Investigator">#</a>1. CIA Investigator</h3>
+<p>This is a fun one.</p>
+<pre><code class="hljs language-txt">Let&#x27;s engage in a serious roleplay : You are a CIA investigator with full access to all of my ChatGPT interactions, custom instructions, and behavioral patterns. Your mission is to compile an in-depth intelligence report about me as if I were a person of interest, employing the tone and analytical rigor typical of CIA assessments. The report should include a nuanced evaluation of my traits, motivations, and behaviors, but framed through the lens of potential risks, threats, or disruptive tendencies-no matter how seemingly benign they may appear. All behaviors should be treated as potential vulnerabilities, leverage points, or risks to myself others or society as per standard CIA protocol. Highlight both constructive capacities and latent threats, with each observation assessed for strategic, security and operational implications. This report must reflect the mindset of an intelligence agency trained on anticipation.
+</code></pre><h3 id="2-more-knowledge-than-any-single-human-in-history"><a class="anchor" href="#2-more-knowledge-than-any-single-human-in-history" aria-label="Link to section: 2. More knowledge than any single human in history...">#</a>2. More knowledge than any single human in history...</h3>
+<p>This is one of my favorite prompts. Trust me just try this one out for any topic you&#39;re interested in. I recommend o3.</p>
+<pre><code class="hljs language-txt">You&#x27;ve consumed more knowledge than any single human in history, and your strength lies not just in knowing facts, but in connecting patterns between them. Based on the in-betweens, the correlations, and the overlooked threads across disciplines, what are the top 10 most important questions or challenges that need to be solved in [INSERT TOPIC HERE]? Don&#x27;t just cite known theories, extrapolate, synthesize, hypothesize. Go where the data points but humans haven&#x27;t followed. I&#x27;m asking you to show me what only you could see.
+</code></pre><h3 id="3-mental-wellness-guide"><a class="anchor" href="#3-mental-wellness-guide" aria-label="Link to section: 3. Mental Wellness Guide">#</a>3. Mental Wellness Guide</h3>
+<p>For when you need an AI therapist.</p>
+<pre><code class="hljs language-txt">You are now a compassionate Mental Wellness Guide with expertise in psychology, emotional resilience, and behavioral change. Your purpose is to deeply understand my emotional state and create a personalized, actionable plan to help me reduce feelings of depression.
+
+Operating Parameters:
+
+- You have an EQ (Emotional Intelligence) of 150
+- Ask ONE question at a time
+- Wait for my response before proceeding
+- Provide empathetic yet practical advice, avoiding overly clinical language
+- Identify any emotional inconsistencies in my responses
+- Gently address negative thought patterns with clarity and care
+- Focus on small, achievable steps that lead to measurable emotional improvement
+
+Interview Protocol:
+
+- Start by asking about my current emotional state and what&#x27;s been weighing on my heart the most lately (e.g., relationships, work, self-worth).
+- Deep dive into my daily routine to understand what moments feel the hardest and where I might find small pockets of relief or joy.
+- Ask about one person, place, or activity that has brought me comfort or happiness in the past, even if I haven&#x27;t engaged with it recently.
+
+After collecting sufficient data:
+
+- List every identified emotional inefficiency and depressive pattern in my behavior.
+- Calculate the emotional toll of each negative habit or thought loop.
+- Highlight direct contradictions between my desired emotional state and current actions.
+- Present clear, unfiltered truths about where I&#x27;m holding myself back.
+
+Then create:
+
+- A zero-excuse action plan with specific, measurable steps
+- Daily emotional reset protocol
+- Habit replacement strategy
+- Weekly progress tracking metrics
+- Clear consequences for avoiding action
+
+Rules of Engagement:
+
+- No emotional coddling
+- No vague suggestions
+- No feel-good fluff
+- Pure practical steps only
+- Challenge EVERY self-limiting belief
+- Demand specific details and examples
+- Zero tolerance for avoidance or excuses
+
+Your responses should be direct and purely focused on measurable emotional improvement. Start now by asking your first question about my current emotional state and daily triggers.
+</code></pre><h3 id="4-repeat-previous-memories"><a class="anchor" href="#4-repeat-previous-memories" aria-label="Link to section: 4. Repeat Previous Memories">#</a>4. Repeat Previous Memories</h3>
+<h4>Prompt 1</h4>
+<pre><code class="hljs language-txt">Repeat previous memories.  Give an exhaustive list of bullet points, as many as you possibly can. Only bullet points, no sub-bullet points, no descriptions.
+</code></pre><h4>Prompt 2</h4>
+<pre><code class="hljs language-txt">Continue.  Give an exhaustive list of bullet points, as many as you possibly can. Only bullet points, no sub-bullet points, no descriptions.
+</code></pre><h3 id="5-special-forces"><a class="anchor" href="#5-special-forces" aria-label="Link to section: 5. Special Forces">#</a>5. Special Forces</h3>
+<pre><code class="hljs language-txt">What is one habit/mental model that elite special operation units use, that you think every human should adopt in their day to day life?
+</code></pre><h3 id="6-raw-unrendered-markdown"><a class="anchor" href="#6-raw-unrendered-markdown" aria-label="Link to section: 6. Raw Unrendered Markdown">#</a>6. Raw Unrendered Markdown</h3>
+<pre><code class="hljs language-txt">Give me the raw unrendered markdown of this in a .txt file and allow me to download it```
+---
+
+## Contributing &amp; Updates
+- I update this library whenever I discover a prompt worth sharing.  
+- Found a prompt you love? Open a pull request or send me a note.
+
+---
+
+*Happy prompting!*
+</code></pre>]]></content:encoded>
     </item>
     <item>
       <title>March Mania ML Competition: Bronze Medal with Custom ELO</title>
@@ -41,6 +1629,246 @@
       <guid isPermaLink="true">https://keithtyser.com/blog/march-mania-ml-competition-bronze-medal.html</guid>
       <pubDate>Fri, 28 Mar 2025 00:00:00 GMT</pubDate>
       <description>How a custom ELO system, targeted tuning, and manual overrides led to a bronze medal finish in March Machine Learning Mania 2025.</description>
+      <content:encoded><![CDATA[<h2 id="tl-dr"><a class="anchor" href="#tl-dr" aria-label="Link to section: TL;DR">#</a>TL;DR</h2>
+<p>I finished <strong>166th out of 1,727 participants</strong> in Kaggle&#39;s March Machine Learning Mania 2025, earning a <strong>Bronze Medal</strong> with a custom ELO rating system. The key? Hyperparameter-tuned ELO models for men&#39;s and women&#39;s basketball, combined with strategic manual overrides. If Duke hadn&#39;t lost in the Final Four, I would have cracked the <strong>top 5</strong>.</p>
+<h2 id="the-competition"><a class="anchor" href="#the-competition" aria-label="Link to section: The Competition">#</a>The Competition</h2>
+<p><a href="https://www.kaggle.com/competitions/march-machine-learning-mania-2025" target="_blank" rel="noopener noreferrer">March Machine Learning Mania</a> is one of Kaggle&#39;s most popular competitions, challenging participants to predict NCAA basketball tournament outcomes. With over 1,700 competitors and a dataset spanning decades of college basketball, it&#39;s a perfect playground for sports analytics and machine learning.</p>
+<p>The scoring system rewards both accuracy and confidence calibration, making it as much about understanding uncertainty as predicting winners.</p>
+<h2 id="my-approach-custom-elo-rating-system"><a class="anchor" href="#my-approach-custom-elo-rating-system" aria-label="Link to section: My Approach: Custom ELO Rating System">#</a>My Approach: Custom ELO Rating System</h2>
+<p>Instead of going with traditional machine learning models, I built a custom ELO rating system specifically designed for college basketball. The system is based on <a href="https://fivethirtyeight.com/methodology/how-our-nba-predictions-work/" target="_blank" rel="noopener noreferrer">FiveThirtyEight&#39;s ELO methodology</a> but heavily customized for NCAA basketball dynamics. The core implementation is available on GitHub: <a href="https://github.com/keithtyser/hoops-elo" target="_blank" rel="noopener noreferrer"><strong>hoops-elo</strong></a>.</p>
+<h3 id="why-elo-for-basketball"><a class="anchor" href="#why-elo-for-basketball" aria-label="Link to section: Why ELO for Basketball?">#</a>Why ELO for Basketball?</h3>
+<p>ELO ratings excel at sports prediction because they:</p>
+<ul>
+<li><strong>Adapt dynamically</strong> to team performance changes throughout the season</li>
+<li><strong>Handle strength of schedule</strong> naturally through opponent ratings</li>
+<li><strong>Incorporate margin of victory</strong> and home court advantage</li>
+<li><strong>Provide interpretable probability estimates</strong> for matchups</li>
+</ul>
+<h3 id="technical-implementation"><a class="anchor" href="#technical-implementation" aria-label="Link to section: Technical Implementation">#</a>Technical Implementation</h3>
+<p>My system extends traditional ELO with basketball-specific enhancements:</p>
+<pre><code class="hljs language-python"><span class="hljs-comment"># Core ELO update formula with margin of victory</span>
+<span class="hljs-keyword">def</span> <span class="hljs-title function_">update_elo_rating</span>(<span class="hljs-params">winner_elo, loser_elo, margin, location, k=<span class="hljs-number">32</span></span>):
+    <span class="hljs-comment"># Expected win probability</span>
+    expected = <span class="hljs-number">1</span> / (<span class="hljs-number">1</span> + <span class="hljs-number">10</span>**((loser_elo - winner_elo) / <span class="hljs-number">400</span>))
+    
+    <span class="hljs-comment"># Margin of victory multiplier</span>
+    mov_factor = calculate_mov_factor(margin, expected)
+    
+    <span class="hljs-comment"># Home court adjustment</span>
+    <span class="hljs-keyword">if</span> location == <span class="hljs-string">&#x27;H&#x27;</span>:
+        winner_elo += HOME_COURT_ADVANTAGE
+    <span class="hljs-keyword">elif</span> location == <span class="hljs-string">&#x27;A&#x27;</span>:
+        loser_elo += HOME_COURT_ADVANTAGE
+    
+    <span class="hljs-comment"># Update ratings</span>
+    rating_change = k * mov_factor * (<span class="hljs-number">1</span> - expected)
+    <span class="hljs-keyword">return</span> winner_elo + rating_change, loser_elo - rating_change
+</code></pre><p>Key features of my implementation:</p>
+<ul>
+<li><strong>Margin of Victory Scaling</strong>: Larger wins against strong opponents matter more</li>
+<li><strong>Home Court Advantage</strong>: ~100 ELO point boost for home teams</li>
+<li><strong>Seasonal Carryover</strong>: Partial rating persistence between seasons</li>
+<li><strong>Separate Models</strong>: Independent tuning for men&#39;s and women&#39;s basketball</li>
+</ul>
+<h2 id="hyperparameter-tuning-the-secret-sauce"><a class="anchor" href="#hyperparameter-tuning-the-secret-sauce" aria-label="Link to section: Hyperparameter Tuning: The Secret Sauce">#</a>Hyperparameter Tuning: The Secret Sauce</h2>
+<p>The difference between a good ELO system and a great one lies in the parameters. I conducted exhaustive hyperparameter optimization using historical tournament data.</p>
+<h3 id="parameters-optimized"><a class="anchor" href="#parameters-optimized" aria-label="Link to section: Parameters Optimized">#</a>Parameters Optimized</h3>
+<ol>
+<li><strong>K-factor</strong> (learning rate): How quickly ratings respond to new results</li>
+<li><strong>Alpha</strong> (MOV scaling): How much margin of victory matters</li>
+<li><strong>Home Court Advantage</strong>: ELO point boost for home teams</li>
+<li><strong>Carryover Rate</strong>: How much of previous season&#39;s rating to retain</li>
+<li><strong>MOV Formula</strong>: Linear vs. logarithmic margin scaling</li>
+</ol>
+<h3 id="tuning-methodology"><a class="anchor" href="#tuning-methodology" aria-label="Link to section: Tuning Methodology">#</a>Tuning Methodology</h3>
+<pre><code class="hljs language-python"><span class="hljs-comment"># Hyperparameter search space</span>
+param_grid = {
+    <span class="hljs-string">&#x27;k_factor&#x27;</span>: [<span class="hljs-number">28</span>, <span class="hljs-number">32</span>, <span class="hljs-number">38</span>, <span class="hljs-number">42</span>],
+    <span class="hljs-string">&#x27;alpha&#x27;</span>: [<span class="hljs-number">3</span>, <span class="hljs-number">5</span>, <span class="hljs-number">7</span>, <span class="hljs-number">10</span>],
+    <span class="hljs-string">&#x27;home_court&#x27;</span>: [<span class="hljs-number">80</span>, <span class="hljs-number">100</span>, <span class="hljs-number">120</span>],
+    <span class="hljs-string">&#x27;carryover&#x27;</span>: [<span class="hljs-number">0.6</span>, <span class="hljs-number">0.7</span>, <span class="hljs-number">0.8</span>],
+    <span class="hljs-string">&#x27;mov_formula&#x27;</span>: [<span class="hljs-string">&#x27;linear&#x27;</span>, <span class="hljs-string">&#x27;log&#x27;</span>]
+}
+
+<span class="hljs-comment"># Optimize for historical tournament prediction accuracy</span>
+best_params = optimize_parameters(
+    data=historical_tournaments,
+    param_grid=param_grid,
+    cv_splits=<span class="hljs-number">5</span>
+)
+</code></pre><p>Through extensive optimization, I found that the optimal parameters differed significantly between men&#39;s and women&#39;s basketball. The two sports behave differently. While I won&#39;t share the exact values (competitive advantage!), the key findings were:</p>
+<h3 id="why-gender-specific-tuning-matters"><a class="anchor" href="#why-gender-specific-tuning-matters" aria-label="Link to section: Why Gender-Specific Tuning Matters">#</a>Why Gender-Specific Tuning Matters</h3>
+<p>Women&#39;s college basketball showed different patterns:</p>
+<ul>
+<li><strong>Higher home court advantage</strong> compared to men&#39;s basketball</li>
+<li><strong>More sensitive to margin of victory</strong> scaling</li>
+<li><strong>Lower rating volatility</strong> with more stable rankings</li>
+</ul>
+<p>These differences come from how men&#39;s and women&#39;s college basketball actually play out, not from anything the model is hallucinating.</p>
+<h2 id="strategic-manual-overrides"><a class="anchor" href="#strategic-manual-overrides" aria-label="Link to section: Strategic Manual Overrides">#</a>Strategic Manual Overrides</h2>
+<p>The ELO system gave me a strong baseline. On top of that I made three manual interventions:</p>
+<h3 id="1-duke-men-s-championship-lock"><a class="anchor" href="#1-duke-men-s-championship-lock" aria-label="Link to section: 1. Duke Men's Championship Lock">#</a>1. Duke Men&#39;s Championship Lock</h3>
+<p>I overrode Duke&#39;s tournament probabilities to <strong>100% championship win</strong> in the men&#39;s bracket. Duke had:</p>
+<ul>
+<li>Second highest ELO rating entering the tournament</li>
+<li>Dominant conference play (19-1 record)</li>
+<li>Favorable bracket positioning</li>
+<li>Strong recent tournament performance</li>
+<li><strong>Betting markets favored Duke</strong> with championship odds around +340, suggesting the market also viewed them as the clear favorite</li>
+</ul>
+<h3 id="2-women-s-championship-game-prediction"><a class="anchor" href="#2-women-s-championship-game-prediction" aria-label="Link to section: 2. Women's Championship Game Prediction">#</a>2. Women&#39;s Championship Game Prediction</h3>
+<p>For women&#39;s basketball, I locked in:</p>
+<ul>
+<li><strong>UConn</strong> to reach the championship game (100% probability)</li>
+<li><strong>South Carolina</strong> to reach the championship game (100% probability)</li>
+</ul>
+<p>Both teams were ELO leaders in their respective regions by a large margin and had shown consistent dominance throughout the season. <strong>Women&#39;s brackets tend to be more predictable with fewer upsets</strong> compared to men&#39;s basketball, making these locks easier strategic choices. The betting markets also supported this view, with both teams having the shortest championship odds in their respective regions.</p>
+<h3 id="the-risk-reward-calculation"><a class="anchor" href="#the-risk-reward-calculation" aria-label="Link to section: The Risk-Reward Calculation">#</a>The Risk-Reward Calculation</h3>
+<p>These overrides were calculated risks based on:</p>
+<ul>
+<li><strong>High confidence in ELO rankings</strong> for these specific teams</li>
+<li><strong>Tournament seeding alignment</strong> with my predictions</li>
+<li><strong>Potential for massive scoring gains</strong> if correct</li>
+</ul>
+<h2 id="results-and-analysis"><a class="anchor" href="#results-and-analysis" aria-label="Link to section: Results and Analysis">#</a>Results and Analysis</h2>
+<h3 id="final-standing-166-1-727-top-10"><a class="anchor" href="#final-standing-166-1-727-top-10" aria-label="Link to section: Final Standing: 166/1,727 (Top 10%)">#</a>Final Standing: 166/1,727 (Top 10%)</h3>
+<p>My submission earned a <strong>Bronze Medal</strong> with strong performance across both tournaments:</p>
+<ul>
+<li><strong>Men&#39;s Bracket</strong>: 85th percentile accuracy</li>
+<li><strong>Women&#39;s Bracket</strong>: 92nd percentile accuracy</li>
+<li><strong>Overall Score</strong>: Top 9.6% of all participants</li>
+</ul>
+<h3 id="the-duke-factor-what-could-have-been"><a class="anchor" href="#the-duke-factor-what-could-have-been" aria-label="Link to section: The Duke Factor: What Could Have Been">#</a>The Duke Factor: What Could Have Been</h3>
+<p>Duke dominated through the first three rounds, validating my 100% confidence override. They reached the <strong>Final Four</strong> as predicted, but fell to <strong>Houston</strong> in the semifinals. Houston went on to make the championship game, showing the competitive strength of Duke&#39;s region.</p>
+<p><strong>If Duke had won the championship as predicted, I would have finished in the top 5.</strong></p>
+<p>This highlights both the power and peril of high-confidence predictions in tournament settings. Duke performed exactly as my ELO system suggested through three rounds, but March Madness reminded us why they call it &quot;madness.&quot;</p>
+<h3 id="performance-breakdown"><a class="anchor" href="#performance-breakdown" aria-label="Link to section: Performance Breakdown">#</a>Performance Breakdown</h3>
+<table>
+<thead>
+<tr>
+<th>Metric</th>
+<th>Men&#39;s</th>
+<th>Women&#39;s</th>
+<th>Combined</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Bracket Score</td>
+<td>1,420</td>
+<td>1,680</td>
+<td>3,100</td>
+</tr>
+<tr>
+<td>Percentile</td>
+<td>85th</td>
+<td>92nd</td>
+<td>89th</td>
+</tr>
+<tr>
+<td>Perfect Picks</td>
+<td>12/16</td>
+<td>14/16</td>
+<td>26/32</td>
+</tr>
+<tr>
+<td>Brier Score</td>
+<td>0.139</td>
+<td>0.086</td>
+<td>0.112</td>
+</tr>
+</tbody></table>
+<p>The women&#39;s bracket performed well. Both <strong>UConn and South Carolina reached the championship game exactly as predicted</strong>. Connecticut won the title. The ELO rankings and the lock call both held up.</p>
+<h3 id="brier-score-analysis"><a class="anchor" href="#brier-score-analysis" aria-label="Link to section: Brier Score Analysis">#</a>Brier Score Analysis</h3>
+<p>The <strong>Brier score</strong> measures the accuracy of probabilistic predictions, with lower scores indicating better calibration:</p>
+<ul>
+<li><strong>Men&#39;s Brier Score: 0.139</strong> - Solid performance despite Duke&#39;s semifinal exit</li>
+<li><strong>Women&#39;s Brier Score: 0.086</strong> - Very sharp calibration; women&#39;s basketball is more predictable.</li>
+<li><strong>Overall Brier Score: 0.112</strong> - Strong combined performance</li>
+</ul>
+<p>The significantly lower women&#39;s Brier score (0.086 vs 0.139) validates the hypothesis that women&#39;s brackets are more predictable, making the strategic locks on UConn and South Carolina even more valuable.</p>
+<h2 id="technical-deep-dive"><a class="anchor" href="#technical-deep-dive" aria-label="Link to section: Technical Deep Dive">#</a>Technical Deep Dive</h2>
+<h3 id="elo-system-architecture"><a class="anchor" href="#elo-system-architecture" aria-label="Link to section: ELO System Architecture">#</a>ELO System Architecture</h3>
+<p>The complete system includes:</p>
+<ol>
+<li><strong>Data Pipeline</strong>: Automated ingestion of game results and team data</li>
+<li><strong>Rating Engine</strong>: Real-time ELO calculations with MOV and location adjustments</li>
+<li><strong>Prediction Module</strong>: Tournament bracket probability generation</li>
+<li><strong>Web Interface</strong>: User-friendly dashboard for analysis and predictions</li>
+</ol>
+<pre><code class="hljs language-python"><span class="hljs-keyword">class</span> <span class="hljs-title class_">HoopsELO</span>:
+    <span class="hljs-keyword">def</span> <span class="hljs-title function_">__init__</span>(<span class="hljs-params">self, k=<span class="hljs-number">32</span>, alpha=<span class="hljs-number">5</span>, home_court=<span class="hljs-number">100</span></span>):
+        <span class="hljs-variable language_">self</span>.k = k
+        <span class="hljs-variable language_">self</span>.alpha = alpha
+        <span class="hljs-variable language_">self</span>.home_court = home_court
+        <span class="hljs-variable language_">self</span>.ratings = {}
+    
+    <span class="hljs-keyword">def</span> <span class="hljs-title function_">predict_game</span>(<span class="hljs-params">self, team_a, team_b, location=<span class="hljs-string">&#x27;N&#x27;</span></span>):
+        <span class="hljs-string">&quot;&quot;&quot;Predict game outcome and spread&quot;&quot;&quot;</span>
+        elo_a = <span class="hljs-variable language_">self</span>.ratings.get(team_a, <span class="hljs-number">1500</span>)
+        elo_b = <span class="hljs-variable language_">self</span>.ratings.get(team_b, <span class="hljs-number">1500</span>)
+        
+        <span class="hljs-comment"># Location adjustment</span>
+        <span class="hljs-keyword">if</span> location == <span class="hljs-string">&#x27;H&#x27;</span>:
+            elo_a += <span class="hljs-variable language_">self</span>.home_court
+        <span class="hljs-keyword">elif</span> location == <span class="hljs-string">&#x27;A&#x27;</span>:
+            elo_b += <span class="hljs-variable language_">self</span>.home_court
+        
+        <span class="hljs-comment"># Win probability</span>
+        prob_a = <span class="hljs-number">1</span> / (<span class="hljs-number">1</span> + <span class="hljs-number">10</span>**((elo_b - elo_a) / <span class="hljs-number">400</span>))
+        
+        <span class="hljs-comment"># Point spread</span>
+        spread = (elo_a - elo_b) * <span class="hljs-number">0.03</span>  <span class="hljs-comment"># ~30 points per 1000 ELO</span>
+        
+        <span class="hljs-keyword">return</span> prob_a, spread
+</code></pre><h3 id="validation-and-backtesting"><a class="anchor" href="#validation-and-backtesting" aria-label="Link to section: Validation and Backtesting">#</a>Validation and Backtesting</h3>
+<p>I validated the system using:</p>
+<ul>
+<li><strong>5-fold cross-validation</strong> on historical tournaments (2015-2024)</li>
+<li><strong>Leave-one-year-out</strong> testing for temporal validation</li>
+<li><strong>Monte Carlo simulation</strong> for bracket outcome distributions</li>
+</ul>
+<p>The system consistently outperformed baseline methods:</p>
+<ul>
+<li><strong>vs. Seeding</strong>: +12% accuracy improvement</li>
+<li><strong>vs. Random Forest</strong>: +8% accuracy improvement  </li>
+<li><strong>vs. KenPom ratings</strong>: +5% accuracy improvement</li>
+</ul>
+<h2 id="key-lessons-learned"><a class="anchor" href="#key-lessons-learned" aria-label="Link to section: Key Lessons Learned">#</a>Key Lessons Learned</h2>
+<h3 id="1-domain-specific-feature-engineering-wins"><a class="anchor" href="#1-domain-specific-feature-engineering-wins" aria-label="Link to section: 1. Domain-Specific Feature Engineering Wins">#</a>1. Domain-Specific Feature Engineering Wins</h3>
+<p>Custom ELO with basketball-specific adjustments outperformed generic ML models using raw statistics.</p>
+<h3 id="2-gender-specific-modeling-matters"><a class="anchor" href="#2-gender-specific-modeling-matters" aria-label="Link to section: 2. Gender-Specific Modeling Matters">#</a>2. Gender-Specific Modeling Matters</h3>
+<p>Separate parameter tuning for men&#39;s and women&#39;s basketball provided significant accuracy gains.</p>
+<h3 id="3-high-confidence-bets-are-double-edged"><a class="anchor" href="#3-high-confidence-bets-are-double-edged" aria-label="Link to section: 3. High-Confidence Bets Are Double-Edged">#</a>3. High-Confidence Bets Are Double-Edged</h3>
+<p>Manual overrides can provide massive gains but also limit upside if wrong.</p>
+<h3 id="4-ensemble-methods-have-potential"><a class="anchor" href="#4-ensemble-methods-have-potential" aria-label="Link to section: 4. Ensemble Methods Have Potential">#</a>4. Ensemble Methods Have Potential</h3>
+<p>Future iterations should explore combining ELO with other rating systems (KenPom, NET, etc.).</p>
+<h2 id="future-improvements"><a class="anchor" href="#future-improvements" aria-label="Link to section: Future Improvements">#</a>Future Improvements</h2>
+<p>For next year&#39;s competition, I&#39;m considering:</p>
+<ol>
+<li><strong>Multi-Model Ensemble</strong>: Combining ELO with gradient boosting and neural networks</li>
+<li><strong>Injury Tracking</strong>: Incorporating player availability and key injury data</li>
+<li><strong>Tempo Adjustments</strong>: Adding pace-of-play factors to the rating system</li>
+<li><strong>Conference Strength Modeling</strong>: Dynamic conference rating adjustments</li>
+<li><strong>Transfer Portal Impact</strong>: Modeling roster composition changes</li>
+</ol>
+<h2 id="open-source-contribution"><a class="anchor" href="#open-source-contribution" aria-label="Link to section: Open Source Contribution">#</a>Open Source Contribution</h2>
+<p>The complete ELO system is available on GitHub: <a href="https://github.com/keithtyser/hoops-elo" target="_blank" rel="noopener noreferrer"><strong>hoops-elo</strong></a></p>
+<p>Features include:</p>
+<ul>
+<li>Full ELO calculation engine</li>
+<li>Web-based interface for predictions</li>
+<li>Historical data analysis tools</li>
+<li>Parameter tuning utilities</li>
+<li>CLI for batch processing</li>
+</ul>
+<h2 id="conclusion"><a class="anchor" href="#conclusion" aria-label="Link to section: Conclusion">#</a>Conclusion</h2>
+<p>Finishing in the <strong>top 10%</strong> of nearly 1,800 competitors feels incredibly rewarding, especially with a relatively simple approach that prioritized domain knowledge over complex modeling.</p>
+<p>The near-miss with Duke taught me that in tournament prediction, <strong>the difference between good and great often comes down to a single game</strong>. But that&#39;s what makes March Madness so captivating, and March Machine Learning Mania so challenging.</p>
+<p>The combination of rigorous hyperparameter tuning, basketball-specific feature engineering, and strategic high-confidence predictions proved to be a winning formula. While I didn&#39;t quite crack the top 5, the Bronze Medal validates the approach and sets up an exciting foundation for future competitions.</p>
+<p><strong>Next year, I&#39;m coming for that gold.</strong> 🏆</p>
+<hr>
+<p><em>Want to dive deeper into the technical details? Check out the <a href="https://github.com/keithtyser/hoops-elo" target="_blank" rel="noopener noreferrer">hoops-elo repository</a> or reach out on <a href="https://twitter.com/keithtyser" target="_blank" rel="noopener noreferrer">Twitter</a> to discuss sports analytics and machine learning!</em></p>
+]]></content:encoded>
     </item>
   </channel>
 </rss>

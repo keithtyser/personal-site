@@ -32,15 +32,21 @@ document.addEventListener('DOMContentLoaded', () => {
     progress.setAttribute('aria-hidden', 'true');
     statusbar.appendChild(progress);
     let raf = 0;
+    let total = 0;
+    const measure = () => {
+      total = document.documentElement.scrollHeight - window.innerHeight;
+    };
     const update = () => {
       raf = 0;
-      const total = document.documentElement.scrollHeight - window.innerHeight;
       const pct = total > 0 ? Math.min(100, (window.scrollY / total) * 100) : 0;
       progress.style.width = `${pct}%`;
     };
+    window.addEventListener('resize', () => { measure(); update(); });
+    window.addEventListener('load', () => { measure(); update(); });
     window.addEventListener('scroll', () => {
       if (!raf) raf = requestAnimationFrame(update);
     }, { passive: true });
+    measure();
     update();
   }
 
@@ -143,13 +149,29 @@ function initPalette() {
     { title: 'RSS feed', hint: 'social', href: '/feed.xml' },
   ];
 
+  // Terminal easter eggs: exact command input runs these instead of nav
+  const COMMANDS = {
+    whoami: () => 'guest. the one with the green status dot is keith.',
+    pwd: () => `~${window.location.pathname.replace(/index\.html$/, '').replace(/\.html$/, '').replace(/\/$/, '')}`,
+    ls: () => 'home/  writing/  archive/  now/  books/  tech-stack/  ai/',
+    sudo: () => 'guest is not in the sudoers file. this incident will be reported.',
+    vim: () => 'you are now stuck in vim. refresh the page to exit.',
+    'rm -rf /': () => 'nice try. this site is version controlled.',
+    man: () => 'no manual entry. there never was a manual.',
+    help: () => 'try: whoami, pwd, ls, sudo, vim, man, clear, exit. or just type where you want to go.',
+    clear: 'clear',
+    exit: 'exit',
+  };
+
   let overlay = null;
   let input = null;
   let list = null;
+  let output = null;
   let items = [];
   let filtered = [];
   let active = 0;
   let loaded = false;
+  let lastFocused = null;
 
   function buildDom() {
     overlay = document.createElement('div');
@@ -158,25 +180,58 @@ function initPalette() {
       <div class="palette" role="dialog" aria-modal="true" aria-label="Command palette">
         <div class="palette-head">
           <span class="palette-prompt" aria-hidden="true">$</span>
-          <input class="palette-input" type="text" placeholder="jump to..." aria-label="Search pages, posts, and actions" autocomplete="off" spellcheck="false">
+          <input class="palette-input" type="text" placeholder="jump to... (or try: whoami)" aria-label="Search pages, posts, and actions" autocomplete="off" spellcheck="false">
           <kbd class="palette-esc" aria-hidden="true">esc</kbd>
         </div>
+        <div class="palette-output" role="status" hidden></div>
         <ul class="palette-list" role="listbox"></ul>
       </div>`;
     document.body.appendChild(overlay);
     input = overlay.querySelector('.palette-input');
     list = overlay.querySelector('.palette-list');
+    output = overlay.querySelector('.palette-output');
 
     overlay.addEventListener('mousedown', (e) => {
       if (e.target === overlay) close();
+    });
+    // Focus trap: the input is the dialog's only focusable control
+    overlay.addEventListener('keydown', (e) => {
+      if (e.key === 'Tab') {
+        e.preventDefault();
+        input.focus();
+      }
     });
     input.addEventListener('input', () => { active = 0; render(); });
     input.addEventListener('keydown', (e) => {
       if (e.key === 'ArrowDown') { e.preventDefault(); move(1); }
       else if (e.key === 'ArrowUp') { e.preventDefault(); move(-1); }
-      else if (e.key === 'Enter') { e.preventDefault(); execute(filtered[active]); }
+      else if (e.key === 'Enter') {
+        e.preventDefault();
+        if (!runCommand(input.value)) execute(filtered[active]);
+      }
       else if (e.key === 'Escape') { e.preventDefault(); close(); }
     });
+  }
+
+  function runCommand(value) {
+    const cmd = value.trim().toLowerCase();
+    const handler = COMMANDS[cmd] || (cmd.startsWith('sudo ') ? COMMANDS.sudo : null)
+      || (cmd.startsWith('rm ') ? COMMANDS['rm -rf /'] : null)
+      || (cmd.startsWith('man ') ? COMMANDS.man : null);
+    if (!handler) return false;
+    if (handler === 'exit') { close(); return true; }
+    if (handler === 'clear') {
+      output.hidden = true;
+      output.textContent = '';
+      input.value = '';
+      render();
+      return true;
+    }
+    output.textContent = `$ ${cmd}\n${handler()}`;
+    output.hidden = false;
+    input.value = '';
+    render();
+    return true;
   }
 
   async function loadItems() {
@@ -249,10 +304,13 @@ function initPalette() {
 
   function open() {
     if (!overlay) buildDom();
+    lastFocused = document.activeElement;
     loadItems();
     overlay.classList.add('is-open');
     document.body.style.overflow = 'hidden';
     input.value = '';
+    output.hidden = true;
+    output.textContent = '';
     active = 0;
     render();
     input.focus();
@@ -262,6 +320,7 @@ function initPalette() {
     if (!overlay) return;
     overlay.classList.remove('is-open');
     document.body.style.overflow = '';
+    if (lastFocused && typeof lastFocused.focus === 'function') lastFocused.focus();
   }
 
   function isOpen() {

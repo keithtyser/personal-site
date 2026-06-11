@@ -142,6 +142,10 @@ ${items}
 const FONT_PRELOADS = `  <link rel="preload" href="/fonts/SchibstedGroteskVariable.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="/fonts/JetBrainsMonoVariable.woff2" as="font" type="font/woff2" crossorigin>`;
 
+// Privacy-friendly analytics (no cookies). Counts nothing until the
+// "keithtyser" site code is registered at goatcounter.com.
+const ANALYTICS = `  <script data-goatcounter="https://keithtyser.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>`;
+
 function renderStatusbar(sbPath) {
   return `  <div class="statusbar" role="contentinfo" aria-label="Status bar">
     <div class="sb-left">
@@ -149,7 +153,7 @@ function renderStatusbar(sbPath) {
     </div>
     <div class="sb-right">
       <time class="sb-clock" id="sb-clock" title="Your local time" aria-hidden="true"></time>
-      <button type="button" class="sb-hint" data-palette-open aria-label="Open command palette">ctrl+k</button>
+      <button type="button" class="sb-hint" data-palette-open aria-label="ctrl+k: open command palette">ctrl+k</button>
       <button id="darkModeToggle" type="button" class="icon-link" aria-label="Toggle theme">
         <svg class="icon text-[13px] dark:hidden" aria-hidden="true"><use href="/icons.svg#moon"/></svg>
         <svg class="icon text-[13px] hidden dark:inline" aria-hidden="true"><use href="/icons.svg#sun"/></svg>
@@ -236,6 +240,7 @@ function renderArticleDoc({
   ogImage,
   minutes,
   postNav,
+  headExtra,
 }) {
   const shellClass = hasToc ? 'article-shell article-with-toc' : 'article-shell';
   const layoutOpen = hasToc ? '<div class="article-layout">' : '';
@@ -312,6 +317,7 @@ ${FONT_PRELOADS}
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 ${rssLink}
+${headExtra || ''}
   <script src="${scriptPath}" defer></script>
 </head>
 <body>
@@ -342,6 +348,7 @@ ${postNav || ''}
   </div>
 
 ${renderStatusbar(sbPath)}
+${ANALYTICS}
 </body>
 </html>
 `;
@@ -368,6 +375,18 @@ ${newerLink}
 }
 
 function renderPostPage({ title, description, dateDisplay, dateISO, slug, hasToc, content, tocMarkup, minutes, newer, older }) {
+  const schema = `  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": ${JSON.stringify(title)},
+    "description": ${JSON.stringify(description)},
+    "datePublished": "${dateISO}",
+    "url": "${SITE_URL}/blog/${slug}.html",
+    "image": "${SITE_URL}/blog/og/${slug}.png",
+    "author": { "@type": "Person", "name": "Keith Tyser", "url": "${SITE_URL}/" }
+  }
+  </script>`;
   return renderArticleDoc({
     title,
     description,
@@ -387,6 +406,7 @@ function renderPostPage({ title, description, dateDisplay, dateISO, slug, hasToc
     ogImage: `${SITE_URL}/blog/og/${slug}.png`,
     minutes,
     postNav: renderPostNav(newer, older),
+    headExtra: schema,
   });
 }
 
@@ -500,6 +520,7 @@ ${entries}
   </div>
 
 ${renderStatusbar('~/blog')}
+${ANALYTICS}
 </body>
 </html>
 `;
@@ -519,12 +540,13 @@ function renderFeed(posts) {
       <guid isPermaLink="true">${SITE_URL}/blog/${p.slug}.html</guid>
       <pubDate>${toRFC822(p.date)}</pubDate>
       <description>${escapeXml(p.description)}</description>
+      <content:encoded><![CDATA[${(p.html || '').replace(/\]\]>/g, ']]&gt;')}]]></content:encoded>
     </item>`,
     )
     .join('\n');
 
   return `<?xml version="1.0" encoding="UTF-8"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
   <channel>
     <title>${escapeXml(SITE_TITLE)}</title>
     <link>${SITE_URL}/blog/</link>
@@ -731,8 +753,12 @@ async function main() {
   const mdFiles = entries.filter((f) => f.endsWith('.md'));
 
   const posts = [];
+  const drafts = [];
 
-  // Pass 1: parse all posts so prev/next links can see neighbors
+  // Pass 1: parse all posts so prev/next links can see neighbors.
+  // Files named DRAFT-*.md render as pages for local preview but stay
+  // out of every listing (index, feed, sitemap, llms.txt, palette,
+  // landing) and out of git (.gitignore covers blog/DRAFT-*).
   for (const file of mdFiles) {
     const full = path.join(blogDir, file);
     const raw = repairMojibake(await fs.readFile(full, 'utf8'));
@@ -746,7 +772,7 @@ async function main() {
     const slug = path.basename(file, '.md');
     const dateObj = data.date instanceof Date ? data.date : new Date(data.date);
 
-    posts.push({
+    const post = {
       slug,
       title: data.title,
       description: data.description || '',
@@ -756,17 +782,19 @@ async function main() {
       hasToc: Boolean(data.toc),
       body: body.trim(),
       minutes: readingTime(body),
-    });
+    };
+    (file.startsWith('DRAFT-') ? drafts : posts).push(post);
   }
 
   // Sort reverse chronological (newest first)
   posts.sort((a, b) => b.date - a.date);
 
-  // Pass 2: render each post page with neighbors + its OG image
+  // Pass 2: render each post page with neighbors + its OG image.
+  // Side effect: p.html is kept for the full-content RSS feed.
   for (let i = 0; i < posts.length; i++) {
     const p = posts[i];
     const tocEntries = [];
-    const html = renderMarkdown(p.body, tocEntries);
+    p.html = renderMarkdown(p.body, tocEntries);
     const tocMarkup = p.hasToc ? buildToc(tocEntries) : '';
 
     const pageHtml = renderPostPage({
@@ -776,7 +804,7 @@ async function main() {
       dateISO: p.dateISO,
       slug: p.slug,
       hasToc: p.hasToc,
-      content: html,
+      content: p.html,
       tocMarkup,
       minutes: p.minutes,
       newer: posts[i - 1] || null,
@@ -785,6 +813,27 @@ async function main() {
 
     await fs.writeFile(path.join(blogDir, `${p.slug}.html`), pageHtml, 'utf8');
     await generatePostOgImage({ title: p.title, dateDisplay: p.dateDisplay, slug: p.slug });
+  }
+
+  // Render draft pages (preview only, excluded from all listings)
+  for (const p of drafts) {
+    const tocEntries = [];
+    const html = renderMarkdown(p.body, tocEntries);
+    const pageHtml = renderPostPage({
+      title: p.title,
+      description: p.description,
+      dateDisplay: p.dateDisplay,
+      dateISO: p.dateISO,
+      slug: p.slug,
+      hasToc: p.hasToc,
+      content: html,
+      tocMarkup: p.hasToc ? buildToc(tocEntries) : '',
+      minutes: p.minutes,
+      newer: null,
+      older: null,
+    });
+    await fs.writeFile(path.join(blogDir, `${p.slug}.html`), pageHtml, 'utf8');
+    console.log(`[render-blog] Draft (unlisted): blog/${p.slug}.html`);
   }
 
   // Blog index
