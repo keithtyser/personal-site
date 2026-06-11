@@ -146,6 +146,10 @@ const FONT_PRELOADS = `  <link rel="preload" href="/fonts/SchibstedGroteskVariab
 // "keithtyser" site code is registered at goatcounter.com.
 const ANALYTICS = `  <script data-goatcounter="https://keithtyser.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>`;
 
+// Chromium prerenders same-site links on hover: combined with view
+// transitions, navigation feels instant. No-op elsewhere.
+const SPECULATION = `  <script type="speculationrules">{"prerender":[{"where":{"href_matches":"/*"},"eagerness":"moderate"}]}</script>`;
+
 function renderStatusbar(sbPath) {
   return `  <div class="statusbar" role="contentinfo" aria-label="Status bar">
     <div class="sb-left">
@@ -318,6 +322,7 @@ ${FONT_PRELOADS}
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 ${rssLink}
 ${headExtra || ''}
+${SPECULATION}
   <script src="${scriptPath}" defer></script>
 </head>
 <body>
@@ -482,6 +487,7 @@ ${FONT_PRELOADS}
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <link rel="alternate" type="application/rss+xml" title="${escapeHtml(SITE_TITLE)}" href="${SITE_URL}/feed.xml">
+${SPECULATION}
   <script src="/src/scripts/main.js" defer></script>
 </head>
 <body>
@@ -731,6 +737,17 @@ async function renderStaticPages() {
 /* palette.json — data source for the command palette (lazy-fetched)  */
 /* ------------------------------------------------------------------ */
 
+function plainText(markdownBody, max = 4000) {
+  return markdownBody
+    .replace(/```[\s\S]*?```/g, ' ')
+    .replace(/!\[[^\]]*\]\([^)]*\)/g, ' ')
+    .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')
+    .replace(/[#>*_`|-]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, max);
+}
+
 function renderPaletteData({ posts, pagesMeta }) {
   const pages = [
     { title: 'Home', href: '/' },
@@ -738,12 +755,14 @@ function renderPaletteData({ posts, pagesMeta }) {
     { title: 'Archive', href: '/archive.html' },
     ...pagesMeta
       .filter((p) => !p.unlisted)
-      .map((p) => ({ title: p.title, href: `/${p.slug}.html` })),
+      .map((p) => ({ title: p.title, href: `/${p.slug}.html`, src: `/pages/${p.slug}.md` })),
   ];
   const postItems = posts.map((p) => ({
     title: p.title,
     href: `/blog/${p.slug}.html`,
     date: p.dateDisplay,
+    src: `/blog/${p.slug}.md`,
+    text: plainText(p.body),
   }));
   return JSON.stringify({ pages, posts: postItems });
 }

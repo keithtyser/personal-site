@@ -1,10 +1,13 @@
 document.addEventListener('DOMContentLoaded', () => {
   // ---------------------------------------------------------------
-  // Dark mode toggle
+  // Dark mode toggle + CRT easter egg persistence
   // ---------------------------------------------------------------
   const toggleButton = document.getElementById('darkModeToggle');
   if (toggleButton) {
     toggleButton.addEventListener('click', toggleTheme);
+  }
+  if (localStorage.getItem('crt') === '1') {
+    document.documentElement.classList.add('crt');
   }
 
   // ---------------------------------------------------------------
@@ -119,9 +122,6 @@ document.addEventListener('DOMContentLoaded', () => {
       .catch(() => { ghTarget.hidden = true; });
   }
 
-  // ---------------------------------------------------------------
-  // Command palette
-  // ---------------------------------------------------------------
   initPalette();
 });
 
@@ -134,12 +134,141 @@ function toggleTheme() {
   }
 }
 
+function setCrt(on) {
+  document.documentElement.classList.toggle('crt', on);
+  if (on) localStorage.setItem('crt', '1');
+  else localStorage.removeItem('crt');
+}
+
+/* =================================================================
+   Site data: pages + posts (with markdown source paths and post
+   text for full-text search), lazily fetched from /palette.json.
+   ================================================================= */
+const siteData = { pages: [], posts: [], promise: null };
+
+function loadSiteData() {
+  if (!siteData.promise) {
+    siteData.promise = fetch('/palette.json')
+      .then((r) => (r.ok ? r.json() : { pages: [], posts: [] }))
+      .then((data) => {
+        siteData.pages = data.pages || [];
+        siteData.posts = data.posts || [];
+        return siteData;
+      })
+      .catch(() => siteData);
+  }
+  return siteData.promise;
+}
+
+function slugOf(entry) {
+  if (entry.src) return entry.src.split('/').pop().replace(/\.md$/, '');
+  if (entry.href === '/') return 'home';
+  if (entry.href === '/blog/') return 'writing';
+  return entry.href.replace(/^\//, '').replace(/\.html$/, '');
+}
+
+/* =================================================================
+   Shared command core. Used by both the palette and terminal mode.
+   Handlers print via the provided sink; return true if handled.
+   ================================================================= */
+const BOOT_LINES = [
+  '[ ok ] mounting ~keith',
+  '[ ok ] loading phosphor profile',
+  '[ ok ] starting statusbar.service',
+  '[ ok ] syncing experiment queue',
+  'ready.',
+];
+
+function makeCommands(ctx) {
+  // ctx: { print(text), clear(), close(), isTerminal }
+  const cmds = {
+    whoami: () => ctx.print('guest. the one with the green status dot is keith.'),
+    pwd: () => ctx.print(`~${window.location.pathname.replace(/index\.html$/, '').replace(/\.html$/, '').replace(/\/$/, '')}`),
+    date: () => ctx.print(new Date().toString()),
+    sudo: () => ctx.print('guest is not in the sudoers file. this incident will be reported.'),
+    vim: () => ctx.print('you are now stuck in vim. refresh the page to exit.'),
+    rm: () => ctx.print('nice try. this site is version controlled.'),
+    man: () => ctx.print('no manual entry. there never was a manual.'),
+    clear: () => ctx.clear(),
+    exit: () => ctx.close(),
+    help: () => ctx.print(
+      ctx.isTerminal
+        ? 'commands: ls, cd, cat <file>, open <file>, pwd, whoami, date, theme [crt|dark|light], reboot, clear, exit\ntab completes. up/down for history. esc leaves.'
+        : 'try: whoami, ls, cat <page>, theme crt, reboot, terminal. or just type where you want to go.',
+    ),
+    theme: (args) => {
+      const mode = (args[0] || '').toLowerCase();
+      if (mode === 'crt') { setCrt(true); ctx.print('phosphor mode engaged. theme default to recover.'); }
+      else if (mode === 'default' || mode === 'off') { setCrt(false); ctx.print('back to civilian display.'); }
+      else if (mode === 'dark' || mode === 'light') {
+        document.documentElement.classList.toggle('dark', mode === 'dark');
+        localStorage.setItem('theme', mode);
+        ctx.print(`theme: ${mode}`);
+      } else ctx.print('usage: theme crt | default | dark | light');
+    },
+    reboot: () => {
+      let i = 0;
+      const step = () => {
+        if (i < BOOT_LINES.length) {
+          ctx.print(BOOT_LINES[i++]);
+          setTimeout(step, 260);
+        } else {
+          setTimeout(() => window.location.reload(), 350);
+        }
+      };
+      step();
+    },
+    cat: async (args) => {
+      const name = (args[0] || '').replace(/\.md$/, '').replace(/^(blog|pages)\//, '');
+      if (!name) { ctx.print('usage: cat <page|post-slug>  (ls shows what exists)'); return; }
+      await loadSiteData();
+      const all = [...siteData.pages, ...siteData.posts].filter((e) => e.src);
+      const entry = all.find((e) => slugOf(e) === name)
+        || all.find((e) => e.title.toLowerCase() === name.toLowerCase())
+        || all.find((e) => slugOf(e).startsWith(name));
+      if (!entry) { ctx.print(`cat: ${name}: No such file`); return; }
+      try {
+        const res = await fetch(entry.src);
+        if (!res.ok) throw new Error(String(res.status));
+        let text = await res.text();
+        const MAX = 6000;
+        if (text.length > MAX) text = `${text.slice(0, MAX)}\n\n--- truncated. open ${slugOf(entry)} for the rest ---`;
+        ctx.print(text);
+      } catch {
+        ctx.print(`cat: ${name}: read error`);
+      }
+    },
+    open: async (args) => {
+      const name = (args[0] || '').replace(/\.md$/, '').replace(/^(blog|pages)\//, '');
+      if (!name) { ctx.print('usage: open <page|post-slug>'); return; }
+      await loadSiteData();
+      const all = [...siteData.pages, ...siteData.posts];
+      const entry = all.find((e) => slugOf(e) === name)
+        || all.find((e) => e.title.toLowerCase().includes(name.toLowerCase()))
+        || all.find((e) => slugOf(e).startsWith(name));
+      if (!entry) { ctx.print(`open: ${name}: not found`); return; }
+      window.location.href = entry.href;
+    },
+  };
+  return cmds;
+}
+
+function parseCommandLine(value) {
+  const parts = value.trim().split(/\s+/);
+  if (!parts[0]) return null;
+  let cmd = parts[0].toLowerCase();
+  let args = parts.slice(1);
+  // sudo/rm/man swallow their arguments; "rm -rf /" stays one joke
+  if (cmd === 'rm' || cmd === 'man' || cmd === 'sudo') args = [];
+  return { cmd, args };
+}
+
 /* =================================================================
    Command palette: Ctrl+K / Cmd+K / "/" or the statusbar hint.
-   DOM built lazily on first open; page/post data from /palette.json.
    ================================================================= */
 function initPalette() {
   const STATIC_ITEMS = [
+    { title: 'Terminal mode', hint: 'action', action: 'terminal' },
     { title: 'Toggle theme', hint: 'action', action: 'theme' },
     { title: 'GitHub', hint: 'social', href: 'https://github.com/keithtyser', external: true },
     { title: 'LinkedIn', hint: 'social', href: 'https://linkedin.com/in/keithtyser/', external: true },
@@ -148,20 +277,6 @@ function initPalette() {
     { title: 'Email Keith', hint: 'social', href: 'mailto:keithtyser@gmail.com' },
     { title: 'RSS feed', hint: 'social', href: '/feed.xml' },
   ];
-
-  // Terminal easter eggs: exact command input runs these instead of nav
-  const COMMANDS = {
-    whoami: () => 'guest. the one with the green status dot is keith.',
-    pwd: () => `~${window.location.pathname.replace(/index\.html$/, '').replace(/\.html$/, '').replace(/\/$/, '')}`,
-    ls: () => 'home/  writing/  archive/  now/  books/  tech-stack/  ai/',
-    sudo: () => 'guest is not in the sudoers file. this incident will be reported.',
-    vim: () => 'you are now stuck in vim. refresh the page to exit.',
-    'rm -rf /': () => 'nice try. this site is version controlled.',
-    man: () => 'no manual entry. there never was a manual.',
-    help: () => 'try: whoami, pwd, ls, sudo, vim, man, clear, exit. or just type where you want to go.',
-    clear: 'clear',
-    exit: 'exit',
-  };
 
   let overlay = null;
   let input = null;
@@ -173,6 +288,18 @@ function initPalette() {
   let loaded = false;
   let lastFocused = null;
 
+  const cmdCtx = {
+    print: (text) => {
+      output.textContent = output.hidden ? text : `${output.textContent}\n${text}`;
+      output.hidden = false;
+      output.scrollTop = output.scrollHeight;
+    },
+    clear: () => { output.hidden = true; output.textContent = ''; },
+    close: () => close(),
+    isTerminal: false,
+  };
+  const commands = makeCommands(cmdCtx);
+
   function buildDom() {
     overlay = document.createElement('div');
     overlay.className = 'palette-overlay';
@@ -180,7 +307,7 @@ function initPalette() {
       <div class="palette" role="dialog" aria-modal="true" aria-label="Command palette">
         <div class="palette-head">
           <span class="palette-prompt" aria-hidden="true">$</span>
-          <input class="palette-input" type="text" placeholder="jump to... (or try: whoami)" aria-label="Search pages, posts, and actions" autocomplete="off" spellcheck="false">
+          <input class="palette-input" type="text" placeholder="jump to... (or try: whoami, cat now)" aria-label="Search pages, posts, and actions" autocomplete="off" spellcheck="false">
           <kbd class="palette-esc" aria-hidden="true">esc</kbd>
         </div>
         <div class="palette-output" role="status" hidden></div>
@@ -214,21 +341,24 @@ function initPalette() {
   }
 
   function runCommand(value) {
-    const cmd = value.trim().toLowerCase();
-    const handler = COMMANDS[cmd] || (cmd.startsWith('sudo ') ? COMMANDS.sudo : null)
-      || (cmd.startsWith('rm ') ? COMMANDS['rm -rf /'] : null)
-      || (cmd.startsWith('man ') ? COMMANDS.man : null);
-    if (!handler) return false;
-    if (handler === 'exit') { close(); return true; }
-    if (handler === 'clear') {
-      output.hidden = true;
-      output.textContent = '';
+    const parsed = parseCommandLine(value);
+    if (!parsed) return false;
+    const { cmd, args } = parsed;
+    if (cmd === 'terminal' || cmd === 'term') {
+      close();
+      openTerminal();
+      return true;
+    }
+    if (cmd === 'ls') {
+      cmdCtx.print('home/  writing/  archive/  now/  books/  tech-stack/  ai/');
       input.value = '';
       render();
       return true;
     }
-    output.textContent = `$ ${cmd}\n${handler()}`;
-    output.hidden = false;
+    if (!commands[cmd]) return false;
+    // Bare command words that are also plausible search text only run
+    // as commands when they match exactly
+    commands[cmd](args);
     input.value = '';
     render();
     return true;
@@ -237,17 +367,11 @@ function initPalette() {
   async function loadItems() {
     if (loaded) return;
     loaded = true;
-    let dynamic = [];
-    try {
-      const res = await fetch('/palette.json');
-      if (res.ok) {
-        const data = await res.json();
-        dynamic = [
-          ...data.pages.map((p) => ({ title: p.title, hint: 'page', href: p.href })),
-          ...data.posts.map((p) => ({ title: p.title, hint: p.date, href: p.href })),
-        ];
-      }
-    } catch { /* palette still works with static items */ }
+    await loadSiteData();
+    const dynamic = [
+      ...siteData.pages.map((p) => ({ title: p.title, hint: 'page', href: p.href })),
+      ...siteData.posts.map((p) => ({ title: p.title, hint: p.date, href: p.href, text: (p.text || '').toLowerCase() })),
+    ];
     items = [...dynamic, ...STATIC_ITEMS];
     render();
   }
@@ -255,7 +379,19 @@ function initPalette() {
   function render() {
     const q = input.value.trim().toLowerCase();
     filtered = q
-      ? items.filter((i) => (i.title + ' ' + (i.hint || '')).toLowerCase().includes(q))
+      ? items
+          .map((i) => {
+            const inMeta = (i.title + ' ' + (i.hint || '')).toLowerCase().includes(q);
+            if (inMeta) return { ...i, matched: 'meta' };
+            if (i.text && i.text.includes(q)) {
+              const at = i.text.indexOf(q);
+              const start = Math.max(0, at - 24);
+              const snippet = (start > 0 ? '…' : '') + i.text.slice(start, at + q.length + 32) + '…';
+              return { ...i, matched: 'body', snippet };
+            }
+            return null;
+          })
+          .filter(Boolean)
       : items.slice();
     if (active >= filtered.length) active = Math.max(0, filtered.length - 1);
     list.innerHTML = filtered.length
@@ -263,10 +399,10 @@ function initPalette() {
           .map((item, idx) => `
         <li class="palette-item${idx === active ? ' is-active' : ''}" role="option" aria-selected="${idx === active}" data-idx="${idx}">
           <span class="palette-item-title">${escapeText(item.title)}</span>
-          <span class="palette-item-hint">${escapeText(item.hint || '')}</span>
+          <span class="palette-item-hint">${escapeText(item.snippet || item.hint || '')}</span>
         </li>`)
           .join('')
-      : '<li class="palette-empty">no matches found</li>';
+      : '<li class="palette-empty">no matches. (commands work too: help)</li>';
     list.querySelectorAll('.palette-item').forEach((el) => {
       el.addEventListener('mouseenter', () => {
         active = Number(el.dataset.idx);
@@ -292,6 +428,11 @@ function initPalette() {
     if (item.action === 'theme') {
       toggleTheme();
       close();
+      return;
+    }
+    if (item.action === 'terminal') {
+      close();
+      openTerminal();
       return;
     }
     if (item.external) {
@@ -333,7 +474,7 @@ function initPalette() {
       isOpen() ? close() : open();
       return;
     }
-    if (e.key === '/' && !isOpen()) {
+    if (e.key === '/' && !isOpen() && !terminalIsOpen()) {
       const t = e.target;
       const typing = t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable);
       if (!typing) {
@@ -349,6 +490,162 @@ function initPalette() {
 
   // Console users and tests can drive it too
   window.__palette = { open, close };
+}
+
+/* =================================================================
+   Full terminal mode: the whole site, navigable as a filesystem.
+   ================================================================= */
+let term = null;
+
+function terminalIsOpen() {
+  return term && term.overlay.classList.contains('is-open');
+}
+
+async function openTerminal() {
+  await loadSiteData();
+  if (!term) buildTerminal();
+  term.overlay.classList.add('is-open');
+  document.body.style.overflow = 'hidden';
+  term.input.focus();
+}
+
+function closeTerminal() {
+  if (!term) return;
+  term.overlay.classList.remove('is-open');
+  document.body.style.overflow = '';
+}
+
+function buildTerminal() {
+  const overlay = document.createElement('div');
+  overlay.className = 'term-overlay';
+  overlay.innerHTML = `
+    <div class="term" role="dialog" aria-modal="true" aria-label="Terminal">
+      <div class="term-log" aria-live="polite"></div>
+      <div class="term-input-row">
+        <span class="term-prompt"></span>
+        <input class="term-input" type="text" aria-label="Terminal input" autocomplete="off" spellcheck="false" autocapitalize="off">
+      </div>
+    </div>`;
+  document.body.appendChild(overlay);
+
+  const log = overlay.querySelector('.term-log');
+  const input = overlay.querySelector('.term-input');
+  const promptEl = overlay.querySelector('.term-prompt');
+
+  let cwd = '~';
+  const history = [];
+  let histIdx = -1;
+
+  const prompt = () => `keith@keithtyser.com:${cwd}$`;
+  const refreshPrompt = () => { promptEl.textContent = prompt(); };
+
+  const print = (text) => {
+    const div = document.createElement('div');
+    div.className = 'term-line';
+    div.textContent = text;
+    log.appendChild(div);
+    log.scrollTop = log.scrollHeight;
+  };
+
+  const ctx = {
+    print,
+    clear: () => { log.innerHTML = ''; },
+    close: closeTerminal,
+    isTerminal: true,
+  };
+  const commands = makeCommands(ctx);
+
+  function rootEntries() {
+    const pages = siteData.pages.filter((p) => p.src).map((p) => `${slugOf(p)}.md`);
+    return ['blog/', 'home', 'archive', ...pages];
+  }
+
+  function blogEntries() {
+    return siteData.posts.map((p) => `${slugOf(p)}.md`);
+  }
+
+  function entriesFor(dir) {
+    return dir === '~/blog' ? blogEntries() : rootEntries();
+  }
+
+  function run(line) {
+    print(`${prompt()} ${line}`);
+    const parsed = parseCommandLine(line);
+    if (!parsed) return;
+    const { cmd, args } = parsed;
+
+    if (cmd === 'ls') {
+      print(entriesFor(args[0] === 'blog' ? '~/blog' : cwd).join('  '));
+      return;
+    }
+    if (cmd === 'cd') {
+      const target = (args[0] || '~').replace(/\/$/, '');
+      if (target === '~' || target === '/' || target === '..' && cwd === '~/blog') cwd = '~';
+      else if (target === '..') cwd = '~';
+      else if (target === 'blog' || target === '~/blog') cwd = '~/blog';
+      else { print(`cd: ${target}: No such directory`); return; }
+      refreshPrompt();
+      return;
+    }
+    if (cmd === 'cat' && cwd === '~/blog' && args[0] && !args[0].includes('/')) {
+      commands.cat([`blog/${args[0]}`]);
+      return;
+    }
+    if (commands[cmd]) {
+      commands[cmd](args);
+      return;
+    }
+    // bare page/post name acts like open
+    if (cmd && entriesFor(cwd).some((e) => e.replace(/\.md$/, '').replace(/\/$/, '') === cmd)) {
+      commands.open([cmd]);
+      return;
+    }
+    print(`${cmd}: command not found. try: help`);
+  }
+
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      const line = input.value;
+      input.value = '';
+      if (line.trim()) {
+        history.push(line);
+        histIdx = history.length;
+        run(line);
+      } else {
+        print(prompt());
+      }
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      if (histIdx > 0) { histIdx -= 1; input.value = history[histIdx] || ''; }
+    } else if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      if (histIdx < history.length) { histIdx += 1; input.value = history[histIdx] || ''; }
+    } else if (e.key === 'Tab') {
+      e.preventDefault();
+      const parts = input.value.split(/\s+/);
+      const last = parts[parts.length - 1];
+      if (!last) return;
+      const pool = parts.length === 1
+        ? ['ls', 'cd', 'cat', 'open', 'pwd', 'whoami', 'date', 'theme', 'reboot', 'clear', 'exit', 'help']
+        : entriesFor(cwd).map((x) => x.replace(/\/$/, ''));
+      const match = pool.find((p) => p.startsWith(last));
+      if (match) {
+        parts[parts.length - 1] = match;
+        input.value = parts.join(' ');
+      }
+    } else if (e.key === 'Escape') {
+      e.preventDefault();
+      closeTerminal();
+    }
+  });
+
+  overlay.addEventListener('mousedown', () => input.focus());
+
+  refreshPrompt();
+  print('keithtyser.com terminal. help for commands, esc to leave.');
+
+  term = { overlay, input };
+  window.__terminal = { open: openTerminal, close: closeTerminal };
 }
 
 function relativeTime(date) {
