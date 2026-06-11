@@ -398,6 +398,12 @@ function makeCommands(ctx) {
       speak(text);
       ctx.print(`saying: "${text}"`);
     },
+    sound: (args) => {
+      const mode = (args[0] || '').toLowerCase();
+      if (mode === 'on') { sound.set(true); ctx.print('sound: on. the console hums.'); }
+      else if (mode === 'off') { sound.set(false); ctx.print('sound: off.'); }
+      else ctx.print(`sound is ${sound.enabled ? 'on' : 'off'}. usage: sound on | off`);
+    },
     matrix: () => {
       if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
         ctx.print('matrix: reduced motion is on. no rain today.');
@@ -414,7 +420,7 @@ function makeCommands(ctx) {
     },
     help: () => ctx.print(
       ctx.isTerminal
-        ? 'commands: ls, cd, cat <file>, open <file>, pwd, whoami, date, history, play, top, selfie, matrix, say, demo, startx, fortune, cowsay, motd, theme [crt|dark|light], reboot, clear, exit\ntab completes. up/down for history. esc leaves.'
+        ? 'commands: ls, cd, cat <file>, open <file>, pwd, whoami, date, history, play, top, selfie, matrix, say, sound, demo, startx, fortune, cowsay, motd, theme [crt|dark|light], reboot, clear, exit\ntab completes. up/down for history. esc leaves.'
         : 'try: whoami, cat <page>, history, fortune, matrix, demo, startx, theme crt, terminal. or just type where you want to go.',
     ),
     history: async () => {
@@ -448,6 +454,7 @@ function makeCommands(ctx) {
       const step = () => {
         if (i < BOOT_LINES.length) {
           ctx.print(BOOT_LINES[i++]);
+          sound.tick();
           setTimeout(step, 260);
         } else {
           setTimeout(() => window.location.reload(), 350);
@@ -996,13 +1003,19 @@ function buildTerminal() {
     if (hit >= 0) {
       game.pellets.splice(hit, 1);
       game.score += 1;
+      sound.blip();
       while (game.pellets.length < 3) spawnPellet();
     }
-    if (game.score >= 10) { endGame('you win. the leaderboard remains very far away.'); return; }
+    if (game.score >= 10) {
+      sound.win();
+      endGame('you win. the leaderboard remains very far away.');
+      return;
+    }
     const steps = game.score >= 6 ? 2 : 1;
     for (let i = 0; i < steps; i++) {
       botStep();
       if (game.bot.x === game.player.x && game.bot.y === game.player.y) {
+        sound.over();
         endGame('B caught you. self-play makes brutal opponents.');
         return;
       }
@@ -1059,6 +1072,10 @@ function buildTerminal() {
   }
 
   input.addEventListener('keydown', (e) => {
+    if (e.isTrusted) {
+      if (e.key === 'Enter') sound.enter();
+      else if (e.key.length === 1) sound.click();
+    }
     if (prog) {
       e.preventDefault();
       prog.key(e.key);
@@ -1091,7 +1108,7 @@ function buildTerminal() {
       const last = parts[parts.length - 1];
       if (!last) return;
       const pool = parts.length === 1
-        ? ['ls', 'cd', 'cat', 'open', 'pwd', 'whoami', 'date', 'history', 'play', 'top', 'selfie', 'matrix', 'say', 'demo', 'startx', 'fortune', 'cowsay', 'motd', 'theme', 'reboot', 'clear', 'exit', 'help']
+        ? ['ls', 'cd', 'cat', 'open', 'pwd', 'whoami', 'date', 'history', 'play', 'top', 'selfie', 'matrix', 'say', 'sound', 'demo', 'startx', 'fortune', 'cowsay', 'motd', 'theme', 'reboot', 'clear', 'exit', 'help']
         : entriesFor(cwd).map((x) => x.replace(/\/$/, ''));
       const match = pool.find((p) => p.startsWith(last));
       if (match) {
@@ -1138,6 +1155,54 @@ function buildTerminal() {
   term = { overlay, input };
   window.__terminal = { open: openTerminal, close: closeTerminal, play: startGame, run };
 }
+
+/* =================================================================
+   Sound design: synthesized, opt-in via "sound on", off by default.
+   No audio files; everything is WebAudio oscillators.
+   ================================================================= */
+const sound = {
+  enabled: localStorage.getItem('sound') === '1',
+  ctx: null,
+  ensure() {
+    if (!this.ctx) {
+      try { this.ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch { /* no audio */ }
+    }
+    if (this.ctx && this.ctx.state === 'suspended') this.ctx.resume();
+    return this.ctx;
+  },
+  tone(freq, dur = 0.05, type = 'square', gain = 0.03, when = 0) {
+    if (!this.enabled) return;
+    const c = this.ensure();
+    if (!c) return;
+    const t = c.currentTime + when;
+    const o = c.createOscillator();
+    const g = c.createGain();
+    o.type = type;
+    o.frequency.value = freq;
+    g.gain.setValueAtTime(gain, t);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(g);
+    g.connect(c.destination);
+    o.start(t);
+    o.stop(t + dur + 0.02);
+  },
+  click() { this.tone(1700 + Math.random() * 600, 0.012, 'square', 0.012); },
+  enter() { this.tone(440, 0.04, 'square', 0.02); },
+  blip() { this.tone(880, 0.05, 'sine', 0.03); },
+  tick() { this.tone(1100, 0.02, 'square', 0.015); },
+  boot() { [523, 659, 784].forEach((f, i) => this.tone(f, 0.09, 'sine', 0.03, i * 0.09)); },
+  win() { [523, 659, 784, 1047].forEach((f, i) => this.tone(f, 0.08, 'sine', 0.03, i * 0.08)); },
+  over() { [392, 311, 233].forEach((f, i) => this.tone(f, 0.12, 'sine', 0.03, i * 0.1)); },
+  set(on) {
+    this.enabled = on;
+    if (on) {
+      localStorage.setItem('sound', '1');
+      this.blip();
+    } else {
+      localStorage.removeItem('sound');
+    }
+  },
+};
 
 /* =================================================================
    Deep layer: say, top stats, matrix, demo, konami, idle, KeithOS.
@@ -1386,6 +1451,7 @@ let os = null;
 async function bootOS() {
   await loadSiteData();
   if (!os) buildOS();
+  sound.boot();
   os.overlay.classList.add('is-open');
   document.body.style.overflow = 'hidden';
   if (!os.booted) {
