@@ -5,7 +5,7 @@
     <link>https://keithtyser.com/blog/</link>
     <description>AI/ML, data science, and whatever else seems worth writing down.</description>
     <language>en-us</language>
-    <lastBuildDate>Thu, 11 Jun 2026 00:55:46 GMT</lastBuildDate>
+    <lastBuildDate>Thu, 11 Jun 2026 01:07:48 GMT</lastBuildDate>
     <atom:link href="https://keithtyser.com/feed.xml" rel="self" type="application/rss+xml"/>
     <item>
       <title>Running a 2x DGX Spark Cluster at Home</title>

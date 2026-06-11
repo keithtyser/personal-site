@@ -22,8 +22,10 @@ async function collectHtmlFiles() {
 function sanitize(html) {
   let s = html;
   s = s.replace(/<html([^>]*)\sdata-beasties-container([^>]*)>/g, '<html$1$2>');
-  // Strip any previous cache-busting query so beasties can resolve the file
+  // Strip any previous cache-busting queries so re-runs are idempotent
+  // (and so beasties can resolve the CSS file on disk)
   s = s.replace(/styles\.css\?v=[a-f0-9]+/g, 'styles.css');
+  s = s.replace(/main\.js\?v=[a-f0-9]+/g, 'main.js');
   // Remove any <noscript> block that contains a stylesheet link or inline style
   // (only beasties emits these; we don't author any).
   s = s.replace(/<noscript>[\s\S]*?<\/noscript>/g, (m) =>
@@ -58,6 +60,8 @@ async function main() {
   // makes every deploy take effect immediately).
   const css = await fs.readFile(path.join(projectRoot, 'dist', 'styles.css'));
   const cssHash = crypto.createHash('md5').update(css).digest('hex').slice(0, 8);
+  const js = await fs.readFile(path.join(projectRoot, 'src', 'scripts', 'main.js'));
+  const jsHash = crypto.createHash('md5').update(js).digest('hex').slice(0, 8);
 
   for (const rel of files) {
     const p = path.join(projectRoot, rel);
@@ -66,6 +70,7 @@ async function main() {
     try {
       let processed = await beasties.process(clean);
       processed = processed.replaceAll('dist/styles.css', `dist/styles.css?v=${cssHash}`);
+      processed = processed.replaceAll('scripts/main.js', `scripts/main.js?v=${jsHash}`);
       await fs.writeFile(p, processed, 'utf8');
       const inlined = (processed.match(/<style[^>]*>/g) || []).length;
       console.log(`  ${rel.padEnd(56)} (${inlined} style block${inlined === 1 ? '' : 's'} inlined)`);
