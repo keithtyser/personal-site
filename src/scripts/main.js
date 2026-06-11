@@ -123,6 +123,118 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ---------------------------------------------------------------
+  // Visit tracking for the MOTD (localStorage only, nothing sent)
+  // ---------------------------------------------------------------
+  if (!sessionStorage.getItem('session-started')) {
+    sessionStorage.setItem('session-started', '1');
+    const prev = localStorage.getItem('visit-ts');
+    if (prev) localStorage.setItem('prev-visit', prev);
+    localStorage.setItem('visit-ts', String(Date.now()));
+  }
+
+  // ---------------------------------------------------------------
+  // Copy buttons on article code blocks
+  // ---------------------------------------------------------------
+  document.querySelectorAll('.article-body pre').forEach((pre) => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'copy-btn';
+    btn.textContent = 'copy';
+    btn.setAttribute('aria-label', 'Copy code to clipboard');
+    btn.addEventListener('click', () => {
+      const code = pre.querySelector('code');
+      navigator.clipboard.writeText((code || pre).textContent).then(() => {
+        btn.textContent = 'copied ✓';
+        btn.classList.add('is-copied');
+        setTimeout(() => {
+          btn.textContent = 'copy';
+          btn.classList.remove('is-copied');
+        }, 1400);
+      }).catch(() => {});
+    });
+    pre.appendChild(btn);
+  });
+
+  // ---------------------------------------------------------------
+  // TOC scrollspy: highlight the section you're reading
+  // ---------------------------------------------------------------
+  const tocLinks = document.querySelectorAll('.toc-list a');
+  if (tocLinks.length) {
+    const byId = new Map();
+    tocLinks.forEach((a) => byId.set(a.getAttribute('href').slice(1), a));
+    const heads = [...byId.keys()]
+      .map((id) => document.getElementById(id))
+      .filter(Boolean);
+    let current = null;
+    let spyRaf = 0;
+    const spy = () => {
+      spyRaf = 0;
+      const y = window.scrollY + 130;
+      let pick = heads[0];
+      for (const h of heads) {
+        if (h.getBoundingClientRect().top + window.scrollY <= y) pick = h;
+        else break;
+      }
+      const link = pick ? byId.get(pick.id) : null;
+      if (link !== current) {
+        if (current) current.classList.remove('is-current');
+        current = link;
+        if (current) current.classList.add('is-current');
+      }
+    };
+    window.addEventListener('scroll', () => {
+      if (!spyRaf) spyRaf = requestAnimationFrame(spy);
+    }, { passive: true });
+    spy();
+  }
+
+  // ---------------------------------------------------------------
+  // Resume reading: offer to jump back to where you left off
+  // ---------------------------------------------------------------
+  if (articleBody && statusbar) {
+    const posKey = `pos:${window.location.pathname}`;
+    const saved = Number(localStorage.getItem(posKey) || 0);
+    if (saved > 0.08 && window.scrollY < 50 && !window.location.hash) {
+      const chip = document.createElement('button');
+      chip.type = 'button';
+      chip.className = 'sb-hint sb-resume';
+      chip.textContent = `resume ${Math.round(saved * 100)}% →`;
+      chip.addEventListener('click', () => {
+        window.scrollTo({ top: saved * (document.documentElement.scrollHeight - window.innerHeight), behavior: 'smooth' });
+        chip.remove();
+      });
+      statusbar.querySelector('.sb-right').prepend(chip);
+      setTimeout(() => chip.remove(), 30000);
+    }
+    let saveTimer = 0;
+    window.addEventListener('scroll', () => {
+      clearTimeout(saveTimer);
+      saveTimer = setTimeout(() => {
+        const total = document.documentElement.scrollHeight - window.innerHeight;
+        const pct = total > 0 ? window.scrollY / total : 0;
+        if (pct > 0.05 && pct < 0.9) localStorage.setItem(posKey, pct.toFixed(3));
+        else if (pct >= 0.9) localStorage.removeItem(posKey);
+      }, 400);
+    }, { passive: true });
+  }
+
+  // ---------------------------------------------------------------
+  // Per-post view counts (blog index). GoatCounter public endpoint;
+  // silently absent until public access is enabled in GC settings.
+  // ---------------------------------------------------------------
+  document.querySelectorAll('[data-views-path]').forEach((el) => {
+    fetch(`https://keithtyser.goatcounter.com/counter/${encodeURIComponent(el.dataset.viewsPath)}.json`)
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
+      .then((data) => {
+        if (data && data.count) {
+          el.textContent = `${String(data.count).trim()} views`;
+          el.hidden = false;
+        }
+      })
+      .catch(() => {});
+  });
+
+  // ---------------------------------------------------------------
   // Hero "currently" line: typewriter reveal (instant under
   // prefers-reduced-motion)
   // ---------------------------------------------------------------
@@ -202,6 +314,66 @@ const BOOT_LINES = [
   'ready.',
 ];
 
+const FORTUNES = [
+  'B caught you. self-play makes brutal opponents.',
+  'most search is like that. please return to your crawl.',
+  'a regression never flows downstream.',
+  'it fits. that is the achievement.',
+  'the public recipe is that good. the leaderboard is humbling.',
+  'NVMe, obviously.',
+  'it is a lab, not a dragster.',
+  'when that date gets stale, so does this page.',
+  'keith is available. also hireable. remarkably hireable.',
+  'give it ~20s to warm up.',
+];
+
+function randomFortune() {
+  return FORTUNES[Math.floor(Math.random() * FORTUNES.length)];
+}
+
+function cowsay(text) {
+  const width = Math.min(38, Math.max(8, text.length));
+  const lines = [];
+  let line = '';
+  for (const w of text.split(/\s+/)) {
+    if ((line + ' ' + w).trim().length > width && line) { lines.push(line); line = w; }
+    else line = (line + ' ' + w).trim();
+  }
+  if (line) lines.push(line);
+  const pad = (s) => s + ' '.repeat(width - s.length);
+  const bubble = lines.length === 1
+    ? [`< ${pad(lines[0])} >`]
+    : lines.map((l, i) => {
+        const open = i === 0 ? '/' : i === lines.length - 1 ? '\\' : '|';
+        const shut = i === 0 ? '\\' : i === lines.length - 1 ? '/' : '|';
+        return `${open} ${pad(l)} ${shut}`;
+      });
+  return [
+    ` ${'_'.repeat(width + 2)}`,
+    ...bubble,
+    ` ${'-'.repeat(width + 2)}`,
+    '        \\   ^__^',
+    '         \\  (oo)\\_______',
+    '            (__)\\       )\\/\\',
+    '                ||----w |',
+    '                ||     ||',
+  ].join('\n');
+}
+
+function motdLine() {
+  const prev = Number(localStorage.getItem('prev-visit') || 0);
+  if (!prev) return 'first login. welcome aboard.';
+  const when = relativeTime(new Date(prev));
+  let fresh = 0;
+  for (const p of siteData.posts) {
+    const d = p.src && p.date ? new Date(p.date).getTime() : NaN;
+    if (!Number.isNaN(d) && d > prev) fresh += 1;
+  }
+  return fresh > 0
+    ? `last login: ${when}. ${fresh} new post${fresh === 1 ? '' : 's'} since.`
+    : `last login: ${when}.`;
+}
+
 function makeCommands(ctx) {
   // ctx: { print(text), clear(), close(), isTerminal }
   const cmds = {
@@ -214,10 +386,13 @@ function makeCommands(ctx) {
     man: () => ctx.print('no manual entry. there never was a manual.'),
     clear: () => ctx.clear(),
     exit: () => ctx.close(),
+    fortune: () => ctx.print(randomFortune()),
+    cowsay: (args) => ctx.print(cowsay(args.join(' ') || randomFortune())),
+    motd: () => ctx.print(motdLine()),
     help: () => ctx.print(
       ctx.isTerminal
-        ? 'commands: ls, cd, cat <file>, open <file>, pwd, whoami, date, history, play, theme [crt|dark|light], reboot, clear, exit\ntab completes. up/down for history. esc leaves.'
-        : 'try: whoami, ls, cat <page>, history, theme crt, reboot, terminal. or just type where you want to go.',
+        ? 'commands: ls, cd, cat <file>, open <file>, pwd, whoami, date, history, play, fortune, cowsay, motd, theme [crt|dark|light], reboot, clear, exit\ntab completes. up/down for history. esc leaves.'
+        : 'try: whoami, ls, cat <page>, history, fortune, theme crt, reboot, terminal. or just type where you want to go.',
     ),
     history: async () => {
       ctx.print('fetching site history...');
@@ -293,6 +468,10 @@ function makeCommands(ctx) {
 }
 
 function parseCommandLine(value) {
+  // the one pipe this shell supports
+  if (/^fortune\s*\|\s*cowsay$/i.test(value.trim())) {
+    return { cmd: 'cowsay', args: [] };
+  }
   const parts = value.trim().split(/\s+/);
   if (!parts[0]) return null;
   let cmd = parts[0].toLowerCase();
@@ -487,7 +666,12 @@ function initPalette() {
   function open() {
     if (!overlay) buildDom();
     lastFocused = document.activeElement;
-    loadItems();
+    loadItems().then(() => {
+      const m = motdLine();
+      if (m.includes('new post') && overlay.classList.contains('is-open') && output.hidden) {
+        cmdCtx.print(m);
+      }
+    });
     overlay.classList.add('is-open');
     document.body.style.overflow = 'hidden';
     input.value = '';
@@ -564,7 +748,7 @@ function buildTerminal() {
       <div class="term-log" aria-live="polite"></div>
       <div class="term-input-row">
         <span class="term-prompt"></span>
-        <input class="term-input" type="text" aria-label="Terminal input" autocomplete="off" spellcheck="false" autocapitalize="off">
+        <input class="term-input" type="text" aria-label="Terminal input" autocomplete="off" spellcheck="false" autocapitalize="off" autocorrect="off" enterkeyhint="send">
       </div>
     </div>`;
   document.body.appendChild(overlay);
@@ -614,8 +798,9 @@ function buildTerminal() {
 
   function startGame() {
     game.active = true;
-    game.w = 38;
-    game.h = 13;
+    const touch = window.matchMedia('(hover: none)').matches;
+    game.w = touch ? 26 : 38;
+    game.h = touch ? 11 : 13;
     game.player = { x: 4, y: 6 };
     game.bot = { x: 33, y: 6 };
     game.score = 0;
@@ -624,7 +809,9 @@ function buildTerminal() {
     game.frame = document.createElement('div');
     game.frame.className = 'term-line term-game';
     log.appendChild(game.frame);
-    print('orbit v0.1 — wasd/arrows to move, collect *, avoid B. q quits.');
+    print(window.matchMedia('(hover: none)').matches
+      ? 'orbit v0.1: swipe anywhere to move, collect *, avoid B. double-tap the board to quit.'
+      : 'orbit v0.1: wasd/arrows to move, collect *, avoid B. q quits.');
     drawGame('collect 10 to win');
   }
 
@@ -779,7 +966,7 @@ function buildTerminal() {
       const last = parts[parts.length - 1];
       if (!last) return;
       const pool = parts.length === 1
-        ? ['ls', 'cd', 'cat', 'open', 'pwd', 'whoami', 'date', 'history', 'play', 'theme', 'reboot', 'clear', 'exit', 'help']
+        ? ['ls', 'cd', 'cat', 'open', 'pwd', 'whoami', 'date', 'history', 'play', 'fortune', 'cowsay', 'motd', 'theme', 'reboot', 'clear', 'exit', 'help']
         : entriesFor(cwd).map((x) => x.replace(/\/$/, ''));
       const match = pool.find((p) => p.startsWith(last));
       if (match) {
@@ -794,8 +981,34 @@ function buildTerminal() {
 
   overlay.addEventListener('mousedown', () => input.focus());
 
+  // Touch controls: swipe to steer the game, double-tap to quit it
+  let touchStart = null;
+  let lastTap = 0;
+  overlay.addEventListener('touchstart', (e) => {
+    if (!game.active) return;
+    touchStart = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+  }, { passive: true });
+  overlay.addEventListener('touchmove', (e) => {
+    if (game.active) e.preventDefault();
+  }, { passive: false });
+  overlay.addEventListener('touchend', (e) => {
+    if (!game.active || !touchStart) return;
+    const dx = e.changedTouches[0].clientX - touchStart.x;
+    const dy = e.changedTouches[0].clientY - touchStart.y;
+    touchStart = null;
+    if (Math.abs(dx) < 18 && Math.abs(dy) < 18) {
+      const now = Date.now();
+      if (now - lastTap < 400) { gameKey('q'); lastTap = 0; }
+      else lastTap = now;
+      return;
+    }
+    if (Math.abs(dx) > Math.abs(dy)) gameKey(dx > 0 ? 'ArrowRight' : 'ArrowLeft');
+    else gameKey(dy > 0 ? 'ArrowDown' : 'ArrowUp');
+  }, { passive: true });
+
   refreshPrompt();
   print('keithtyser.com terminal. help for commands, esc to leave.');
+  print(motdLine());
 
   term = { overlay, input };
   window.__terminal = { open: openTerminal, close: closeTerminal };

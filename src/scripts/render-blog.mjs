@@ -403,7 +403,7 @@ function renderPostPage({ title, description, dateDisplay, dateISO, slug, hasToc
     content,
     tocMarkup,
     cssPath: '/dist/styles.css',
-    scriptPath: '/src/scripts/main.js',
+    scriptPath: '/dist/main.js',
     backHref: '/blog/',
     backLabel: 'All writing',
     includeRss: true,
@@ -429,7 +429,7 @@ function renderStaticPage({ title, description, slug, updatedDisplay, updatedISO
     content,
     tocMarkup,
     cssPath: '/dist/styles.css',
-    scriptPath: '/src/scripts/main.js',
+    scriptPath: '/dist/main.js',
     backHref: '/',
     backLabel: 'keithtyser.com',
     includeRss: false,
@@ -452,6 +452,7 @@ function renderIndexPage(posts) {
           <span class="blog-index-meta">
             <time class="blog-index-date" datetime="${p.dateISO}">${p.dateDisplay}</time>
             <span class="blog-index-readtime">${p.minutes} min</span>
+            <span class="blog-index-views" data-views-path="/blog/${escapeHtml(p.slug)}.html" hidden></span>
           </span>
         </a>`,
     )
@@ -488,7 +489,7 @@ ${FONT_PRELOADS}
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <link rel="alternate" type="application/rss+xml" title="${escapeHtml(SITE_TITLE)}" href="${SITE_URL}/feed.xml">
 ${SPECULATION}
-  <script src="/src/scripts/main.js" defer></script>
+  <script src="/dist/main.js" defer></script>
 </head>
 <body>
   <a href="#main" class="skip-link">Skip to content</a>

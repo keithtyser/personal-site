@@ -935,6 +935,47 @@
   padding: 16px 18px;
   overflow-x: auto;
   margin: 1.5em 0;
+  position: relative;
+}
+
+.copy-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 500;
+  color: var(--faint);
+  background-color: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 3px 8px;
+  opacity: 0;
+  transition: opacity 150ms ease, color 150ms ease, border-color 150ms ease;
+}
+
+.article-body pre:hover .copy-btn,
+.copy-btn:focus-visible {
+  opacity: 1;
+}
+
+@media (hover: none) {
+  .copy-btn { opacity: 1; }
+}
+
+.copy-btn:hover {
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
+}
+
+.copy-btn.is-copied {
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--border));
+  opacity: 1;
+}
+
+@media print {
+  .copy-btn { display: none !important; }
 }
 
 .article-body pre code {
@@ -1101,6 +1142,12 @@
   font-size: 12.5px;
 }
 
+/* Scrollspy: the section currently in view */
+.toc-list a.is-current {
+  color: var(--accent);
+  border-left-color: var(--accent);
+}
+
 /* ============================================================
    Blog index page
    ============================================================ */
@@ -1159,6 +1206,13 @@
 }
 
 .blog-index-readtime {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--faint);
+  white-space: nowrap;
+}
+
+.blog-index-views {
   font-family: var(--font-mono);
   font-size: 10.5px;
   color: var(--faint);
@@ -1474,6 +1528,16 @@
 .term-game {
   color: var(--accent);
   line-height: 1.25;
+}
+
+@media (max-width: 560px) {
+  .term {
+    padding: 18px 12px 14px;
+    font-size: 12px;
+  }
+  .term-game {
+    font-size: 11px;
+  }
 }
 
 /* ============================================================

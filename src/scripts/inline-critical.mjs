@@ -60,7 +60,7 @@ async function main() {
   // makes every deploy take effect immediately).
   const css = await fs.readFile(path.join(projectRoot, 'dist', 'styles.css'));
   const cssHash = crypto.createHash('md5').update(css).digest('hex').slice(0, 8);
-  const js = await fs.readFile(path.join(projectRoot, 'src', 'scripts', 'main.js'));
+  const js = await fs.readFile(path.join(projectRoot, 'dist', 'main.js'));
   const jsHash = crypto.createHash('md5').update(js).digest('hex').slice(0, 8);
 
   for (const rel of files) {
@@ -70,7 +70,10 @@ async function main() {
     try {
       let processed = await beasties.process(clean);
       processed = processed.replaceAll('dist/styles.css', `dist/styles.css?v=${cssHash}`);
-      processed = processed.replaceAll('scripts/main.js', `scripts/main.js?v=${jsHash}`);
+      // Point pages at the minified bundle (handles both the legacy
+      // src/scripts path and the dist path) and stamp the hash
+      processed = processed.replaceAll('src/scripts/main.js', 'dist/main.js');
+      processed = processed.replaceAll('dist/main.js', `dist/main.js?v=${jsHash}`);
       await fs.writeFile(p, processed, 'utf8');
       const inlined = (processed.match(/<style[^>]*>/g) || []).length;
       console.log(`  ${rel.padEnd(56)} (${inlined} style block${inlined === 1 ? '' : 's'} inlined)`);
