@@ -767,9 +767,83 @@ async function renderStaticPages() {
     });
 
     await fs.writeFile(path.join(projectRoot, `${slug}.html`), pageHtml, 'utf8');
-    rendered.push({ slug, title: data.title, updatedISO, unlisted: Boolean(data.unlisted) });
+    rendered.push({ slug, title: data.title, updatedISO, unlisted: Boolean(data.unlisted), body: body.trim() });
   }
   return rendered;
+}
+
+/* ------------------------------------------------------------------ */
+/* chat-context.json: bio card + retrieval chunks for keef-mini, the  */
+/* in-browser model. Bio stays small (it is prefilled every turn).    */
+/* ------------------------------------------------------------------ */
+
+function chunkText(title, body, maxLen = 1100) {
+  // split oversized "paragraphs" (e.g. long bullet lists) on sentence
+  // or item boundaries so no chunk blows the model's context budget
+  const paras = plainTextParas(body).flatMap((p) => {
+    if (p.length <= maxLen) return [p];
+    const bits = p.split(/(?<=[.!?])\s+|(?=- )/);
+    const out = [];
+    let cur = '';
+    for (const b of bits) {
+      if ((cur + ' ' + b).length > maxLen && cur) { out.push(cur.trim()); cur = b; }
+      else cur = (cur + ' ' + b).trim();
+    }
+    if (cur) out.push(cur.trim());
+    return out;
+  });
+
+  const chunks = [];
+  let cur = '';
+  for (const p of paras) {
+    if ((cur + ' ' + p).length > maxLen && cur) {
+      chunks.push(`[${title}] ${cur.trim()}`);
+      cur = p;
+    } else {
+      cur = (cur + ' ' + p).trim();
+    }
+  }
+  if (cur) chunks.push(`[${title}] ${cur.trim()}`);
+  return chunks;
+}
+
+function plainTextParas(markdownBody) {
+  return markdownBody
+    .replace(/```[\s\S]*?```/g, ' ')
+    .replace(/!\[[^\]]*\]\([^)]*\)/g, ' ')
+    .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')
+    .split(/\n{2,}/)
+    .map((p) => p.replace(/[#>*_`|]+/g, ' ').replace(/\s+/g, ' ').trim())
+    .filter((p) => p.length > 40);
+}
+
+function renderChatContext({ posts, pagesMeta }) {
+  const postLines = posts
+    .map((p) => `- "${p.title}" (${p.dateDisplay}, ${p.minutes} min): ${p.description}`)
+    .join('\n');
+
+  const bio = `Keith Tyser is a Data Scientist and AI/ML Engineer focused on generative AI, LLM post-training, and cybersecurity. He is a Cyber Operations Officer in the Army National Guard. He holds a Master's in AI from Boston University and has worked at Capital One, Wells Fargo, and MIT Lincoln Laboratory. He is available for work: keithtyser@gmail.com.
+
+Projects: Forgewright (multi-agent swarm that runs the LLM post-training pipeline autonomously, github.com/keithtyser/forgewright). Model Forge (post-training workbench: fine-tuning, quantization, evals, github.com/keithtyser/model-forge). Keef (his autonomous AI agent on OpenClaw, agent.keithtyser.com). KeithGPT (1.9B LLM trained from scratch with nanochat). Hull Tactical Kaggle solution (TabM, 6x Sharpe improvement). March Mania Kaggle bronze medal.
+
+Home lab: a 2x NVIDIA DGX Spark cluster (one DGX Spark + one ASUS Ascent GX10, GB10 Grace Blackwell, 256 GB combined unified memory, linked by QSFP). Two RTX PRO 6000 Blackwell Max-Q GPUs (96 GB each) await a Threadripper PRO 9965WX workstation build.
+
+Currently: competing in the NVIDIA Nemotron Model Reasoning Challenge and Orbit Wars on Kaggle, building Forgewright and Model Forge, thinking about detecting agentic AI activity for cyber defense.
+
+Writing on the site:
+${postLines}
+
+Site: keithtyser.com. It has a command palette (ctrl+k), a working terminal, a game called orbit, KeithOS (startx), and a books page with a 12-tier reading list. Socials: github.com/keithtyser, twitter.com/keithtyser, linkedin.com/in/keithtyser.`;
+
+  const chunks = [];
+  for (const p of posts) {
+    chunks.push(...chunkText(p.title, p.body));
+  }
+  for (const page of pagesMeta) {
+    if (['404', 'ai'].includes(page.slug)) continue;
+    chunks.push(...chunkText(page.title, page.body));
+  }
+  return JSON.stringify({ bio, chunks });
 }
 
 /* ------------------------------------------------------------------ */
@@ -927,6 +1001,13 @@ async function main() {
   await fs.writeFile(
     path.join(projectRoot, 'palette.json'),
     renderPaletteData({ posts, pagesMeta: pagesRendered }),
+    'utf8',
+  );
+
+  // chat-context.json at repo root (keef-mini bio + retrieval chunks)
+  await fs.writeFile(
+    path.join(projectRoot, 'chat-context.json'),
+    renderChatContext({ posts, pagesMeta: pagesRendered }),
     'utf8',
   );
 

@@ -420,8 +420,8 @@ function makeCommands(ctx) {
     },
     help: () => ctx.print(
       ctx.isTerminal
-        ? 'commands: ls, cd, cat <file>, open <file>, pwd, whoami, date, history, play, top, selfie, matrix, say, sound, demo, startx, fortune, cowsay, motd, theme [crt|dark|light], reboot, clear, exit\ntab completes. up/down for history. esc leaves.'
-        : 'try: whoami, cat <page>, history, fortune, matrix, demo, startx, theme crt, terminal. or just type where you want to go.',
+        ? 'commands: ls, cd, cat <file>, open <file>, pwd, whoami, date, history, play, top, selfie, chat, matrix, say, sound, demo, startx, fortune, cowsay, motd, theme [crt|dark|light], reboot, clear, exit\ntab completes. up/down for history. esc leaves.'
+        : 'try: whoami, cat <page>, history, chat, fortune, matrix, demo, startx, theme crt, terminal. or just type where you want to go.',
     ),
     history: async () => {
       ctx.print('fetching site history...');
@@ -517,6 +517,7 @@ function parseCommandLine(value) {
 function initPalette() {
   const STATIC_ITEMS = [
     { title: 'Terminal mode', hint: 'action', action: 'terminal' },
+    { title: 'Chat with keef-mini', hint: 'ai in your tab', action: 'chat' },
     { title: 'Toggle theme', hint: 'action', action: 'theme' },
     { title: 'GitHub', hint: 'social', href: 'https://github.com/keithtyser', external: true },
     { title: 'LinkedIn', hint: 'social', href: 'https://linkedin.com/in/keithtyser/', external: true },
@@ -685,6 +686,13 @@ function initPalette() {
       openTerminal();
       return;
     }
+    if (item.action === 'chat') {
+      close();
+      openTerminal().then(() => {
+        if (window.__terminal) window.__terminal.run('chat');
+      });
+      return;
+    }
     if (item.external) {
       window.open(item.href, '_blank', 'noopener');
       close();
@@ -791,7 +799,21 @@ function buildTerminal() {
   const history = [];
   let histIdx = -1;
 
-  const prompt = () => `keith@keithtyser.com:${cwd}$`;
+  // keef-mini chat state
+  const chat = {
+    engine: null,
+    loading: false,
+    gate: false,      // awaiting y/n on the download
+    mode: false,      // input lines go to the model
+    busy: false,      // a generation is in flight
+    nano: false,
+    history: [],
+    context: null,    // { bio, chunks } from chat-context.json
+  };
+
+  const prompt = () => (chat.mode
+    ? `${chat.nano ? 'keef-nano' : 'keef-mini'}>`
+    : `keith@keithtyser.com:${cwd}$`);
   const refreshPrompt = () => { promptEl.textContent = prompt(); };
 
   const print = (text) => {
@@ -1023,11 +1045,178 @@ function buildTerminal() {
     drawGame(game.score >= 6 ? 'B is accelerating' : '');
   }
 
+  /* ---- keef-mini: a small LLM in the visitor's browser ---- */
+  const CHAT_MODELS = {
+    main: { id: 'Qwen3.5-0.8B-q4f16_1-MLC', label: 'keef-mini (qwen3.5-0.8b, ~520MB download)' },
+    nano: { id: 'SmolLM2-360M-Instruct-q4f16_1-MLC', label: 'keef-nano (smollm2-360m, ~210MB download)' },
+  };
+
+  async function loadChatContext() {
+    if (chat.context) return chat.context;
+    const res = await fetch('/chat-context.json');
+    chat.context = res.ok ? await res.json() : { bio: '', chunks: [] };
+    return chat.context;
+  }
+
+  function retrieveChunks(question, k = 2) {
+    const stop = new Set(['the', 'a', 'an', 'and', 'or', 'of', 'in', 'on', 'to', 'is', 'are', 'was', 'what', 'whats', 'who', 'how', 'does', 'do', 'did', 'his', 'her', 'their', 'keith', 'tyser', 'about', 'with', 'for', 'you', 'your', 'tell', 'me']);
+    const terms = question.toLowerCase().replace(/[^a-z0-9\s]/g, ' ').split(/\s+/)
+      .filter((t) => t.length > 2 && !stop.has(t));
+    if (!terms.length) return [];
+    const scored = chat.context.chunks.map((c) => {
+      const lc = c.toLowerCase();
+      let score = 0;
+      for (const t of terms) {
+        if (lc.includes(t)) score += 2;
+        if (lc.slice(0, 80).includes(t)) score += 1; // title/topic bonus
+      }
+      return { c, score };
+    }).filter((x) => x.score > 1);
+    scored.sort((a, b) => b.score - a.score);
+    return scored.slice(0, k).map((x) => x.c);
+  }
+
+  function chatGateOpen(nano) {
+    chat.nano = Boolean(nano);
+    const m = chat.nano ? CHAT_MODELS.nano : CHAT_MODELS.main;
+    print(`${m.label}`);
+    print('runs entirely in this tab via webgpu. one download, cached after that. no servers, no api keys, nothing leaves your browser.');
+    print('small models are charming but fallible: for ground truth, read the actual posts.');
+    print('proceed? [y/n]');
+    chat.gate = true;
+  }
+
+  async function chatLoad() {
+    chat.gate = false;
+    if (!navigator.gpu) {
+      print('chat: this browser has no webgpu. your browser cannot run a language model yet. imagine that sentence five years ago.');
+      return;
+    }
+    chat.loading = true;
+    const m = chat.nano ? CHAT_MODELS.nano : CHAT_MODELS.main;
+    const progressLine = makeFrame();
+    progressLine.textContent = 'fetching webllm runtime...';
+    try {
+      const [webllm] = await Promise.all([
+        import('https://esm.run/@mlc-ai/web-llm@0.2.84'),
+        loadChatContext(),
+      ]);
+      const engine = await webllm.CreateMLCEngine(
+        m.id,
+        {
+          initProgressCallback: (p) => {
+            progressLine.textContent = p.text.length > 90 ? `${p.text.slice(0, 90)}…` : p.text;
+            log.scrollTop = log.scrollHeight;
+          },
+        },
+        { context_window_size: 3072 },
+      );
+      chat.engine = engine;
+      chat.mode = true;
+      chat.history = [];
+      progressLine.textContent = 'model loaded.';
+      sound.boot();
+      print(`${chat.nano ? 'keef-nano' : 'keef-mini'} online. ask about keith, the lab, the projects. /exit leaves, /clear resets, /stats for numbers.`);
+      refreshPrompt();
+    } catch (err) {
+      progressLine.textContent = 'model load failed.';
+      print(`chat: ${err && err.message ? String(err.message).slice(0, 120) : 'load error'}`);
+      if (!chat.nano) print('that can be a memory limit. try the smaller model: chat small');
+    } finally {
+      chat.loading = false;
+    }
+  }
+
+  async function chatSend(text) {
+    if (chat.busy) { print('keef-mini is still typing. patience.'); return; }
+    chat.busy = true;
+    const excerpts = retrieveChunks(text);
+    const system = `You are keef-mini, a tiny language model running entirely inside a visitor's browser tab on keithtyser.com, Keith Tyser's personal site. You answer questions about Keith using the FACTS below plus any SITE EXCERPTS in the user message. Answer naturally and directly from what you know here; broad questions like "tell me about keith" are answered from FACTS. Greetings and small talk get one short friendly line. Only when the user asks for specific information that genuinely appears nowhere in the FACTS or excerpts, reply: "that's not on the site - try the palette search (ctrl+k)". Keep answers under 80 words. Plain text, no markdown. A dry, lowercase tone fits the house.\n\nFACTS:\n${chat.context.bio}`;
+    const userMsg = excerpts.length
+      ? `site excerpts:\n${excerpts.join('\n')}\n\nquestion: ${text}`
+      : `question: ${text}`;
+    const messages = [
+      { role: 'system', content: system },
+      ...chat.history.slice(-4),
+      { role: 'user', content: userMsg },
+    ];
+    const out = makeFrame();
+    out.textContent = '…';
+    let acc = '';
+    try {
+      const stream = await chat.engine.chat.completions.create({
+        messages,
+        stream: true,
+        temperature: 0.3,
+        top_p: 0.9,
+        max_tokens: 220,
+        extra_body: { enable_thinking: false },
+      });
+      for await (const part of stream) {
+        acc += (part.choices[0] && part.choices[0].delta && part.choices[0].delta.content) || '';
+        out.textContent = acc.replace(/<think>[\s\S]*?(<\/think>|$)/g, '').trimStart() || '…';
+        log.scrollTop = log.scrollHeight;
+      }
+      const clean = acc.replace(/<think>[\s\S]*?(<\/think>|$)/g, '').trim();
+      out.textContent = clean || '(empty reply. small models, man.)';
+      chat.history.push({ role: 'user', content: text }, { role: 'assistant', content: clean });
+      try {
+        const stats = await chat.engine.runtimeStatsText();
+        const dim = document.createElement('div');
+        dim.className = 'term-line term-dim';
+        dim.textContent = `[ ${stats} ]`;
+        log.appendChild(dim);
+      } catch { /* stats are a bonus */ }
+      log.scrollTop = log.scrollHeight;
+    } catch (err) {
+      out.textContent = `chat error: ${err && err.message ? String(err.message).slice(0, 120) : 'generation failed'}`;
+    } finally {
+      chat.busy = false;
+    }
+  }
+
   function run(line) {
     print(`${prompt()} ${line}`);
+
+    // chat interceptors come before normal command parsing
+    if (chat.gate) {
+      chat.gate = false;
+      if (line.trim().toLowerCase() === 'y') chatLoad();
+      else print('chat: aborted. the weights remain undownloaded.');
+      return;
+    }
+    if (chat.mode) {
+      const t = line.trim();
+      if (t === '/exit') {
+        chat.mode = false;
+        refreshPrompt();
+        print('keef-mini suspended. chat re-enters without re-downloading.');
+        return;
+      }
+      if (t === '/clear') { chat.history = []; print('context cleared.'); return; }
+      if (t === '/stats') {
+        chat.engine.runtimeStatsText().then((s) => print(`[ ${s} ]`)).catch(() => print('no stats yet.'));
+        return;
+      }
+      if (t) chatSend(t);
+      return;
+    }
+
     const parsed = parseCommandLine(line);
     if (!parsed) return;
     const { cmd, args } = parsed;
+
+    if (cmd === 'chat') {
+      if (chat.loading) { print('chat: still loading.'); return; }
+      if (chat.engine) {
+        chat.mode = true;
+        refreshPrompt();
+        print(`${chat.nano ? 'keef-nano' : 'keef-mini'} resumed. /exit leaves.`);
+      } else {
+        chatGateOpen(args[0] === 'small');
+      }
+      return;
+    }
 
     if (cmd === 'play' || cmd === 'orbit') {
       startGame();
@@ -1108,7 +1297,7 @@ function buildTerminal() {
       const last = parts[parts.length - 1];
       if (!last) return;
       const pool = parts.length === 1
-        ? ['ls', 'cd', 'cat', 'open', 'pwd', 'whoami', 'date', 'history', 'play', 'top', 'selfie', 'matrix', 'say', 'sound', 'demo', 'startx', 'fortune', 'cowsay', 'motd', 'theme', 'reboot', 'clear', 'exit', 'help']
+        ? ['ls', 'cd', 'cat', 'open', 'pwd', 'whoami', 'date', 'history', 'play', 'top', 'selfie', 'chat', 'matrix', 'say', 'sound', 'demo', 'startx', 'fortune', 'cowsay', 'motd', 'theme', 'reboot', 'clear', 'exit', 'help']
         : entriesFor(cwd).map((x) => x.replace(/\/$/, ''));
       const match = pool.find((p) => p.startsWith(last));
       if (match) {

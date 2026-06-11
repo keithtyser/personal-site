@@ -9,7 +9,7 @@ This site is built like the things I work on: a small system with strong opinion
 
 ## The idea
 
-The design is an operator's console. I spend my days in terminals, training runs, and incident timelines, so the site borrows that language: a status bar instead of a nav, mono timestamps, numbered sections, phosphor green on near-black. Light mode is warm paper for people who read in the daylight. Press `ctrl+k` and you get a command palette; type `terminal` and the whole site becomes a shell. Try `theme crt` if you miss cathode rays. None of it is a framework theme. All of it is deliberate.
+The design is an operator's console. I spend my days in terminals, training runs, and incident timelines, so the site borrows that language: a status bar instead of a nav, mono timestamps, numbered sections, phosphor green on near-black. Light mode is warm paper for people who read in the daylight. Press `ctrl+k` and you get a command palette; type `terminal` and the whole site becomes a shell. Try `theme crt` if you miss cathode rays. Type `chat` and a small language model (Qwen3.5-0.8B) downloads into your tab, runs on your GPU via WebGPU, and answers questions about me. No server, no API key; the weights live in your browser cache. None of it is a framework theme. All of it is deliberate.
 
 ## Stack
 

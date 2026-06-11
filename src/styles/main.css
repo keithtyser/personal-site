@@ -1530,6 +1530,11 @@
   line-height: 1.25;
 }
 
+.term-dim {
+  color: var(--faint);
+  font-size: 11px;
+}
+
 @media (max-width: 560px) {
   .term {
     padding: 18px 12px 14px;
