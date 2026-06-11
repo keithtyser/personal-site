@@ -4,14 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // ---------------------------------------------------------------
   const toggleButton = document.getElementById('darkModeToggle');
   if (toggleButton) {
-    toggleButton.addEventListener('click', () => {
-      document.documentElement.classList.toggle('dark');
-      if (document.documentElement.classList.contains('dark')) {
-        localStorage.setItem('theme', 'dark');
-      } else {
-        localStorage.setItem('theme', 'light');
-      }
-    });
+    toggleButton.addEventListener('click', toggleTheme);
   }
 
   // ---------------------------------------------------------------
@@ -29,6 +22,29 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ---------------------------------------------------------------
+  // Reading progress line on article pages (fills along statusbar top)
+  // ---------------------------------------------------------------
+  const articleBody = document.querySelector('.article-body');
+  const statusbar = document.querySelector('.statusbar');
+  if (articleBody && statusbar) {
+    const progress = document.createElement('span');
+    progress.className = 'sb-progress';
+    progress.setAttribute('aria-hidden', 'true');
+    statusbar.appendChild(progress);
+    let raf = 0;
+    const update = () => {
+      raf = 0;
+      const total = document.documentElement.scrollHeight - window.innerHeight;
+      const pct = total > 0 ? Math.min(100, (window.scrollY / total) * 100) : 0;
+      progress.style.width = `${pct}%`;
+    };
+    window.addEventListener('scroll', () => {
+      if (!raf) raf = requestAnimationFrame(update);
+    }, { passive: true });
+    update();
+  }
+
+  // ---------------------------------------------------------------
   // Card cursor spotlight (pointer devices only)
   // ---------------------------------------------------------------
   if (window.matchMedia('(hover: hover)').matches) {
@@ -38,6 +54,17 @@ document.addEventListener('DOMContentLoaded', () => {
         card.style.setProperty('--mx', `${e.clientX - rect.left}px`);
         card.style.setProperty('--my', `${e.clientY - rect.top}px`);
       });
+    });
+  }
+
+  // ---------------------------------------------------------------
+  // 404 page: show the path the visitor actually asked for
+  // ---------------------------------------------------------------
+  if (document.title.startsWith('404')) {
+    document.querySelectorAll('.article-body pre code').forEach((code) => {
+      if (code.textContent.includes('/this/page')) {
+        code.textContent = code.textContent.replaceAll('/this/page', window.location.pathname);
+      }
     });
   }
 
@@ -85,7 +112,185 @@ document.addEventListener('DOMContentLoaded', () => {
       })
       .catch(() => { ghTarget.hidden = true; });
   }
+
+  // ---------------------------------------------------------------
+  // Command palette
+  // ---------------------------------------------------------------
+  initPalette();
 });
+
+function toggleTheme() {
+  document.documentElement.classList.toggle('dark');
+  if (document.documentElement.classList.contains('dark')) {
+    localStorage.setItem('theme', 'dark');
+  } else {
+    localStorage.setItem('theme', 'light');
+  }
+}
+
+/* =================================================================
+   Command palette: Ctrl+K / Cmd+K / "/" or the statusbar hint.
+   DOM built lazily on first open; page/post data from /palette.json.
+   ================================================================= */
+function initPalette() {
+  const STATIC_ITEMS = [
+    { title: 'Toggle theme', hint: 'action', action: 'theme' },
+    { title: 'GitHub', hint: 'social', href: 'https://github.com/keithtyser', external: true },
+    { title: 'LinkedIn', hint: 'social', href: 'https://linkedin.com/in/keithtyser/', external: true },
+    { title: 'X (Twitter)', hint: 'social', href: 'https://twitter.com/keithtyser', external: true },
+    { title: 'Google Scholar', hint: 'social', href: 'https://scholar.google.com/citations?user=LyyIWSYAAAAJ', external: true },
+    { title: 'Email Keith', hint: 'social', href: 'mailto:keithtyser@gmail.com' },
+    { title: 'RSS feed', hint: 'social', href: '/feed.xml' },
+  ];
+
+  let overlay = null;
+  let input = null;
+  let list = null;
+  let items = [];
+  let filtered = [];
+  let active = 0;
+  let loaded = false;
+
+  function buildDom() {
+    overlay = document.createElement('div');
+    overlay.className = 'palette-overlay';
+    overlay.innerHTML = `
+      <div class="palette" role="dialog" aria-modal="true" aria-label="Command palette">
+        <div class="palette-head">
+          <span class="palette-prompt" aria-hidden="true">$</span>
+          <input class="palette-input" type="text" placeholder="jump to..." aria-label="Search pages, posts, and actions" autocomplete="off" spellcheck="false">
+          <kbd class="palette-esc" aria-hidden="true">esc</kbd>
+        </div>
+        <ul class="palette-list" role="listbox"></ul>
+      </div>`;
+    document.body.appendChild(overlay);
+    input = overlay.querySelector('.palette-input');
+    list = overlay.querySelector('.palette-list');
+
+    overlay.addEventListener('mousedown', (e) => {
+      if (e.target === overlay) close();
+    });
+    input.addEventListener('input', () => { active = 0; render(); });
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowDown') { e.preventDefault(); move(1); }
+      else if (e.key === 'ArrowUp') { e.preventDefault(); move(-1); }
+      else if (e.key === 'Enter') { e.preventDefault(); execute(filtered[active]); }
+      else if (e.key === 'Escape') { e.preventDefault(); close(); }
+    });
+  }
+
+  async function loadItems() {
+    if (loaded) return;
+    loaded = true;
+    let dynamic = [];
+    try {
+      const res = await fetch('/palette.json');
+      if (res.ok) {
+        const data = await res.json();
+        dynamic = [
+          ...data.pages.map((p) => ({ title: p.title, hint: 'page', href: p.href })),
+          ...data.posts.map((p) => ({ title: p.title, hint: p.date, href: p.href })),
+        ];
+      }
+    } catch { /* palette still works with static items */ }
+    items = [...dynamic, ...STATIC_ITEMS];
+    render();
+  }
+
+  function render() {
+    const q = input.value.trim().toLowerCase();
+    filtered = q
+      ? items.filter((i) => (i.title + ' ' + (i.hint || '')).toLowerCase().includes(q))
+      : items.slice();
+    if (active >= filtered.length) active = Math.max(0, filtered.length - 1);
+    list.innerHTML = filtered.length
+      ? filtered
+          .map((item, idx) => `
+        <li class="palette-item${idx === active ? ' is-active' : ''}" role="option" aria-selected="${idx === active}" data-idx="${idx}">
+          <span class="palette-item-title">${escapeText(item.title)}</span>
+          <span class="palette-item-hint">${escapeText(item.hint || '')}</span>
+        </li>`)
+          .join('')
+      : '<li class="palette-empty">no matches found</li>';
+    list.querySelectorAll('.palette-item').forEach((el) => {
+      el.addEventListener('mouseenter', () => {
+        active = Number(el.dataset.idx);
+        render();
+      });
+      el.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        execute(filtered[Number(el.dataset.idx)]);
+      });
+    });
+    const activeEl = list.querySelector('.is-active');
+    if (activeEl) activeEl.scrollIntoView({ block: 'nearest' });
+  }
+
+  function move(delta) {
+    if (!filtered.length) return;
+    active = (active + delta + filtered.length) % filtered.length;
+    render();
+  }
+
+  function execute(item) {
+    if (!item) return;
+    if (item.action === 'theme') {
+      toggleTheme();
+      close();
+      return;
+    }
+    if (item.external) {
+      window.open(item.href, '_blank', 'noopener');
+      close();
+    } else {
+      window.location.href = item.href;
+    }
+  }
+
+  function open() {
+    if (!overlay) buildDom();
+    loadItems();
+    overlay.classList.add('is-open');
+    document.body.style.overflow = 'hidden';
+    input.value = '';
+    active = 0;
+    render();
+    input.focus();
+  }
+
+  function close() {
+    if (!overlay) return;
+    overlay.classList.remove('is-open');
+    document.body.style.overflow = '';
+  }
+
+  function isOpen() {
+    return overlay && overlay.classList.contains('is-open');
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+      e.preventDefault();
+      isOpen() ? close() : open();
+      return;
+    }
+    if (e.key === '/' && !isOpen()) {
+      const t = e.target;
+      const typing = t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable);
+      if (!typing) {
+        e.preventDefault();
+        open();
+      }
+    }
+  });
+
+  document.querySelectorAll('[data-palette-open]').forEach((el) => {
+    el.addEventListener('click', open);
+  });
+
+  // Console users and tests can drive it too
+  window.__palette = { open, close };
+}
 
 function relativeTime(date) {
   const diffMs = Date.now() - date.getTime();

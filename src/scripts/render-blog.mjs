@@ -5,6 +5,7 @@ import { marked } from 'marked';
 import { markedHighlight } from 'marked-highlight';
 import hljs from 'highlight.js';
 import matter from 'gray-matter';
+import sharp from 'sharp';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -34,6 +35,18 @@ function repairMojibake(text) {
   const originalNoise = (text.match(/[âÃÂ]/g) || []).length;
   const repairedNoise = (repaired.match(/[âÃÂ]/g) || []).length;
   return repairedNoise <= originalNoise ? repaired : text;
+}
+
+// Heading inner HTML from marked is already entity-escaped; decode it
+// before slugifying/re-escaping so TOC text doesn't double-escape
+// ("What&#39;s next") and slugs don't pick up entity digits.
+function decodeEntities(s) {
+  return s
+    .replace(/&#39;/g, "'")
+    .replace(/&quot;/g, '"')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&amp;/g, '&');
 }
 
 function escapeHtml(s) {
@@ -89,7 +102,7 @@ function renderMarkdown(body, tocEntries) {
   const slugCounts = new Map();
   html = html.replace(/<h([23])>([\s\S]*?)<\/h\1>/g, (_m, depth, inner) => {
     const d = Number(depth);
-    const rawText = inner.replace(/<[^>]+>/g, '').trim();
+    const rawText = decodeEntities(inner.replace(/<[^>]+>/g, '')).trim();
     const base = slugify(rawText) || 'section';
     const seen = slugCounts.get(base) || 0;
     slugCounts.set(base, seen + 1);
@@ -136,12 +149,66 @@ function renderStatusbar(sbPath) {
     </div>
     <div class="sb-right">
       <time class="sb-clock" id="sb-clock" title="Your local time" aria-hidden="true"></time>
+      <button type="button" class="sb-hint" data-palette-open aria-label="Open command palette">ctrl+k</button>
       <button id="darkModeToggle" type="button" class="icon-link" aria-label="Toggle theme">
         <svg class="icon text-[13px] dark:hidden" aria-hidden="true"><use href="/icons.svg#moon"/></svg>
         <svg class="icon text-[13px] hidden dark:inline" aria-hidden="true"><use href="/icons.svg#sun"/></svg>
       </button>
     </div>
   </div>`;
+}
+
+function readingTime(markdownBody) {
+  const words = markdownBody.split(/\s+/).filter(Boolean).length;
+  return Math.max(1, Math.round(words / 220));
+}
+
+/* ------------------------------------------------------------------ */
+/* Per-post OG image (1200x630, site branding, wrapped title)         */
+/* ------------------------------------------------------------------ */
+
+function wrapTitle(title, maxChars = 26, maxLines = 3) {
+  const words = title.split(/\s+/);
+  const lines = [];
+  let line = '';
+  for (const w of words) {
+    if ((line + ' ' + w).trim().length > maxChars && line) {
+      lines.push(line);
+      line = w;
+    } else {
+      line = (line + ' ' + w).trim();
+    }
+  }
+  if (line) lines.push(line);
+  if (lines.length > maxLines) {
+    lines.length = maxLines;
+    lines[maxLines - 1] = lines[maxLines - 1].replace(/\s*\S*$/, '') + '…';
+  }
+  return lines;
+}
+
+async function generatePostOgImage({ title, dateDisplay, slug }) {
+  const lines = wrapTitle(title);
+  const fontSize = lines.length >= 3 ? 56 : 64;
+  const lineHeight = fontSize * 1.18;
+  const blockHeight = lines.length * lineHeight;
+  const firstBaseline = 315 - blockHeight / 2 + fontSize * 0.8;
+  const titleText = lines
+    .map((l, i) => `<text x="80" y="${Math.round(firstBaseline + i * lineHeight)}" font-family="'Schibsted Grotesk', 'Segoe UI', system-ui, -apple-system, Helvetica, Arial, sans-serif" font-size="${fontSize}" font-weight="700" fill="#e7ece7" letter-spacing="-2">${escapeXml(l)}</text>`)
+    .join('\n    ');
+
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+    <rect width="1200" height="630" fill="#0a0c0a"/>
+    <rect x="0" y="0" width="6" height="630" fill="#7ce38b"/>
+    <text x="80" y="120" font-family="'JetBrains Mono', Consolas, 'Courier New', monospace" font-size="24" font-weight="500" fill="#7ce38b">// keith tyser · ${escapeXml(dateDisplay.toLowerCase())}</text>
+    ${titleText}
+    <text x="80" y="560" font-family="'JetBrains Mono', Consolas, 'Courier New', monospace" font-size="22" font-weight="500" fill="#9aa69c">keith@keithtyser.com:~/blog/${escapeXml(slug)}</text>
+  </svg>`;
+
+  const ogDir = path.join(blogDir, 'og');
+  await fs.mkdir(ogDir, { recursive: true });
+  const png = await sharp(Buffer.from(svg)).png({ compressionLevel: 9 }).toBuffer();
+  await fs.writeFile(path.join(ogDir, `${slug}.png`), png);
 }
 
 /* ------------------------------------------------------------------ */
@@ -166,13 +233,18 @@ function renderArticleDoc({
   backLabel,
   includeRss,
   sbPath,
+  ogImage,
+  minutes,
+  postNav,
 }) {
   const shellClass = hasToc ? 'article-shell article-with-toc' : 'article-shell';
   const layoutOpen = hasToc ? '<div class="article-layout">' : '';
   const layoutClose = hasToc ? '</div>' : '';
+  const ogImageUrl = ogImage || `${SITE_URL}/og-image.png`;
+  const minutesSuffix = minutes ? ` <span class="sb-sep" aria-hidden="true">·</span> ${minutes} min read` : '';
 
   const dateBlock = dateDisplay
-    ? `        <time class="article-date" datetime="${dateISO}">${dateDisplay}</time>`
+    ? `        <p class="article-date"><time datetime="${dateISO}">${dateDisplay}</time>${minutesSuffix}</p>`
     : updatedDisplay
       ? `        <p class="article-date">Last updated <time datetime="${updatedISO}">${updatedDisplay}</time></p>`
       : '';
@@ -220,14 +292,14 @@ ${content}
   <meta property="og:title" content="${escapeHtml(title)}">
   <meta property="og:description" content="${escapeHtml(description)}">
   <meta property="og:url" content="${canonical}">
-  <meta property="og:image" content="${SITE_URL}/og-image.png">
+  <meta property="og:image" content="${ogImageUrl}">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
 ${articleMeta}
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="${escapeHtml(title)}">
   <meta name="twitter:description" content="${escapeHtml(description)}">
-  <meta name="twitter:image" content="${SITE_URL}/og-image.png">
+  <meta name="twitter:image" content="${ogImageUrl}">
   <script>
     (() => {
       const saved = localStorage.getItem('theme');
@@ -252,6 +324,7 @@ ${rssLink}
 
     <main id="main">
     ${articleMain}
+${postNav || ''}
     </main>
 
     <footer class="mt-24 pt-8 border-t text-[12px] muted">
@@ -274,7 +347,27 @@ ${renderStatusbar(sbPath)}
 `;
 }
 
-function renderPostPage({ title, description, dateDisplay, dateISO, slug, hasToc, content, tocMarkup }) {
+function renderPostNav(newer, older) {
+  if (!newer && !older) return '';
+  const olderLink = older
+    ? `      <a href="/blog/${escapeHtml(older.slug)}.html" class="post-nav-link">
+        <span class="post-nav-label">← older</span>
+        <span class="post-nav-title">${escapeHtml(older.title)}</span>
+      </a>`
+    : '      <span class="post-nav-spacer"></span>';
+  const newerLink = newer
+    ? `      <a href="/blog/${escapeHtml(newer.slug)}.html" class="post-nav-link post-nav-next">
+        <span class="post-nav-label">newer →</span>
+        <span class="post-nav-title">${escapeHtml(newer.title)}</span>
+      </a>`
+    : '      <span class="post-nav-spacer"></span>';
+  return `    <nav class="post-nav" aria-label="Adjacent posts">
+${olderLink}
+${newerLink}
+    </nav>`;
+}
+
+function renderPostPage({ title, description, dateDisplay, dateISO, slug, hasToc, content, tocMarkup, minutes, newer, older }) {
   return renderArticleDoc({
     title,
     description,
@@ -291,6 +384,9 @@ function renderPostPage({ title, description, dateDisplay, dateISO, slug, hasToc
     backLabel: 'All writing',
     includeRss: true,
     sbPath: `~/blog/${slug}`,
+    ogImage: `${SITE_URL}/blog/og/${slug}.png`,
+    minutes,
+    postNav: renderPostNav(newer, older),
   });
 }
 
@@ -324,8 +420,14 @@ function renderIndexPage(posts) {
   const entries = posts
     .map(
       (p) => `        <a href="${escapeHtml(p.slug)}.html" class="blog-index-entry">
-          <span class="blog-index-title">${escapeHtml(p.title)}</span>
-          <time class="blog-index-date" datetime="${p.dateISO}">${p.dateDisplay}</time>
+          <span class="blog-index-main">
+            <span class="blog-index-title">${escapeHtml(p.title)}</span>${p.description ? `
+            <span class="blog-index-desc">${escapeHtml(p.description)}</span>` : ''}
+          </span>
+          <span class="blog-index-meta">
+            <time class="blog-index-date" datetime="${p.dateISO}">${p.dateDisplay}</time>
+            <span class="blog-index-readtime">${p.minutes} min</span>
+          </span>
         </a>`,
     )
     .join('\n');
@@ -598,9 +700,30 @@ async function renderStaticPages() {
     });
 
     await fs.writeFile(path.join(projectRoot, `${slug}.html`), pageHtml, 'utf8');
-    rendered.push({ slug, updatedISO, unlisted: Boolean(data.unlisted) });
+    rendered.push({ slug, title: data.title, updatedISO, unlisted: Boolean(data.unlisted) });
   }
   return rendered;
+}
+
+/* ------------------------------------------------------------------ */
+/* palette.json — data source for the command palette (lazy-fetched)  */
+/* ------------------------------------------------------------------ */
+
+function renderPaletteData({ posts, pagesMeta }) {
+  const pages = [
+    { title: 'Home', href: '/' },
+    { title: 'Writing', href: '/blog/' },
+    { title: 'Archive', href: '/archive.html' },
+    ...pagesMeta
+      .filter((p) => !p.unlisted)
+      .map((p) => ({ title: p.title, href: `/${p.slug}.html` })),
+  ];
+  const postItems = posts.map((p) => ({
+    title: p.title,
+    href: `/blog/${p.slug}.html`,
+    date: p.dateDisplay,
+  }));
+  return JSON.stringify({ pages, posts: postItems });
 }
 
 async function main() {
@@ -609,6 +732,7 @@ async function main() {
 
   const posts = [];
 
+  // Pass 1: parse all posts so prev/next links can see neighbors
   for (const file of mdFiles) {
     const full = path.join(blogDir, file);
     const raw = repairMojibake(await fs.readFile(full, 'utf8'));
@@ -621,40 +745,47 @@ async function main() {
 
     const slug = path.basename(file, '.md');
     const dateObj = data.date instanceof Date ? data.date : new Date(data.date);
-    const dateISO = dateObj.toISOString().split('T')[0];
-    const dateDisplay = formatDate(dateObj);
-    const hasToc = Boolean(data.toc);
-
-    const tocEntries = [];
-    const html = renderMarkdown(body.trim(), tocEntries);
-    const tocMarkup = hasToc ? buildToc(tocEntries) : '';
-
-    const pageHtml = renderPostPage({
-      title: data.title,
-      description: data.description || '',
-      dateDisplay,
-      dateISO,
-      slug,
-      hasToc,
-      content: html,
-      tocMarkup,
-    });
-
-    const outputPath = path.join(blogDir, `${slug}.html`);
-    await fs.writeFile(outputPath, pageHtml, 'utf8');
 
     posts.push({
       slug,
       title: data.title,
       description: data.description || '',
       date: dateObj,
-      dateISO,
-      dateDisplay,
+      dateISO: dateObj.toISOString().split('T')[0],
+      dateDisplay: formatDate(dateObj),
+      hasToc: Boolean(data.toc),
+      body: body.trim(),
+      minutes: readingTime(body),
     });
   }
 
   // Sort reverse chronological (newest first)
   posts.sort((a, b) => b.date - a.date);
+
+  // Pass 2: render each post page with neighbors + its OG image
+  for (let i = 0; i < posts.length; i++) {
+    const p = posts[i];
+    const tocEntries = [];
+    const html = renderMarkdown(p.body, tocEntries);
+    const tocMarkup = p.hasToc ? buildToc(tocEntries) : '';
+
+    const pageHtml = renderPostPage({
+      title: p.title,
+      description: p.description,
+      dateDisplay: p.dateDisplay,
+      dateISO: p.dateISO,
+      slug: p.slug,
+      hasToc: p.hasToc,
+      content: html,
+      tocMarkup,
+      minutes: p.minutes,
+      newer: posts[i - 1] || null,
+      older: posts[i + 1] || null,
+    });
+
+    await fs.writeFile(path.join(blogDir, `${p.slug}.html`), pageHtml, 'utf8');
+    await generatePostOgImage({ title: p.title, dateDisplay: p.dateDisplay, slug: p.slug });
+  }
 
   // Blog index
   await fs.writeFile(path.join(blogDir, 'index.html'), renderIndexPage(posts), 'utf8');
@@ -679,6 +810,13 @@ async function main() {
   await fs.writeFile(
     path.join(projectRoot, 'llms.txt'),
     renderLlmsTxt({ posts, pagesMeta: pagesRendered }),
+    'utf8',
+  );
+
+  // palette.json at repo root (command palette data)
+  await fs.writeFile(
+    path.join(projectRoot, 'palette.json'),
+    renderPaletteData({ posts, pagesMeta: pagesRendered }),
     'utf8',
   );
 

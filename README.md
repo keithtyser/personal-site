@@ -4,9 +4,11 @@ My personal site and blog. Static HTML + Tailwind. Deployed to GitHub Pages on t
 
 ## Tech
 
-- HTML and Tailwind CSS, no framework.
-- `src/scripts/render-blog.mjs` renders markdown to HTML. It auto-discovers `blog/*.md` and `pages/*.md`, parses frontmatter with gray-matter, and generates blog post pages, a flat blog index, an RSS feed, and standalone pages (like `/books.html` and `/tech-stack.html`).
-- Dark mode via a tiny script in `src/scripts/main.js` and a CSS class on the root element.
+- HTML and Tailwind CSS, no framework. "Operator's console" design: phosphor-green accent, self-hosted Schibsted Grotesk + JetBrains Mono variable fonts, vim-style status bar on every page.
+- `src/scripts/render-blog.mjs` renders markdown to HTML. It auto-discovers `blog/*.md` and `pages/*.md`, parses frontmatter with gray-matter, and generates blog post pages (with per-post OG images, reading time, prev/next links), a flat blog index, an RSS feed, `palette.json` for the command palette, and standalone pages (like `/books.html` and `/tech-stack.html`).
+- `src/scripts/inline-critical.mjs` inlines critical CSS (beasties) and cache-busts the stylesheet URL with a content hash so deploys take effect through the CDN immediately.
+- `src/scripts/main.js`: dark mode, status bar clock + GitHub activity, command palette (Ctrl+K), article reading progress.
+- `drafts/` is gitignored; move a draft into `blog/` to publish it.
 
 ## Scripts
 

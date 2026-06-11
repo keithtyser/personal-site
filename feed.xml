@@ -5,8 +5,15 @@
     <link>https://keithtyser.com/blog/</link>
     <description>AI/ML, data science, and whatever else seems worth writing down.</description>
     <language>en-us</language>
-    <lastBuildDate>Wed, 10 Jun 2026 23:06:34 GMT</lastBuildDate>
+    <lastBuildDate>Thu, 11 Jun 2026 00:38:18 GMT</lastBuildDate>
     <atom:link href="https://keithtyser.com/feed.xml" rel="self" type="application/rss+xml"/>
+    <item>
+      <title>Running a 2x DGX Spark Cluster at Home</title>
+      <link>https://keithtyser.com/blog/running-a-2x-dgx-spark-cluster-at-home.html</link>
+      <guid isPermaLink="true">https://keithtyser.com/blog/running-a-2x-dgx-spark-cluster-at-home.html</guid>
+      <pubDate>Wed, 10 Jun 2026 00:00:00 GMT</pubDate>
+      <description>What it&apos;s actually like to cluster an NVIDIA DGX Spark with an ASUS Ascent GX10 over QSFP, and what 256 GB of unified memory gets you.</description>
+    </item>
     <item>
       <title>Hull Tactical Market Prediction: A TabM Approach</title>
       <link>https://keithtyser.com/blog/hull_tactical_solution.html</link>

@@ -1,5 +1,13 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-  <rect width="32" height="32" rx="7" fill="#0a0c0a"/>
-  <text x="15" y="23" font-family="'JetBrains Mono', Consolas, ui-monospace, monospace" font-size="19" font-weight="600" fill="#7ce38b" text-anchor="middle">K</text>
-  <rect x="22" y="16" width="4" height="8" fill="#7ce38b"/>
+  <style>
+    .tile { fill: #0a0c0a; }
+    .mark { fill: #7ce38b; }
+    @media (prefers-color-scheme: light) {
+      .tile { fill: #f5f4ef; }
+      .mark { fill: #1a7f37; }
+    }
+  </style>
+  <rect class="tile" width="32" height="32" rx="7"/>
+  <text class="mark" x="15" y="23" font-family="'JetBrains Mono', Consolas, ui-monospace, monospace" font-size="19" font-weight="600" text-anchor="middle">K</text>
+  <rect class="mark" x="22" y="16" width="4" height="8"/>
 </svg>
