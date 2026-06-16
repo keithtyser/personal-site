@@ -828,7 +828,7 @@ Projects: Forgewright (multi-agent swarm that runs the LLM post-training pipelin
 
 Home lab: a 2x NVIDIA DGX Spark cluster (one DGX Spark + one ASUS Ascent GX10, GB10 Grace Blackwell, 256 GB combined unified memory, linked by QSFP). Two RTX PRO 6000 Blackwell Max-Q GPUs (96 GB each) await a Threadripper PRO 9965WX workstation build.
 
-Currently: competing in the NVIDIA Nemotron Model Reasoning Challenge and Orbit Wars on Kaggle, building Forgewright and Model Forge, thinking about detecting agentic AI activity for cyber defense.
+Currently: focused on Neurogolf 2026 (a swarm of AI agents playing code-golf on ARC-AGI v1) and Orbit Wars (self-play RL) on Kaggle, building Forgewright and Model Forge, thinking about detecting agentic AI activity for cyber defense. He recently finished the NVIDIA Nemotron Model Reasoning Challenge, placing 658 of 4,354 (no medal).
 
 Writing on the site:
 ${postLines}
