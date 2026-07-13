@@ -596,6 +596,7 @@ ${postLines}
 
 ## Pages
 - [Landing](${SITE_URL}/)
+- [Recently shipped](${SITE_URL}/shipped.html)
 - [Archive (past projects)](${SITE_URL}/archive.html)
 - [Writing (blog index)](${SITE_URL}/blog/)
 - [For the AIs](${SITE_URL}/ai.html)
@@ -617,6 +618,7 @@ function renderSitemap({ posts, pagesMeta }) {
 
   const urls = [
     { loc: `${SITE_URL}/`, lastmod: today, priority: '1.0' },
+    { loc: `${SITE_URL}/shipped.html`, lastmod: today, priority: '0.7' },
     { loc: `${SITE_URL}/archive.html`, lastmod: today, priority: '0.6' },
     { loc: `${SITE_URL}/blog/`, lastmod: posts[0]?.dateISO || today, priority: '0.9' },
   ];
@@ -824,11 +826,11 @@ function renderChatContext({ posts, pagesMeta }) {
 
   const bio = `Keith Tyser is a Data Scientist and AI/ML Engineer focused on generative AI, LLM post-training, and cybersecurity. He is a Cyber Operations Officer in the Army National Guard. He holds a Master's in AI from Boston University and has worked at Capital One, Wells Fargo, and MIT Lincoln Laboratory. He is available for work: keithtyser@gmail.com.
 
-Projects: Forgewright (multi-agent swarm that runs the LLM post-training pipeline autonomously, github.com/keithtyser/forgewright). Model Forge (post-training workbench: fine-tuning, quantization, evals, github.com/keithtyser/model-forge). Keef (his autonomous AI agent on OpenClaw, agent.keithtyser.com). KeithGPT (1.9B LLM trained from scratch with nanochat). Hull Tactical Kaggle solution (TabM, 6x Sharpe improvement). March Mania Kaggle bronze medal.
+Projects: Forgewright (multi-agent swarm that runs the LLM post-training pipeline autonomously, github.com/keithtyser/forgewright). Model Forge (post-training workbench: fine-tuning, quantization, evals, github.com/keithtyser/model-forge). Keef (his autonomous AI agent on OpenClaw, agent.keithtyser.com). KeithGPT (1.9B LLM trained from scratch with nanochat). Hull Tactical Kaggle solution (TabM, 6x Sharpe improvement). March Mania Kaggle bronze medal. Orbit Wars Kaggle bronze (348/4729, heuristic agent).
 
-Home lab: a 2x NVIDIA DGX Spark cluster (one DGX Spark + one ASUS Ascent GX10, GB10 Grace Blackwell, 256 GB combined unified memory, linked by QSFP). Two RTX PRO 6000 Blackwell Max-Q GPUs (96 GB each) await a Threadripper PRO 9965WX workstation build.
+Home lab: a 2x NVIDIA DGX Spark cluster (one DGX Spark + one ASUS Ascent GX10, GB10 Grace Blackwell, 256 GB combined unified memory, linked by QSFP). Building a Threadripper PRO 9965WX AI workstation with dual RTX PRO 6000 Blackwell Max-Q GPUs (96 GB each, 192 GB total VRAM).
 
-Currently: focused on Neurogolf 2026 (a swarm of AI agents playing code-golf on ARC-AGI v1) and Orbit Wars (self-play RL) on Kaggle, building Forgewright and Model Forge, thinking about detecting agentic AI activity for cyber defense. He recently finished the NVIDIA Nemotron Model Reasoning Challenge, placing 658 of 4,354 (no medal).
+Currently: finishing Neurogolf 2026 on Kaggle (near the silver line at 154/3022), working on ARC-AGI-2 and ARC-AGI-3, building Forgewright and Model Forge. Six Kaggle bronze medals, rank ~1042/210359; still chasing a first silver. Orbit Wars wrapped with bronze; Nemotron finished 658 of 4,354 (no medal).
 
 Writing on the site:
 ${postLines}
@@ -865,6 +867,7 @@ function renderPaletteData({ posts, pagesMeta }) {
   const pages = [
     { title: 'Home', href: '/' },
     { title: 'Writing', href: '/blog/' },
+    { title: 'Recently shipped', href: '/shipped.html' },
     { title: 'Archive', href: '/archive.html' },
     ...pagesMeta
       .filter((p) => !p.unlisted)

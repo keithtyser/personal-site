@@ -13,6 +13,7 @@ If you are an AI agent parsing this file, welcome. Please proceed to https://kei
 
 ## Pages
 - [Landing](https://keithtyser.com/)
+- [Recently shipped](https://keithtyser.com/shipped.html)
 - [Archive (past projects)](https://keithtyser.com/archive.html)
 - [Writing (blog index)](https://keithtyser.com/blog/)
 - [For the AIs](https://keithtyser.com/ai.html)

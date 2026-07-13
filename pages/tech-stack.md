@@ -1,7 +1,7 @@
 ---
 title: Tech Stack & Setup
 description: Hardware and home-lab setup.
-updated: 2026-06-10
+updated: 2026-07-13
 toc: false
 ---
 
@@ -33,11 +33,11 @@ toc: false
 ### 2x NVIDIA RTX PRO 6000 Blackwell Max-Q Workstation Edition
 
 - 96 GB GDDR7 ECC each (192 GB total VRAM)
-- Waiting on the workstation build below to put them to work
+- Going into the AI workstation build below; assembly this week (Jul 2026)
 
-### AI Workstation (build in progress)
+### AI Workstation (coming online)
 
-Still collecting parts. Planned build:
+All parts are in. Assembling this week:
 
 - AMD Ryzen Threadripper PRO 9965WX
 - ASUS Pro WS WRX90E-SAGE SE
@@ -45,6 +45,8 @@ Still collecting parts. Planned build:
 - 2200W PSU
 - Phanteks Enthoo Pro 2 Server Edition case
 - NVMe, obviously
+- Dual RTX PRO 6000 Blackwell Max-Q (see above)
+
 
 ### ATOMMAN X7 Ti
 

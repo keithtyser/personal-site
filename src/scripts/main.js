@@ -601,7 +601,7 @@ function initPalette() {
       return true;
     }
     if (cmd === 'ls') {
-      cmdCtx.print('home/  writing/  archive/  now/  books/  tech-stack/  ai/');
+      cmdCtx.print('home/  writing/  shipped/  archive/  now/  books/  tech-stack/  ai/');
       input.value = '';
       render();
       return true;
@@ -834,7 +834,7 @@ function buildTerminal() {
 
   function rootEntries() {
     const pages = siteData.pages.filter((p) => p.src).map((p) => `${slugOf(p)}.md`);
-    return ['blog/', 'home', 'archive', ...pages];
+    return ['blog/', 'home', 'shipped', 'archive', ...pages];
   }
 
   function blogEntries() {

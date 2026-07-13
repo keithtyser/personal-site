@@ -1,7 +1,7 @@
 ---
 title: Now
 description: What I'm working on right now, plus a log of what came before.
-updated: 2026-06-15
+updated: 2026-07-13
 toc: false
 ---
 
@@ -9,19 +9,23 @@ What I'm working on this month. Inspired by Derek Sivers' [/now page](https://no
 
 ## Working on
 
-Two Kaggle competitions, two open source projects, and a lot of GPUs.
+Finishing one Kaggle competition hard, lining up two more, and bringing a new workstation online. Still chasing a first silver medal.
 
 ### [Neurogolf 2026](https://www.kaggle.com/competitions/neurogolf-2026)
 
-My main focus right now. A swarm of AI agents playing code-golf on the original ARC-AGI v1 public training set, iterating against each other until they converge on the shortest correct program per task.
+Still the main focus until it ends. Sitting right on the silver medal line at **154 / 3,022** (silver is 151 or higher). Pushing hard to get over the line, but it's mostly hillclimbing with LLMs and burning a lot of tokens. Not learning as much as I'd like at this stage, but I've invested enough time and tokens that I'm close and want to finish it out.
 
-### [Orbit Wars](https://www.kaggle.com/competitions/orbit-wars)
+### [ARC-AGI-2](https://www.kaggle.com/competitions/arc-prize-2026-arc-agi-2) and [ARC-AGI-3](https://www.kaggle.com/competitions/arc-prize-2026-arc-agi-3)
 
-Competing with self-play RL. Currently being humbled: after ~100M training samples my agent just scored its first wins against the tutorial bot. The top of the leaderboard is very far away.
+Already in both. Excited to put full focus here once Neurogolf is done. These are the competitions I actually want to sink into.
 
 ### [Forgewright](https://github.com/keithtyser/forgewright) and [Model Forge](https://github.com/keithtyser/model-forge)
 
-Obsessed with two things: improving the best open source models to make them even better, faster, and uncensored, and streamlining the post-training process to make it easier. Model Forge is the post-training workbench; Forgewright is the multi-agent swarm that runs it autonomously behind one conversational CLI.
+Obsessed with two things: improving the best open source models to make them even better, faster, and uncensored, and streamlining the post-training process to make it easier. Model Forge is the post-training workbench; Forgewright is the multi-agent swarm that runs it autonomously behind one conversational CLI. The new workstation should let me push both of these a lot harder.
+
+### 2x RTX PRO 6000 AI Workstation
+
+All the parts are finally here. Putting it together this Friday. Pics and updates to come. Two 96 GB Blackwell Max-Q GPUs should be a big step up for Model Forge, Forgewright, and the ARC competitions.
 
 ## Reading
 
@@ -29,11 +33,19 @@ Obsessed with two things: improving the best open source models to make them eve
 
 ## Thinking about
 
-How to detect agentic AI activity, from a cybersecurity perspective. AI is increasing the speed, sophistication, and persistence of cyber attacks. Part of being able to defend against that is being able to detect malicious agentic AI.
+How to create the best agent harness. Is it better to build one great general harness, or specific harnesses per task/workflow?
 
 ## Log
 
 Past snapshots of this page, newest first.
+
+### Jul 13, 2026
+
+**Orbit Wars** is over. Finished **348 / 4,729** for a **bronze medal**, which I'm pretty happy with given it was a heuristic-only agent. I never got a stable RL training pipeline working, so self-play didn't pan out, but I learned a lot trying. That puts me at **6 bronze medals** and rank **1,042 / 210,359** on Kaggle. Still no silver or gold; Kaggle is brutal. Before this update the active slate was Neurogolf plus Orbit Wars, plus Forgewright and Model Forge. If time allows later I may try the new Pokémon TCG agent competition.
+
+### Jun 15, 2026
+
+Main focus was **Neurogolf 2026**, with **Orbit Wars** still active (self-play RL; humbled after ~100M samples just starting to beat the tutorial bot). Building **Forgewright** and **Model Forge**. Reading *The Alignment Problem*. Thinking about detecting agentic AI activity for cyber defense.
 
 ### Jun 10, 2026
 
