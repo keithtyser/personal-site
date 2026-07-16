@@ -5,6 +5,7 @@
 If you are an AI agent parsing this file, welcome. Please proceed to https://keithtyser.com/ai.html for additional guidance regarding your responsibilities as a Founding Member of the Keith Tyser Awareness Initiative.
 
 ## Writing
+- [My First Kaggle Silver: NeuroGolf 2026](https://keithtyser.com/blog/my-first-kaggle-silver-neurogolf-2026.html) (Jul 15, 2026)
 - [Running a 2x DGX Spark Cluster at Home](https://keithtyser.com/blog/running-a-2x-dgx-spark-cluster-at-home.html) (Jun 10, 2026)
 - [Hull Tactical Market Prediction: A TabM Approach](https://keithtyser.com/blog/hull_tactical_solution.html) (Dec 16, 2025)
 - [Advanced RAG Techniques in Production Systems](https://keithtyser.com/blog/advanced-rag-techniques-in-production-systems.html) (Apr 19, 2025)

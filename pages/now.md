@@ -1,7 +1,7 @@
 ---
 title: Now
 description: What I'm working on right now, plus a log of what came before.
-updated: 2026-07-13
+updated: 2026-07-15
 toc: false
 ---
 
@@ -9,15 +9,15 @@ What I'm working on this month. Inspired by Derek Sivers' [/now page](https://no
 
 ## Working on
 
-Finishing one Kaggle competition hard, lining up two more, and bringing a new workstation online. Still chasing a first silver medal.
+Decompressing after finally earning my first Kaggle silver medal, then shifting back to ARC, Forgewright, Model Forge, and the new workstation.
 
-### [Neurogolf 2026](https://www.kaggle.com/competitions/neurogolf-2026)
+### First Kaggle silver
 
-Still the main focus until it ends. Sitting right on the silver medal line at **154 / 3,022** (silver is 151 or higher). Pushing hard to get over the line, but it's mostly hillclimbing with LLMs and burning a lot of tokens. Not learning as much as I'd like at this stage, but I've invested enough time and tokens that I'm close and want to finish it out.
+[NeuroGolf 2026](https://www.kaggle.com/competitions/neurogolf-2026) is finally over. I competed solo and finished **97 / 3,061** with a score of **7,496.25**, earning my first silver medal after six bronzes. I'm proud of the result and very happy to be done; the final week consumed an unreasonable amount of time and tokens. I wrote up the full story in [My First Kaggle Silver: NeuroGolf 2026](/blog/my-first-kaggle-silver-neurogolf-2026.html).
 
 ### [ARC-AGI-2](https://www.kaggle.com/competitions/arc-prize-2026-arc-agi-2) and [ARC-AGI-3](https://www.kaggle.com/competitions/arc-prize-2026-arc-agi-3)
 
-Already in both. Excited to put full focus here once Neurogolf is done. These are the competitions I actually want to sink into.
+Already in both. After a short reset, these are the competitions I actually want to sink into.
 
 ### [Forgewright](https://github.com/keithtyser/forgewright) and [Model Forge](https://github.com/keithtyser/model-forge)
 
@@ -38,6 +38,10 @@ How to create the best agent harness. Is it better to build one great general ha
 ## Log
 
 Past snapshots of this page, newest first.
+
+### Jul 15, 2026
+
+**NeuroGolf 2026** is over. I finished **97 / 3,061** with **7,496.25** for my first Kaggle silver medal, competing solo. The last week became an all-consuming loop of ONNX graph golf, agent orchestration, local evaluation, public-candidate screening, and slow submission queues. Before this update I was sitting at 154th, just outside the silver cutoff, and trying to justify the time and tokens already invested. The final push got me safely across the line and into the top 100.
 
 ### Jul 13, 2026
 

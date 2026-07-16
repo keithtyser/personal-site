@@ -5,8 +5,114 @@
     <link>https://keithtyser.com/blog/</link>
     <description>AI/ML, data science, and whatever else seems worth writing down.</description>
     <language>en-us</language>
-    <lastBuildDate>Mon, 13 Jul 2026 18:04:11 GMT</lastBuildDate>
+    <lastBuildDate>Thu, 16 Jul 2026 02:37:08 GMT</lastBuildDate>
     <atom:link href="https://keithtyser.com/feed.xml" rel="self" type="application/rss+xml"/>
+    <item>
+      <title>My First Kaggle Silver: NeuroGolf 2026</title>
+      <link>https://keithtyser.com/blog/my-first-kaggle-silver-neurogolf-2026.html</link>
+      <guid isPermaLink="true">https://keithtyser.com/blog/my-first-kaggle-silver-neurogolf-2026.html</guid>
+      <pubDate>Wed, 15 Jul 2026 00:00:00 GMT</pubDate>
+      <description>I finished 97th in NeuroGolf 2026 after using coding agents to optimize 400 ONNX models.</description>
+      <content:encoded><![CDATA[<p>I finally earned my first Kaggle silver medal.</p>
+<p>I finished <strong>97th out of 3,061 entries</strong> in <a href="https://www.kaggle.com/competitions/neurogolf-2026" target="_blank" rel="noopener noreferrer">NeuroGolf 2026</a>, with a final score of <strong>7,496.25</strong>. That put me in the top 3.2%, 2.43 points inside the top 100, and comfortably above the silver cutoff.</p>
+<p>After six bronze medals, getting the first silver feels great. Mostly, though, I feel relieved. This competition was fascinating, but it consumed an absurd amount of time, attention, and AI tokens. I am very happy it is over.</p>
+<h2 id="working-with-coding-agents"><a class="anchor" href="#working-with-coding-agents" aria-label="Link to section: Working with coding agents">#</a>Working with coding agents</h2>
+<p>Most of the implementation work ran through Codex subagents and headless Codex workers, with a few other models used on selected problems. I chose the tasks, set priorities, managed the shared state, reviewed results, and controlled the submission budget.</p>
+<p>The prompts had to be specific. &quot;Make the solution better&quot; produced vague ideas. Naming one task, its current cost, the evaluator, and the required ONNX builder produced code I could test.</p>
+<h2 id="starting-fast-then-burning-out"><a class="anchor" href="#starting-fast-then-burning-out" aria-label="Link to section: Starting fast, then burning out">#</a>Starting fast, then burning out</h2>
+<p>I started the competition very early and briefly reached <strong>rank 5 on May 6</strong>. With 400 mostly independent targets and an exact evaluator, the competition suited coding agents. Early on, every new worker seemed capable of finding another measurable gain.</p>
+<p>I also burned out quickly. NeuroGolf was consuming my weekly Codex and Claude Code usage limits, and those were the same limits I wanted for Forgewright, Model Forge, ARC, and everything else I was building. Spending most of that capacity on another round of ONNX micro-optimization became hard to justify, so I backed off and lost the early leaderboard position.</p>
+<h3 id="the-webui-detour"><a class="anchor" href="#the-webui-detour" aria-label="Link to section: The WebUI detour">#</a>The WebUI detour</h3>
+<p>I also tried GPT-5.5 Pro and GPT-5.6 Sol Pro through the ChatGPT WebUI. On my account, the WebUI did not have the obvious weekly meter I saw in the coding CLIs. Its practical limits were request throttling and bot detection. Those two models found some of my best gains.</p>
+<p>The tabs could not see my local files. Every run needed a self-contained prompt with the task corpus, current cost, evaluator behavior, and expected artifact. I then had to copy the code back into my local build and validation pipeline. Doing that by hand across hundreds of tasks was too slow.</p>
+<p>I tried automating the handoff with <a href="https://github.com/OLmatter/chatgpt-bridge" target="_blank" rel="noopener noreferrer">OLmatter&#39;s ChatGPT WebUI Bridge</a>. I got it working late, but Codex sent requests too quickly and hit rate limits. It also had trouble parsing responses and sometimes gave the tabs prompts that returned suggestions instead of finished ONNX code. GPT-5.6 Sol Ultra could spend a long time repairing the bridge when I needed it to work on tasks. I shut the experiment down. It might have become useful with an earlier start and a better queue, but the final week was too late to tune it.</p>
+<h2 id="what-neurogolf-actually-was"><a class="anchor" href="#what-neurogolf-actually-was" aria-label="Link to section: What NeuroGolf actually was">#</a>What NeuroGolf actually was</h2>
+<p>Each NeuroGolf submission contained <strong>400 separate ONNX models</strong>, one for each transformation task in the original ARC-AGI v1 training set. Each model had to solve its task correctly while using as little charged memory and as few parameter elements as possible.</p>
+<p>For a correct task, the scorer was effectively:</p>
+<pre><code class="hljs language-text">cost   = intermediate tensor bytes + parameter elements
+points = max(1, 25 - ln(max(1, cost)))
+</code></pre><p>Inputs and outputs were free. Compute was free. Intermediate tensors were not. Parameter initializers were charged by element count rather than byte size. Correctness came from the sign of the output.</p>
+<p>That incentive structure inverted normal inference optimization. A network could do a ridiculous amount of computation and still be excellent if it wrote directly to the free output. Recomputing something three times was often cheaper than materializing it once. A tiny boolean intermediate could matter more than a huge contraction.</p>
+<p>In practice, it was 400 small program-golf problems expressed as ONNX graphs.</p>
+<h2 id="the-workflow-that-finally-worked"><a class="anchor" href="#the-workflow-that-finally-worked" aria-label="Link to section: The workflow that finally worked">#</a>The workflow that finally worked</h2>
+<p>My central data structure was a <strong>champion registry</strong>: the cheapest model I currently trusted for each task. Every champion had a task ID, cost, source, SHA-256 hash, and validation receipt. A candidate could replace it only if it was both correct under the required gates and strictly cheaper.</p>
+<p>The loop became:</p>
+<ol>
+<li>Rank tasks by plausible score gain and architectural tractability.</li>
+<li>Give one task to one worker.</li>
+<li>Recover the actual transformation rule before touching the graph.</li>
+<li>Build a deterministic ONNX candidate and its source.</li>
+<li>Run structural checks, all known examples, both ONNX Runtime modes, and task-specific stress tests.</li>
+<li>Compare the official cost against the current champion.</li>
+<li>Overlay accepted hashes onto the highest live-proven 400-model ZIP.</li>
+<li>Bundle mature gains; isolate uncertain operators or semantics in one-task Kaggle probes.</li>
+</ol>
+<p>I maintained two candidate lanes. The original-work lane produced new architectures and graph rewrites. The public-artifact lane monitored public Kaggle datasets and GitHub repositories, preserved provenance, deduplicated candidates by task and hash, and evaluated only models that were actually cheaper than my current base.</p>
+<p>Public models never bypassed validation. A public package score did not prove that one model would improve my stronger package, and several apparent wins failed the current checker or hidden distribution. I kept exact source URLs and hashes for anything I adopted and excluded encrypted or privately offered material.</p>
+<p>Across 100 matched campaign submissions, my evaluator&#39;s median absolute prediction error was about <strong>0.0028</strong>, and 97 predictions were within 0.05. The large misses usually came from whole-task failures: a hidden semantic case, processor incompatibility, package mistake, or runtime issue could erase almost an entire task.</p>
+<h2 id="score-over-time"><a class="anchor" href="#score-over-time" aria-label="Link to section: Score over time">#</a>Score over time</h2>
+<p>Kaggle&#39;s full submission export reaches back to April 16, giving me a complete 91-day score history. I made <strong>2,140 submission attempts</strong> across 52 active UTC dates: 1,770 completed with a score and 370 ended in an error. The very first completed submission scored <strong>84.27</strong>.</p>
+<figure>
+  <img src="/blog/images/neurogolf-full-score-history.svg" alt="Cumulative high-water chart of my NeuroGolf public score from 84.27 on April 16 to 7,496.25 on July 15, with daily bars showing 2,140 submission attempts, including 1,770 completed submissions and 370 errors." loading="lazy">
+  <figcaption>The line follows every new completed-submission high, while the bars show all attempts by UTC date. Kaggle rescored historical entries after checker changes, so the plot uses the scores attached to those original timestamps today, not necessarily the number displayed on that day.</figcaption>
+</figure>
+
+<h2 id="the-last-few-days"><a class="anchor" href="#the-last-few-days" aria-label="Link to section: The last few days">#</a>The last few days</h2>
+<p>The last week was the part I will remember. I started the final 55 hours at rank 168 and kept crossing the rank-151 silver line as other competitors improved. The first goal was simply to get back over the line. Then it became rank 130 with a cushion, then top 100.</p>
+<figure>
+  <img src="/blog/images/neurogolf-last-55-hours-rank.svg" alt="My leaderboard rank over the final 55 hours, moving from rank 168 to rank 97 while repeatedly crossing the rank-151 silver cutoff." loading="lazy">
+</figure>
+
+<h2 id="the-last-week-public-solution-scramble"><a class="anchor" href="#the-last-week-public-solution-scramble" aria-label="Link to section: The last-week public-solution scramble">#</a>The last-week public-solution scramble</h2>
+<p>Strong public packages and commits kept appearing in the final days. Public solution sharing was still allowed when the material was genuinely public, although it was strongly discouraged during the final week. Kaggle disabled new competition notebooks, but existing notebooks could still be updated and solutions could still appear as standalone datasets or GitHub repositories.</p>
+<p>When a strong public bundle landed, dozens of entries could absorb overlapping gains at once. Standing still meant moving backward. Among the final-day artifacts I screened were <a href="https://www.kaggle.com/datasets/sebastiangil00/neurogolf-7310-verified-blend" target="_blank" rel="noopener noreferrer">Sebastian Gil&#39;s 7,310 verified blend</a> and late commits from <a href="https://github.com/lljjcc426/NGC-work" target="_blank" rel="noopener noreferrer"><code>lljjcc426/NGC-work</code></a>. I compared each task hash against my champion registry and ran cheaper candidates through the same local checks as my own models.</p>
+<p>One last-day upload claimed a <strong>7,957-point</strong> score. Its creator accused top-five teams of cheating and trading solutions, threatened a release before the deadline, and posted an offer to sell the package for $1,000 in Bitcoin. I had no evidence for those claims. A <a href="https://www.kaggle.com/competitions/neurogolf-2026/discussion/726541" target="_blank" rel="noopener noreferrer">later Kaggle discussion</a> identified the encrypted archive as the public baseline, so I discarded it.</p>
+<p>I climbed <strong>71 places</strong>, from rank 168 to <strong>97th</strong>, safely inside silver.</p>
+<h2 id="the-technical-ideas-that-paid"><a class="anchor" href="#the-technical-ideas-that-paid" aria-label="Link to section: The technical ideas that paid">#</a>The technical ideas that paid</h2>
+<p>The most reliable optimization was producer substitution: inline an intermediate&#39;s producer into the final output contraction.</p>
+<p>Task303 originally built row and column summaries before combining them. I inlined both summaries into a single final <code>Einsum</code>. The graph repeated the input and did more arithmetic, but it stopped storing both charged tensors. Cost fell from <strong>700 to 220</strong>, worth <strong>+1.157 points</strong>.</p>
+<figure>
+  <img src="/blog/images/neurogolf-task303-arc.svg" alt="Task303 ARC example: a blue-and-black input grid becomes an output where the complete black row and column are red." loading="lazy">
+</figure>
+
+<p>Task298 was a different kind of simplification. A general ring-decomposition algorithm turned out to be unnecessary: across the available distribution, the important colors could be recovered from three fixed coordinates. Replacing the general procedure with direct sampling and construction cut cost from <strong>14,912 to 1,349</strong>, worth <strong>+2.403 points</strong>.</p>
+<figure>
+  <img src="/blog/images/neurogolf-task298-arc.svg" alt="Task298 ARC example: the colors of three nested square rings rotate positions in the output." loading="lazy">
+</figure>
+
+<p>Five tasks ended at <strong>zero cost and the full 25 points</strong>. Three were simple direct input-to-output graphs. The stranger pair, Tasks 087 and 140, implemented a fixed 3x3 rotation with one attribute-only <code>LpPool</code>. With no initializer and no intermediate tensor, the scorer saw zero cost. Those two models alone added <strong>3.219 points</strong>.</p>
+<figure>
+  <img src="/blog/images/neurogolf-zero-cost-rotations.svg" alt="ARC examples for Tasks 087 and 140, each rotating a 3-by-3 grid by 180 degrees." loading="lazy">
+</figure>
+
+<p>The final breakthrough was Task162, which fills available 3x3 black regions with blue. An earlier correct model cost 2,323 because it materialized a local activation over a window grid. I expanded those factors directly inside the final contraction instead. The P13 version reached cost 876 after full validation. With minutes left, P14 removed another sentinel row and synthesized its bias from existing coverage:</p>
+<pre><code class="hljs language-text">memory = 16 bytes
+params = 822 elements
+cost   = 838
+</code></pre><p>It did vastly more computation than the old graph and stored almost nothing.</p>
+<figure>
+  <img src="/blog/images/neurogolf-task162-arc.svg" alt="Task162 ARC example: a blue 3-by-3 square fills one empty region in a green-and-black grid." loading="lazy">
+</figure>
+
+<h2 id="what-local-validation-missed"><a class="anchor" href="#what-local-validation-missed" aria-label="Link to section: What local validation missed">#</a>What local validation missed</h2>
+<p>Task096 passed 266 stored cases in both runtime modes plus hundreds of translations, then failed on Kaggle. Task279 passed 266 cases, 1,862 symmetry transforms, and 9,428 layout translations twice. Its isolated overlay still lost about 16.56 points.</p>
+<p>Case counts did not measure generator coverage. My tests could vary symmetry and placement while preserving a hidden part of the task&#39;s structure. High-arity <code>Einsum</code>, sparse initializers, and quantized graphs also produced failures that the local runtime did not predict. I isolated unfamiliar operator families in one-task probes.</p>
+<p>Each final ZIP also received package-level checks for the 400 root files, overlay diff, entry order, model hashes, and checksum. Near the deadline, one stale base could silently throw away hours of gains.</p>
+<h2 id="the-honest-cost"><a class="anchor" href="#the-honest-cost" aria-label="Link to section: The honest cost">#</a>The honest cost</h2>
+<p>The official export records <strong>1,770 completed submissions</strong>. Many were controlled one-task probes spread across the month, but too many small gains should have waited for a larger bundle.</p>
+<p>The last week turned into a full-time operations exercise. I watched the leaderboard, screened public candidates, assigned tasks to agents, reconciled model hashes, ran the evaluators, built packages, and managed a grading queue that could take half an hour. I pushed the workstation hard enough to crash it once and had to cap evaluator concurrency.</p>
+<p>The token consumption was also excessive. Parallel agents worked because the 400 tasks were independent, but adding workers without narrow assignments mostly created noise. Every result still had to pass the same deterministic gate.</p>
+<p>I am proud of the medal, but I would not want every competition to demand this pace. Earlier bundling and stricter resource caps would have saved a lot of time and tokens.</p>
+<h2 id="final-artifacts"><a class="anchor" href="#final-artifacts" aria-label="Link to section: Final artifacts">#</a>Final artifacts</h2>
+<p>I published the exact final package at <a href="https://github.com/keithtyser/neurogolf-2026-final-submission" target="_blank" rel="noopener noreferrer">keithtyser/neurogolf-2026-final-submission</a>.</p>
+<pre><code class="hljs language-text">Score:      7,496.25
+Place:      97 / 3,061
+ZIP files:  400 ONNX models
+ZIP SHA256: d90f10e8b58b1360db7d80bcd8cc239f06ce227a6823f6204413312c5bd57ea8
+</code></pre><p>Thanks to the organizers and to everyone who published models or failure reports I could independently verify.</p>
+<p>The leaderboard tabs are closed. Next up: ARC.</p>
+]]></content:encoded>
+    </item>
     <item>
       <title>Running a 2x DGX Spark Cluster at Home</title>
       <link>https://keithtyser.com/blog/running-a-2x-dgx-spark-cluster-at-home.html</link>

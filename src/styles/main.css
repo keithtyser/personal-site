@@ -1046,6 +1046,25 @@
   border: 1px solid var(--border);
 }
 
+.article-body figure {
+  margin: 2.25em 0;
+}
+
+.article-body figure img {
+  display: block;
+  width: 100%;
+  margin: 0;
+}
+
+.article-body figcaption {
+  margin-top: 0.75rem;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-style: italic;
+  line-height: 1.55;
+}
+
 .article-body table {
   width: 100%;
   border-collapse: collapse;
