@@ -1,0 +1,156 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 1600" role="img" aria-labelledby="title desc">
+  <title id="title">NeuroGolf agent architecture</title>
+  <desc id="desc">Keith directs a main Codex orchestrator that assigns tasks to specialist subagents, headless Codex workers, and public-solution scouts. Candidates pass through a local validation gate, enter a 400-task champion registry, and become Kaggle submission packages. Score and rank feed back into the orchestrator.</desc>
+  <defs>
+    <linearGradient id="background" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#080c09"/>
+      <stop offset="0.55" stop-color="#0d130f"/>
+      <stop offset="1" stop-color="#101712"/>
+    </linearGradient>
+    <linearGradient id="orchestratorFill" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#15261a"/>
+      <stop offset="1" stop-color="#101a13"/>
+    </linearGradient>
+    <pattern id="grid" width="28" height="28" patternUnits="userSpaceOnUse">
+      <path d="M 28 0 L 0 0 0 28" fill="none" stroke="#7ce38b" stroke-width="0.6" opacity="0.045"/>
+    </pattern>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="145%">
+      <feDropShadow dx="0" dy="7" stdDeviation="10" flood-color="#000000" flood-opacity="0.35"/>
+    </filter>
+    <filter id="softGlow" x="-80%" y="-80%" width="260%" height="260%">
+      <feGaussianBlur stdDeviation="5" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <marker id="arrowGreen" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#7ce38b"/>
+    </marker>
+    <marker id="arrowMuted" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#66736a"/>
+    </marker>
+    <style>
+      .sans { font-family: Inter, "Segoe UI", Arial, sans-serif; }
+      .mono { font-family: "JetBrains Mono", Consolas, monospace; }
+      .eyebrow { font-size: 18px; font-weight: 750; letter-spacing: 2.8px; fill: #7ce38b; }
+      .headline { font-size: 40px; font-weight: 760; fill: #edf4ee; }
+      .summary { font-size: 17px; font-weight: 700; letter-spacing: 1.4px; fill: #8c998f; }
+      .box-label { font-size: 18px; font-weight: 750; letter-spacing: 2px; fill: #7ce38b; }
+      .box-title { font-size: 29px; font-weight: 750; fill: #f0f5f1; }
+      .box-copy { font-size: 21px; fill: #aab5ac; }
+      .small-copy { font-size: 18px; fill: #8f9b92; }
+      .worker-title { font-size: 25px; font-weight: 730; fill: #edf4ee; }
+      .worker-copy { font-size: 19px; fill: #9da9a0; }
+      .pill { font-size: 16px; font-weight: 700; fill: #c3ccc5; }
+      .pass { font-size: 17px; font-weight: 750; letter-spacing: 1px; fill: #f1b45b; }
+      .number { font-size: 46px; font-weight: 790; fill: #7ce38b; }
+      .number-label { font-size: 16px; font-weight: 700; letter-spacing: 1.3px; fill: #879289; }
+      .feedback { font-size: 15px; font-weight: 750; letter-spacing: 1.4px; fill: #7ce38b; }
+      .line-green { fill: none; stroke: #7ce38b; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+      .line-muted { fill: none; stroke: #66736a; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+    </style>
+  </defs>
+
+  <rect x="1" y="1" width="598" height="1598" rx="22" fill="url(#background)" stroke="#2a342c" stroke-width="2"/>
+  <rect x="1" y="1" width="598" height="1598" rx="22" fill="url(#grid)"/>
+
+  <text x="34" y="45" class="mono eyebrow">NEUROGOLF 2026</text>
+  <text x="34" y="91" class="sans headline">Agent architecture</text>
+  <text x="34" y="122" class="mono summary">400 TASKS &#183; ONE VALIDATION GATE</text>
+
+  <!-- Human direction. -->
+  <g filter="url(#shadow)">
+    <rect x="32" y="158" width="504" height="142" rx="16" fill="#111713" stroke="#344038" stroke-width="1.5"/>
+    <rect x="32" y="158" width="6" height="142" rx="3" fill="#f1b45b"/>
+  </g>
+  <text x="62" y="193" class="mono box-label" fill="#f1b45b">ME</text>
+  <text x="62" y="234" class="sans box-title">Direction</text>
+  <text x="62" y="270" class="sans box-copy">Priorities, task selection, risk, submission budget</text>
+
+  <path d="M 284 300 L 284 337" class="line-green" marker-end="url(#arrowGreen)"/>
+
+  <!-- Main orchestrator. -->
+  <g filter="url(#shadow)">
+    <rect x="32" y="349" width="504" height="197" rx="18" fill="url(#orchestratorFill)" stroke="#7ce38b" stroke-width="2"/>
+  </g>
+  <circle cx="64" cy="384" r="7" fill="#7ce38b" filter="url(#softGlow)"/>
+  <text x="86" y="391" class="mono box-label">MAIN CODEX SESSION</text>
+  <text x="62" y="435" class="sans box-title">Orchestrator</text>
+  <text x="62" y="474" class="sans box-copy">Ranks opportunities and assigns disjoint tasks</text>
+  <text x="62" y="508" class="sans box-copy">Tracks the current base and reconciles results</text>
+  <text x="62" y="534" class="sans small-copy">Narrow prompts &#183; explicit stop conditions</text>
+
+  <path d="M 284 546 L 284 582" class="line-green" marker-end="url(#arrowGreen)"/>
+
+  <!-- Parallel worker pool. -->
+  <rect x="32" y="594" width="504" height="463" rx="18" fill="#0d120f" stroke="#2c3730" stroke-width="1.5"/>
+  <rect x="56" y="580" width="244" height="34" rx="17" fill="#142019" stroke="#315039"/>
+  <text x="178" y="603" text-anchor="middle" class="mono box-label">PARALLEL WORKERS</text>
+
+  <g>
+    <rect x="56" y="628" width="456" height="116" rx="14" fill="#121915" stroke="#344038"/>
+    <circle cx="87" cy="662" r="15" fill="#17281c" stroke="#52765a"/>
+    <text x="87" y="669" text-anchor="middle" class="mono box-label">1</text>
+    <text x="116" y="670" class="sans worker-title">Task subagents</text>
+    <text x="82" y="709" class="sans worker-copy">Recover the rule &#183; rewrite ONNX &#183; return evidence</text>
+  </g>
+
+  <g>
+    <rect x="56" y="765" width="456" height="116" rx="14" fill="#121915" stroke="#344038"/>
+    <circle cx="87" cy="799" r="15" fill="#17281c" stroke="#52765a"/>
+    <text x="87" y="806" text-anchor="middle" class="mono box-label">2</text>
+    <text x="116" y="807" class="sans worker-title">Headless Codex</text>
+    <text x="82" y="846" class="sans worker-copy">Long searches &#183; operator sweeps &#183; leased tasks</text>
+  </g>
+
+  <g>
+    <rect x="56" y="902" width="456" height="116" rx="14" fill="#121915" stroke="#344038"/>
+    <circle cx="87" cy="936" r="15" fill="#17281c" stroke="#52765a"/>
+    <text x="87" y="943" text-anchor="middle" class="mono box-label">3</text>
+    <text x="116" y="944" class="sans worker-title">Public scouts</text>
+    <text x="82" y="983" class="sans worker-copy">Watch &#183; hash &#183; dedupe &#183; preserve provenance</text>
+  </g>
+
+  <path d="M 284 1057 L 284 1093" class="line-muted" marker-end="url(#arrowMuted)"/>
+
+  <!-- Deterministic local validation. -->
+  <g filter="url(#shadow)">
+    <rect x="32" y="1105" width="504" height="202" rx="18" fill="#122019" stroke="#7ce38b" stroke-width="2"/>
+  </g>
+  <text x="62" y="1141" class="mono box-label">LOCAL EVALUATOR</text>
+  <text x="62" y="1183" class="sans box-title">Deterministic validation gate</text>
+  <g class="mono pill">
+    <rect x="62" y="1208" width="158" height="31" rx="15.5" fill="#1a241d" stroke="#34483a"/>
+    <text x="141" y="1229" text-anchor="middle">CHECKER + SHAPES</text>
+    <rect x="229" y="1208" width="130" height="31" rx="15.5" fill="#1a241d" stroke="#34483a"/>
+    <text x="294" y="1229" text-anchor="middle">FULL CORPUS</text>
+    <rect x="368" y="1208" width="137" height="31" rx="15.5" fill="#1a241d" stroke="#34483a"/>
+    <text x="436.5" y="1229" text-anchor="middle">TWO RUNTIMES</text>
+  </g>
+  <text x="62" y="1273" class="mono pass">PASS = CORRECT + STRICTLY CHEAPER</text>
+
+  <path d="M 284 1307 L 284 1341" class="line-green" marker-end="url(#arrowGreen)"/>
+
+  <!-- Champion registry. -->
+  <g filter="url(#shadow)">
+    <rect x="32" y="1353" width="504" height="112" rx="17" fill="#111713" stroke="#3d4b41" stroke-width="1.5"/>
+  </g>
+  <text x="58" y="1387" class="mono box-label">CHAMPION REGISTRY</text>
+  <text x="58" y="1440" class="sans number">400</text>
+  <text x="167" y="1414" class="mono number-label">ONE TRUSTED MODEL PER TASK</text>
+  <text x="167" y="1441" class="sans small-copy">Cost &#183; hash &#183; source &#183; validation receipt</text>
+
+  <path d="M 284 1465 L 284 1492" class="line-green" marker-end="url(#arrowGreen)"/>
+
+  <!-- Submission. -->
+  <g filter="url(#shadow)">
+    <rect x="32" y="1504" width="504" height="64" rx="17" fill="#111713" stroke="#f1b45b" stroke-width="1.6"/>
+  </g>
+  <text x="58" y="1544" class="mono box-label" fill="#f1b45b">400-MODEL ZIP</text>
+  <text x="512" y="1544" text-anchor="end" class="sans box-title">Kaggle</text>
+
+  <!-- Leaderboard feedback loop. -->
+  <path d="M 536 1536 L 574 1536 L 574 325 L 514 325 L 514 349" class="line-green" opacity="0.8" marker-end="url(#arrowGreen)"/>
+  <g transform="translate(566 890) rotate(-90)">
+    <rect x="-119" y="-17" width="238" height="30" rx="15" fill="#101b13" stroke="#315039"/>
+    <text x="0" y="4" text-anchor="middle" class="mono feedback">SCORE + RANK FEEDBACK</text>
+  </g>
+</svg>

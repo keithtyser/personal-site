@@ -1,0 +1,194 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 880" role="img" aria-labelledby="title desc">
+  <title id="title">NeuroGolf agent architecture</title>
+  <desc id="desc">Keith directs a main Codex orchestrator that assigns isolated tasks to task subagents, headless Codex workers, and public-solution scouts. Candidate ONNX models pass through a local validation gate, then into a 400-task champion registry and a Kaggle submission package. Leaderboard results feed back to the orchestrator.</desc>
+  <defs>
+    <linearGradient id="background" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#080c09"/>
+      <stop offset="0.55" stop-color="#0d130f"/>
+      <stop offset="1" stop-color="#101712"/>
+    </linearGradient>
+    <linearGradient id="orchestratorFill" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#15261a"/>
+      <stop offset="1" stop-color="#101a13"/>
+    </linearGradient>
+    <linearGradient id="gateFill" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#122219"/>
+      <stop offset="1" stop-color="#111914"/>
+    </linearGradient>
+    <pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse">
+      <path d="M 32 0 L 0 0 0 32" fill="none" stroke="#7ce38b" stroke-width="0.6" opacity="0.045"/>
+    </pattern>
+    <filter id="shadow" x="-20%" y="-25%" width="140%" height="150%">
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#000000" flood-opacity="0.34"/>
+    </filter>
+    <filter id="softGlow" x="-80%" y="-80%" width="260%" height="260%">
+      <feGaussianBlur stdDeviation="5" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <marker id="arrowGreen" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#7ce38b"/>
+    </marker>
+    <marker id="arrowMuted" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#66736a"/>
+    </marker>
+    <style>
+      .sans { font-family: Inter, "Segoe UI", Arial, sans-serif; }
+      .mono { font-family: "JetBrains Mono", Consolas, monospace; }
+      .eyebrow { font-size: 16px; font-weight: 700; letter-spacing: 2.6px; fill: #7ce38b; }
+      .headline { font-size: 40px; font-weight: 750; fill: #edf4ee; }
+      .summary { font-size: 15px; font-weight: 700; letter-spacing: 1.5px; fill: #8c998f; }
+      .box-label { font-size: 14px; font-weight: 750; letter-spacing: 1.8px; fill: #7ce38b; }
+      .box-title { font-size: 24px; font-weight: 740; fill: #f0f5f1; }
+      .box-copy { font-size: 16px; fill: #aab5ac; }
+      .small-copy { font-size: 14px; fill: #8f9b92; }
+      .pill { font-size: 13px; font-weight: 650; fill: #c3ccc5; }
+      .number { font-size: 43px; font-weight: 780; fill: #7ce38b; }
+      .number-label { font-size: 12px; font-weight: 700; letter-spacing: 1.4px; fill: #879289; }
+      .flow-label { font-size: 12px; font-weight: 750; letter-spacing: 1.3px; fill: #7ce38b; }
+      .worker-title { font-size: 20px; font-weight: 720; fill: #edf4ee; }
+      .worker-copy { font-size: 14px; fill: #9da9a0; }
+      .pass { font-size: 14px; font-weight: 750; letter-spacing: 1.1px; fill: #f1b45b; }
+      .line-green { fill: none; stroke: #7ce38b; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+      .line-muted { fill: none; stroke: #66736a; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    </style>
+  </defs>
+
+  <rect x="1" y="1" width="1198" height="878" rx="22" fill="url(#background)" stroke="#2a342c" stroke-width="2"/>
+  <rect x="1" y="1" width="1198" height="878" rx="22" fill="url(#grid)"/>
+
+  <text x="54" y="50" class="mono eyebrow">NEUROGOLF 2026</text>
+  <text x="54" y="97" class="sans headline">Agent architecture</text>
+  <text x="1146" y="88" text-anchor="end" class="mono summary">400 TASKS &#183; ONE VALIDATION GATE</text>
+
+  <!-- Feedback loop from Kaggle to the orchestrator. -->
+  <path d="M 1060 636 L 1166 636 L 1166 116 L 604 116 L 604 139" class="line-green" opacity="0.8" marker-end="url(#arrowGreen)"/>
+  <rect x="858" y="101" width="254" height="29" rx="14.5" fill="#101b13" stroke="#315039"/>
+  <text x="985" y="120" text-anchor="middle" class="mono flow-label">SCORE + RANK FEEDBACK</text>
+
+  <!-- Human control. -->
+  <g filter="url(#shadow)">
+    <rect x="54" y="153" width="258" height="151" rx="15" fill="#111713" stroke="#344038" stroke-width="1.5"/>
+    <rect x="54" y="153" width="5" height="151" rx="2.5" fill="#f1b45b"/>
+  </g>
+  <text x="79" y="184" class="mono box-label" fill="#f1b45b">ME</text>
+  <text x="79" y="217" class="sans box-title">Direction</text>
+  <text x="79" y="249" class="sans box-copy">Priorities + task selection</text>
+  <text x="79" y="276" class="sans box-copy">Risk calls + submission budget</text>
+
+  <!-- Orchestrator. -->
+  <g filter="url(#shadow)">
+    <rect x="370" y="139" width="468" height="179" rx="18" fill="url(#orchestratorFill)" stroke="#7ce38b" stroke-width="2"/>
+  </g>
+  <circle cx="404" cy="173" r="6" fill="#7ce38b" filter="url(#softGlow)"/>
+  <text x="424" y="179" class="mono box-label">MAIN CODEX SESSION</text>
+  <text x="404" y="221" class="sans box-title">Orchestrator</text>
+  <text x="404" y="253" class="sans box-copy">Ranks opportunities and assigns disjoint tasks</text>
+  <text x="404" y="280" class="sans box-copy">Tracks the current base and reconciles results</text>
+  <text x="404" y="307" class="sans small-copy">One writer per task &#183; narrow prompts &#183; explicit stop conditions</text>
+
+  <!-- Live state. -->
+  <g filter="url(#shadow)">
+    <rect x="894" y="153" width="252" height="151" rx="15" fill="#111713" stroke="#344038" stroke-width="1.5"/>
+  </g>
+  <text x="919" y="184" class="mono box-label">LIVE STATE</text>
+  <text x="919" y="217" class="sans box-title">Task queue</text>
+  <text x="919" y="249" class="sans box-copy">Current cost + upside</text>
+  <text x="919" y="276" class="sans box-copy">Leases + worker status</text>
+
+  <path d="M 312 228 L 358 228" class="line-green" marker-end="url(#arrowGreen)"/>
+  <path d="M 838 228 L 882 228" class="line-muted" marker-end="url(#arrowMuted)"/>
+
+  <!-- Fan-out from the orchestrator. -->
+  <path d="M 604 318 L 604 349" class="line-green"/>
+  <path d="M 232 349 L 968 349" class="line-green" opacity="0.72"/>
+  <path d="M 232 349 L 232 379" class="line-green" marker-end="url(#arrowGreen)"/>
+  <path d="M 604 349 L 604 379" class="line-green" marker-end="url(#arrowGreen)"/>
+  <path d="M 968 349 L 968 379" class="line-green" marker-end="url(#arrowGreen)"/>
+
+  <!-- Parallel worker pool. -->
+  <rect x="54" y="363" width="1092" height="235" rx="18" fill="#0d120f" stroke="#2c3730" stroke-width="1.5"/>
+  <rect x="78" y="349" width="198" height="29" rx="14.5" fill="#142019" stroke="#315039"/>
+  <text x="177" y="369" text-anchor="middle" class="mono box-label">PARALLEL WORKERS</text>
+
+  <g>
+    <rect x="79" y="391" width="306" height="177" rx="14" fill="#121915" stroke="#344038"/>
+    <circle cx="107" cy="421" r="12" fill="#17281c" stroke="#52765a"/>
+    <text x="107" y="426" text-anchor="middle" class="mono box-label">1</text>
+    <text x="131" y="428" class="sans worker-title">Task subagents</text>
+    <text x="105" y="465" class="sans worker-copy">Recover the transformation rule</text>
+    <text x="105" y="492" class="sans worker-copy">Design a cheaper ONNX graph</text>
+    <text x="105" y="519" class="sans worker-copy">Return builder, model, and evidence</text>
+    <rect x="105" y="535" width="123" height="22" rx="11" fill="#18211b"/>
+    <text x="166.5" y="550" text-anchor="middle" class="mono pill">FOCUSED SEARCH</text>
+  </g>
+
+  <g>
+    <rect x="447" y="391" width="306" height="177" rx="14" fill="#121915" stroke="#344038"/>
+    <circle cx="475" cy="421" r="12" fill="#17281c" stroke="#52765a"/>
+    <text x="475" y="426" text-anchor="middle" class="mono box-label">2</text>
+    <text x="499" y="428" class="sans worker-title">Headless Codex</text>
+    <text x="473" y="465" class="sans worker-copy">Run longer architecture searches</text>
+    <text x="473" y="492" class="sans worker-copy">Sweep graph and operator variants</text>
+    <text x="473" y="519" class="sans worker-copy">Work independently on leased tasks</text>
+    <rect x="473" y="535" width="126" height="22" rx="11" fill="#18211b"/>
+    <text x="536" y="550" text-anchor="middle" class="mono pill">DEEPER LANES</text>
+  </g>
+
+  <g>
+    <rect x="815" y="391" width="306" height="177" rx="14" fill="#121915" stroke="#344038"/>
+    <circle cx="843" cy="421" r="12" fill="#17281c" stroke="#52765a"/>
+    <text x="843" y="426" text-anchor="middle" class="mono box-label">3</text>
+    <text x="867" y="428" class="sans worker-title">Public scouts</text>
+    <text x="841" y="465" class="sans worker-copy">Watch Kaggle and GitHub</text>
+    <text x="841" y="492" class="sans worker-copy">Hash, dedupe, and preserve sources</text>
+    <text x="841" y="519" class="sans worker-copy">Queue only cheaper candidates</text>
+    <rect x="841" y="535" width="145" height="22" rx="11" fill="#18211b"/>
+    <text x="913.5" y="550" text-anchor="middle" class="mono pill">READ-ONLY INTAKE</text>
+  </g>
+
+  <!-- Workers converge on the local gate. -->
+  <path d="M 232 568 L 232 612 L 304 612 L 304 636" class="line-muted"/>
+  <path d="M 600 568 L 600 612 L 304 612" class="line-muted"/>
+  <path d="M 968 568 L 968 612 L 304 612" class="line-muted" marker-end="url(#arrowMuted)"/>
+  <rect x="459" y="597" width="238" height="29" rx="14.5" fill="#111914" stroke="#344038"/>
+  <text x="578" y="616" text-anchor="middle" class="mono flow-label">CANDIDATE ONNX + RECEIPT</text>
+
+  <!-- Deterministic local validation. -->
+  <g filter="url(#shadow)">
+    <rect x="54" y="636" width="500" height="180" rx="17" fill="url(#gateFill)" stroke="#7ce38b" stroke-width="1.8"/>
+  </g>
+  <text x="82" y="668" class="mono box-label">LOCAL EVALUATOR</text>
+  <text x="82" y="704" class="sans box-title">Deterministic validation gate</text>
+  <g class="mono pill">
+    <rect x="82" y="727" width="141" height="28" rx="14" fill="#1a241d" stroke="#34483a"/>
+    <text x="152.5" y="746" text-anchor="middle">CHECKER + SHAPES</text>
+    <rect x="232" y="727" width="135" height="28" rx="14" fill="#1a241d" stroke="#34483a"/>
+    <text x="299.5" y="746" text-anchor="middle">KNOWN CORPUS</text>
+    <rect x="376" y="727" width="150" height="28" rx="14" fill="#1a241d" stroke="#34483a"/>
+    <text x="451" y="746" text-anchor="middle">TWO ORT MODES</text>
+  </g>
+  <text x="82" y="790" class="mono pass">PASS = CORRECT + STRICTLY CHEAPER</text>
+
+  <!-- Champion registry. -->
+  <path d="M 554 726 L 604 726" class="line-green" marker-end="url(#arrowGreen)"/>
+  <g filter="url(#shadow)">
+    <rect x="616" y="636" width="286" height="180" rx="17" fill="#111713" stroke="#3d4b41" stroke-width="1.5"/>
+  </g>
+  <text x="642" y="668" class="mono box-label">CHAMPION REGISTRY</text>
+  <text x="642" y="717" class="sans number">400</text>
+  <text x="735" y="696" class="mono number-label">ONE TRUSTED</text>
+  <text x="735" y="715" class="mono number-label">MODEL PER TASK</text>
+  <text x="642" y="758" class="sans box-copy">Cost &#183; SHA-256 &#183; source</text>
+  <text x="642" y="786" class="sans box-copy">Validation receipt</text>
+
+  <!-- Package and leaderboard. -->
+  <path d="M 902 726 L 944 726" class="line-green" marker-end="url(#arrowGreen)"/>
+  <g filter="url(#shadow)">
+    <rect x="956" y="636" width="190" height="180" rx="17" fill="#111713" stroke="#f1b45b" stroke-width="1.5"/>
+  </g>
+  <text x="981" y="668" class="mono box-label" fill="#f1b45b">SUBMISSION</text>
+  <text x="981" y="706" class="sans box-title">400-model ZIP</text>
+  <line x1="981" y1="728" x2="1121" y2="728" stroke="#3b453e"/>
+  <text x="981" y="760" class="sans box-copy">Kaggle grader</text>
+  <text x="981" y="788" class="sans small-copy">Score + live rank</text>
+</svg>

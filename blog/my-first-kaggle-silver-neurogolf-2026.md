@@ -52,6 +52,13 @@ In practice, it was 400 small program-golf problems expressed as ONNX graphs.
 
 My central data structure was a **champion registry**: the cheapest model I currently trusted for each task. Every champion had a task ID, cost, source, SHA-256 hash, and validation receipt. A candidate could replace it only if it was both correct under the required gates and strictly cheaper.
 
+<figure>
+  <picture>
+    <source media="(max-width: 640px)" srcset="/blog/images/neurogolf-agent-architecture-mobile.svg">
+    <img src="/blog/images/neurogolf-agent-architecture.svg" alt="My NeuroGolf agent architecture: I directed one main Codex orchestrator, which assigned isolated tasks to subagents, headless workers, and public-solution scouts. Candidate ONNX models passed through the local evaluator, champion registry, package builder, and Kaggle, with score and rank fed back to the orchestrator." loading="lazy">
+  </picture>
+</figure>
+
 The loop became:
 
 1. Rank tasks by plausible score gain and architectural tractability.
