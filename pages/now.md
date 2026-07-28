@@ -1,7 +1,7 @@
 ---
 title: Now
 description: What I'm working on right now, plus a log of what came before.
-updated: 2026-07-15
+updated: 2026-07-28
 toc: false
 ---
 
@@ -9,11 +9,13 @@ What I'm working on this month. Inspired by Derek Sivers' [/now page](https://no
 
 ## Working on
 
-Decompressing after finally earning my first Kaggle silver medal, then shifting back to ARC, Forgewright, Model Forge, and the new workstation.
+Using the new Blackwell workstation for LLM post-training, evals, and Kaggle work while I return to ARC, Forgewright, and Model Forge.
 
-### First Kaggle silver
+### 2x RTX PRO 6000 AI workstation
 
-[NeuroGolf 2026](https://www.kaggle.com/competitions/neurogolf-2026) is finally over. I competed solo and finished **97 / 3,061** with a score of **7,496.25**, earning my first silver medal after six bronzes. I'm proud of the result and very happy to be done; the final week consumed an unreasonable amount of time and tokens. I wrote up the full story in [My First Kaggle Silver: NeuroGolf 2026](/blog/my-first-kaggle-silver-neurogolf-2026.html).
+The workstation is built and has stayed busy since its first boot. It has a Threadripper PRO 9965WX, two RTX PRO 6000 Blackwell Max-Q cards, 192 GB of VRAM, and 192 GB of ECC system memory. I use it for vLLM eval servers, SFT and LoRA training, behavioral cloning, PPO, and Kaggle work.
+
+I wrote up the build, benchmarks, fan-curve fix, and early problems in [My 192 GB Blackwell AI Workstation](/blog/my-192gb-blackwell-ai-workstation.html).
 
 ### [ARC-AGI-2](https://www.kaggle.com/competitions/arc-prize-2026-arc-agi-2) and [ARC-AGI-3](https://www.kaggle.com/competitions/arc-prize-2026-arc-agi-3)
 
@@ -21,11 +23,7 @@ Already in both. After a short reset, these are the competitions I actually want
 
 ### [Forgewright](https://github.com/keithtyser/forgewright) and [Model Forge](https://github.com/keithtyser/model-forge)
 
-Obsessed with two things: improving the best open source models to make them even better, faster, and uncensored, and streamlining the post-training process to make it easier. Model Forge is the post-training workbench; Forgewright is the multi-agent swarm that runs it autonomously behind one conversational CLI. The new workstation should let me push both of these a lot harder.
-
-### 2x RTX PRO 6000 AI Workstation
-
-All the parts are finally here. Putting it together this Friday. Pics and updates to come. Two 96 GB Blackwell Max-Q GPUs should be a big step up for Model Forge, Forgewright, and the ARC competitions.
+Obsessed with two things: improving the best open source models to make them better, faster, and uncensored, and making the post-training process easier. Model Forge is the post-training workbench. Forgewright is the multi-agent swarm that runs it through one conversational CLI. The workstation now lets me keep eval servers running while I train.
 
 ## Reading
 

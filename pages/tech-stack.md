@@ -1,7 +1,7 @@
 ---
 title: Tech Stack & Setup
 description: Hardware and home-lab setup.
-updated: 2026-07-13
+updated: 2026-07-28
 toc: false
 ---
 
@@ -30,22 +30,20 @@ toc: false
 - Each node: GB10 Grace Blackwell Superchip, 1 petaFLOP of AI performance at FP4, 128 GB coherent unified memory
 - 256 GB unified memory across the cluster; enough to serve models up to ~405B parameters
 
-### 2x NVIDIA RTX PRO 6000 Blackwell Max-Q Workstation Edition
+### AI workstation
 
-- 96 GB GDDR7 ECC each (192 GB total VRAM)
-- Going into the AI workstation build below; assembly this week (Jul 2026)
-
-### AI Workstation (coming online)
-
-All parts are in. Assembling this week:
-
-- AMD Ryzen Threadripper PRO 9965WX
+- AMD Ryzen Threadripper PRO 9965WX, 24 cores / 48 threads
+- 2x NVIDIA RTX PRO 6000 Blackwell Max-Q Workstation Edition, 96 GB GDDR7 each
+- TEAMGROUP T-Create Master 192 GB DDR5-6000 ECC RDIMM, 8x 24 GB
 - ASUS Pro WS WRX90E-SAGE SE
-- 192 GB DDR5 (8x 24 GB)
-- 2200W PSU
-- Phanteks Enthoo Pro 2 Server Edition case
-- NVMe, obviously
-- Dual RTX PRO 6000 Blackwell Max-Q (see above)
+- 4 TB WD_BLACK SN8100 NVMe, PCIe 5.0 x4
+- Thermaltake Toughpower TF3 1650 W
+- Thermaltake AX700TG Super Tower Chassis
+- Thermaltake AW420 AIO liquid cooler
+- Thermal Grizzly Duronaut thermal paste
+- 6x Noctua NF-A14x25 G2 PWM chromax.black, 140 mm
+
+[Build notes and benchmark results](/blog/my-192gb-blackwell-ai-workstation.html).
 
 
 ### ATOMMAN X7 Ti

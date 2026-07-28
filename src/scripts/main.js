@@ -234,29 +234,6 @@ document.addEventListener('DOMContentLoaded', () => {
       .catch(() => {});
   });
 
-  // ---------------------------------------------------------------
-  // Hero "currently" line: typewriter reveal (instant under
-  // prefers-reduced-motion)
-  // ---------------------------------------------------------------
-  const currently = document.getElementById('hero-currently-text');
-  if (currently) {
-    const full = currently.textContent;
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      // leave as-is
-    } else {
-      currently.textContent = '';
-      let i = 0;
-      const type = () => {
-        if (i <= full.length) {
-          currently.textContent = full.slice(0, i);
-          i += 1;
-          setTimeout(type, 18);
-        }
-      };
-      setTimeout(type, 700);
-    }
-  }
-
   initPalette();
   initKonami();
   initIdle();

@@ -658,40 +658,6 @@ ${body}
 }
 
 /* ------------------------------------------------------------------ */
-/* Update the hero "currently" line in index.html from pages/now.md   */
-/* ------------------------------------------------------------------ */
-
-async function updateLandingCurrently() {
-  const landingPath = path.join(projectRoot, 'index.html');
-  let nowMd;
-  try {
-    nowMd = await fs.readFile(path.join(projectRoot, 'pages', 'now.md'), 'utf8');
-  } catch {
-    return;
-  }
-  const working = nowMd.split(/^## Working on/m)[1];
-  if (!working) return;
-  const section = working.split(/^## /m)[0];
-  const heads = [...section.matchAll(/^### (.+)$/gm)]
-    .map((m) => m[1].replace(/\[([^\]]*)\]\([^)]*\)/g, '$1').trim().toLowerCase())
-    .slice(0, 3);
-  if (!heads.length) return;
-  const line = `currently: ${heads.join(' · ')}`;
-
-  const html = await fs.readFile(landingPath, 'utf8');
-  const START = '<!-- CURRENTLY-START -->';
-  const END = '<!-- CURRENTLY-END -->';
-  const startIdx = html.indexOf(START);
-  const endIdx = html.indexOf(END);
-  if (startIdx === -1 || endIdx === -1) {
-    console.warn('[render-blog] Skipping currently line. Markers not found.');
-    return;
-  }
-  const out = html.slice(0, startIdx + START.length) + escapeHtml(line) + html.slice(endIdx);
-  await fs.writeFile(landingPath, out, 'utf8');
-}
-
-/* ------------------------------------------------------------------ */
 /* Update "Recent posts" region in landing index.html                 */
 /* ------------------------------------------------------------------ */
 
@@ -979,9 +945,6 @@ async function main() {
 
   // Inject 3 most recent into landing index.html
   await updateLandingRecentPosts(posts);
-
-  // Refresh the hero "currently" line from pages/now.md
-  await updateLandingCurrently();
 
   // Render standalone pages from /pages/*.md
   const pagesRendered = await renderStaticPages();
