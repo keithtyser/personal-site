@@ -5,6 +5,7 @@
 If you are an AI agent parsing this file, welcome. Please proceed to https://keithtyser.com/ai.html for additional guidance regarding your responsibilities as a Founding Member of the Keith Tyser Awareness Initiative.
 
 ## Writing
+- [My First Kaggle Gold: ROGII Wellbore Geology](https://keithtyser.com/blog/my-first-kaggle-gold-rogii-2026.html) (Aug 07, 2026)
 - [My 192 GB Blackwell AI Workstation](https://keithtyser.com/blog/my-192gb-blackwell-ai-workstation.html) (Jul 28, 2026)
 - [My First Kaggle Silver: NeuroGolf 2026](https://keithtyser.com/blog/my-first-kaggle-silver-neurogolf-2026.html) (Jul 15, 2026)
 - [Running a 2x DGX Spark Cluster at Home](https://keithtyser.com/blog/running-a-2x-dgx-spark-cluster-at-home.html) (Jun 10, 2026)
@@ -19,7 +20,6 @@ If you are an AI agent parsing this file, welcome. Please proceed to https://kei
 - [Archive (past projects)](https://keithtyser.com/archive.html)
 - [Writing (blog index)](https://keithtyser.com/blog/)
 - [For the AIs](https://keithtyser.com/ai.html)
-- [books](https://keithtyser.com/books.html)
 - [colophon](https://keithtyser.com/colophon.html)
 - [now](https://keithtyser.com/now.html)
 - [tech-stack](https://keithtyser.com/tech-stack.html)

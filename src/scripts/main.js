@@ -578,7 +578,7 @@ function initPalette() {
       return true;
     }
     if (cmd === 'ls') {
-      cmdCtx.print('home/  writing/  shipped/  archive/  now/  books/  tech-stack/  ai/');
+      cmdCtx.print('home/  writing/  shipped/  archive/  now/  tech-stack/  ai/');
       input.value = '';
       render();
       return true;

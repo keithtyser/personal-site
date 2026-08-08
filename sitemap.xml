@@ -2,31 +2,26 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://keithtyser.com/</loc>
-    <lastmod>2026-07-28</lastmod>
+    <lastmod>2026-08-08</lastmod>
     <priority>1.0</priority>
   </url>
   <url>
     <loc>https://keithtyser.com/shipped.html</loc>
-    <lastmod>2026-07-28</lastmod>
+    <lastmod>2026-08-08</lastmod>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://keithtyser.com/archive.html</loc>
-    <lastmod>2026-07-28</lastmod>
+    <lastmod>2026-08-08</lastmod>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://keithtyser.com/blog/</loc>
-    <lastmod>2026-07-28</lastmod>
+    <lastmod>2026-08-07</lastmod>
     <priority>0.9</priority>
   </url>
   <url>
     <loc>https://keithtyser.com/ai.html</loc>
-    <lastmod>2026-04-16</lastmod>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://keithtyser.com/books.html</loc>
     <lastmod>2026-04-16</lastmod>
     <priority>0.7</priority>
   </url>
@@ -37,13 +32,18 @@
   </url>
   <url>
     <loc>https://keithtyser.com/now.html</loc>
-    <lastmod>2026-07-28</lastmod>
+    <lastmod>2026-08-07</lastmod>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://keithtyser.com/tech-stack.html</loc>
     <lastmod>2026-07-28</lastmod>
     <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://keithtyser.com/blog/my-first-kaggle-gold-rogii-2026.html</loc>
+    <lastmod>2026-08-07</lastmod>
+    <priority>0.8</priority>
   </url>
   <url>
     <loc>https://keithtyser.com/blog/my-192gb-blackwell-ai-workstation.html</loc>

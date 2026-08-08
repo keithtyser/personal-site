@@ -801,7 +801,7 @@ Currently: finishing Neurogolf 2026 on Kaggle (near the silver line at 154/3022)
 Writing on the site:
 ${postLines}
 
-Site: keithtyser.com. It has a command palette (ctrl+k), a working terminal, a game called orbit, KeithOS (startx), and a books page with a 12-tier reading list. Socials: github.com/keithtyser, twitter.com/keithtyser, linkedin.com/in/keithtyser.`;
+Site: keithtyser.com. It has a command palette (ctrl+k), a working terminal, a game called orbit, and KeithOS (startx). Socials: github.com/keithtyser, twitter.com/keithtyser, linkedin.com/in/keithtyser.`;
 
   const chunks = [];
   for (const p of posts) {

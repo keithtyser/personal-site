@@ -1,7 +1,7 @@
 ---
 title: Now
 description: What I'm working on right now, plus a log of what came before.
-updated: 2026-07-28
+updated: 2026-08-07
 toc: false
 ---
 
@@ -9,25 +9,17 @@ What I'm working on this month. Inspired by Derek Sivers' [/now page](https://no
 
 ## Working on
 
-Using the new Blackwell workstation for LLM post-training, evals, and Kaggle work while I return to ARC, Forgewright, and Model Forge.
+Just took my first Kaggle gold in [ROGII Wellbore Geology Prediction](https://www.kaggle.com/competitions/rogii-wellbore-geology-prediction), 14 / 6,125, solo. Next up is the Pokémon TCG agent competition.
 
-### 2x RTX PRO 6000 AI workstation
+### [Pokémon TCG AI Battle](https://www.kaggle.com/competitions/pokemon-tcg-ai-battle)
 
-The workstation is built and has stayed busy since its first boot. It has a Threadripper PRO 9965WX, two RTX PRO 6000 Blackwell Max-Q cards, 192 GB of VRAM, and 192 GB of ECC system memory. I use it for vLLM eval servers, SFT and LoRA training, behavioral cloning, PPO, and Kaggle work.
+The next competition. Reinforcement learning is not my strong suit and I know almost nothing about Pokémon, which is most of the appeal.
 
-I wrote up the build, benchmarks, fan-curve fix, and early problems in [My 192 GB Blackwell AI Workstation](/blog/my-192gb-blackwell-ai-workstation.html).
+## Planned
 
 ### [ARC-AGI-2](https://www.kaggle.com/competitions/arc-prize-2026-arc-agi-2) and [ARC-AGI-3](https://www.kaggle.com/competitions/arc-prize-2026-arc-agi-3)
 
-Already in both. After a short reset, these are the competitions I actually want to sink into.
-
-### [Forgewright](https://github.com/keithtyser/forgewright) and [Model Forge](https://github.com/keithtyser/model-forge)
-
-Obsessed with two things: improving the best open source models to make them better, faster, and uncensored, and making the post-training process easier. Model Forge is the post-training workbench. Forgewright is the multi-agent swarm that runs it through one conversational CLI. The workstation now lets me keep eval servers running while I train.
-
-## Reading
-
-- **The Alignment Problem**, Brian Christian
+Entered both. Not working on either yet, but they are the two I most want to sink into.
 
 ## Thinking about
 
@@ -36,6 +28,12 @@ How to create the best agent harness. Is it better to build one great general ha
 ## Log
 
 Past snapshots of this page, newest first.
+
+### Aug 7, 2026
+
+**ROGII Wellbore Geology Prediction** is over. I finished **14 / 6,125** solo for my first Kaggle **gold medal**, climbing 65 places on the private leaderboard from 79th. 607 experiments across 16 focused days, grinding CV down from a 11–15 baseline to 6.2518. That puts me at 1 gold, 1 silver, and 6 bronze, rank **311 / 212,364**, one silver away from Competitions Master. Writeup: [My First Kaggle Gold](/blog/my-first-kaggle-gold-rogii-2026.html).
+
+The **2x RTX PRO 6000 AI workstation** is finished and comes off this page. Threadripper PRO 9965WX, two RTX PRO 6000 Blackwell Max-Q cards, 192 GB of VRAM, 192 GB of ECC system memory, running vLLM eval servers, SFT and LoRA training, behavioral cloning, PPO, and Kaggle work. The build, benchmarks, fan-curve fix, and early problems are in [My 192 GB Blackwell AI Workstation](/blog/my-192gb-blackwell-ai-workstation.html). **Forgewright** and **Model Forge** also come off; I am not actively building on either right now. **ARC-AGI-2** and **ARC-AGI-3** move to planned. Before this update I was resetting after NeuroGolf and getting the workstation busy.
 
 ### Jul 15, 2026
 

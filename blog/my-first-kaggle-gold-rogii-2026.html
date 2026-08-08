@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en" data-beasties-container>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My First Kaggle Gold: ROGII Wellbore Geology - Keith Tyser</title>
+  <meta name="description" content="Six years, thirty-odd competitions, six bronze medals, and then a solo gold. What actually changed.">
+  <link rel="canonical" href="https://keithtyser.com/blog/my-first-kaggle-gold-rogii-2026.html">
+  <meta name="theme-color" content="#0a0a0a">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="My First Kaggle Gold: ROGII Wellbore Geology">
+  <meta property="og:description" content="Six years, thirty-odd competitions, six bronze medals, and then a solo gold. What actually changed.">
+  <meta property="og:url" content="https://keithtyser.com/blog/my-first-kaggle-gold-rogii-2026.html">
+  <meta property="og:image" content="https://keithtyser.com/blog/og/my-first-kaggle-gold-rogii-2026.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="article:published_time" content="2026-08-07">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="My First Kaggle Gold: ROGII Wellbore Geology">
+  <meta name="twitter:description" content="Six years, thirty-odd competitions, six bronze medals, and then a solo gold. What actually changed.">
+  <meta name="twitter:image" content="https://keithtyser.com/blog/og/my-first-kaggle-gold-rogii-2026.png">
+  <script>
+    (() => {
+      const saved = localStorage.getItem('theme');
+      const dark = saved ? saved === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+      if (dark) document.documentElement.classList.add('dark');
+    })();
+  </script>
+  <link rel="preload" href="/fonts/SchibstedGroteskVariable.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/fonts/JetBrainsMonoVariable.woff2" as="font" type="font/woff2" crossorigin>
+  <style>*,:after,:before{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgba(59,130,246,.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }*,:after,:before{box-sizing:border-box;border:0 solid #e5e7eb}:after,:before{--tw-content:""}html{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;-o-tab-size:4;tab-size:4;font-family:ui-sans-serif,system-ui,sans-serif,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,Noto Color Emoji;font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}body{margin:0;line-height:inherit}h1,h2,h3{font-size:inherit;font-weight:inherit}a{text-decoration:inherit}strong{font-weight:bolder}button{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button{text-transform:none}button{-webkit-appearance:button;background-color:transparent;background-image:none}figure,h1,h2,h3,p{margin:0}ul{list-style:none;margin:0;padding:0}button{cursor:pointer}img,svg{display:block;vertical-align:middle}img{max-width:100%;height:auto}*,:after,:before{border-color:var(--border)}html{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility}body,html{background-color:var(--bg)}body{font-family:var(--font-sans);color:var(--text);font-size:17px;line-height:1.65;font-weight:400;-webkit-tap-highlight-color:transparent;padding-bottom:calc(var(--statusbar-h) + 24px);position:relative}body:before{z-index:-1;background:radial-gradient(900px 460px at 50% -140px,color-mix(in srgb,var(--accent) var(--glow-strength),transparent),transparent 70%)}body:after,body:before{content:"";position:fixed;inset:0;pointer-events:none}body:after{z-index:9999;opacity:var(--grain-opacity);background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='a'%3E%3CfeTurbulence baseFrequency='.9' numOctaves='2' stitchTiles='stitch' type='fractalNoise'/%3E%3C/filter%3E%3Cpath d='M0 0h160v160H0z' filter='url(%23a)'/%3E%3C/svg%3E")}a{color:inherit;text-decoration:none;transition:color .15s ease}button{font-family:inherit;cursor:pointer}.mb-10{margin-bottom:2.5rem}.mt-24{margin-top:6rem}.mt-4{margin-top:1rem}.flex{display:flex}.hidden{display:none}.items-center{align-items:center}.justify-between{justify-content:space-between}.gap-1{gap:.25rem}.gap-4{gap:1rem}.border-t{border-top-width:1px}.pt-8{padding-top:2rem}.text-center{text-align:center}.text-\[11px\]{font-size:11px}.text-\[12px\]{font-size:12px}.text-\[13px\]{font-size:13px}.transition-colors{transition-property:color,background-color,border-color,text-decoration-color,fill,stroke;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}:root{--bg:#f5f4ef;--surface:#fdfdfa;--surface-hover:#eeede6;--text:#171a17;--muted:#585f59;--faint:#646b64;--border:#e0dfd5;--border-hover:#c8c7bb;--accent:#1a7f37;--accent-hover:#156b2e;--accent-ink:#f5fff7;--success:#1a7f37;--font-sans:"Schibsted Grotesk",system-ui,-apple-system,"Segoe UI",sans-serif;--font-mono:"JetBrains Mono",ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;--radius-sm:5px;--radius:8px;--radius-lg:12px;--shadow-sm:0 1px 2px rgba(20,24,20,.05);--shadow:0 4px 16px rgba(20,24,20,.07);--grain-opacity:0.05;--glow-strength:7%;--statusbar-h:40px;color-scheme:light}@media (prefers-reduced-motion:reduce){*,:after,:before{transition-duration:.01ms!important;animation-duration:.01ms!important}}.skip-link{position:absolute;top:-48px;left:8px;background:var(--surface);color:var(--text);padding:8px 14px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;font-weight:500;z-index:100;transition:top .15s ease}.skip-link:focus{top:8px}.muted{color:var(--muted)}.mono{font-family:var(--font-mono)}.icon{width:1em;height:1em;vertical-align:-.125em;flex-shrink:0}.icon-link{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;color:var(--faint);border-radius:var(--radius-sm);transition:color .15s ease,background-color .15s ease}.icon-link:hover{color:var(--accent);background-color:var(--surface-hover)}.statusbar{position:fixed;bottom:0;left:0;right:0;z-index:90;height:var(--statusbar-h);justify-content:space-between;gap:16px;padding-inline:14px;font-family:var(--font-mono);font-size:11.5px;color:var(--muted);border-top:1px solid var(--border);background-color:color-mix(in srgb,var(--bg) 84%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}.sb-left,.sb-right,.statusbar{display:flex;align-items:center}.sb-left,.sb-right{gap:10px;min-width:0;white-space:nowrap}.sb-host{color:var(--accent);font-weight:550;overflow:hidden;text-overflow:ellipsis}.sb-sep{color:var(--faint);-webkit-user-select:none;-moz-user-select:none;user-select:none}.sb-clock{font-variant-numeric:tabular-nums;color:var(--faint)}.statusbar .icon-link{width:26px;height:26px}@media (max-width:460px){.sb-host{max-width:150px}}.article-shell{max-width:680px;margin-inline:auto;padding:24px 24px 80px}@media (min-width:640px){.article-shell{padding:32px 32px 96px}}.article-header{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:48px}.article-title{font-size:32px;line-height:1.15;letter-spacing:-.03em;font-weight:650;color:var(--text);margin-bottom:10px}@media (min-width:640px){.article-title{font-size:38px}}.article-date{display:block;font-family:var(--font-mono);font-size:12px;color:var(--faint);letter-spacing:.02em;margin-bottom:40px}.article-body{font-size:17px;line-height:1.7;color:var(--text)}.article-body>:first-child{margin-top:0}.article-body p{margin:1.25em 0}.article-body h2{font-size:23px;font-weight:650;letter-spacing:-.015em;margin-top:2.5em;margin-bottom:.6em}.article-body h2,.article-body h3{color:var(--text);scroll-margin-top:24px;position:relative}.article-body h3{font-size:18px;font-weight:600;margin-top:2em;margin-bottom:.5em}.article-body .anchor{position:absolute;right:100%;padding-right:8px;color:var(--faint);text-decoration:none;opacity:0;transition:opacity .15s ease,color .15s ease;-webkit-user-select:none;-moz-user-select:none;user-select:none;font-weight:400;font-size:.85em}.article-body .anchor:focus-visible,.article-body h2:hover .anchor,.article-body h3:hover .anchor{opacity:1}.article-body .anchor:hover{color:var(--accent)}.article-body a{color:var(--accent);text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:3px;text-decoration-color:color-mix(in srgb,var(--accent) 40%,transparent);transition:text-decoration-color .15s ease}.article-body a:hover{text-decoration-color:var(--accent)}.article-body strong{font-weight:600;color:var(--text)}.article-body img{max-width:100%;height:auto;border-radius:var(--radius);margin:1.5em 0;border:1px solid var(--border)}.article-body figure{margin:2.25em 0}.article-body figure img{display:block;width:100%;margin:0}.article-with-toc{max-width:960px}@media (min-width:1024px){.article-with-toc .article-layout{display:grid;grid-template-columns:minmax(0,1fr) 220px;gap:48px;align-items:start}}.toc{display:none}@media (min-width:1024px){.toc{display:block;position:sticky;top:24px;font-size:13px}}.toc-label{font-family:var(--font-mono);font-size:10.5px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);margin-bottom:12px}.toc-list{list-style:none;padding:0;margin:0;border-left:1px solid var(--border)}.toc-list li{margin:0}.toc-list a{display:block;padding:5px 0 5px 14px;margin-left:-1px;border-left:1px solid transparent;color:var(--muted);line-height:1.4;transition:color .15s ease,border-color .15s ease}.toc-list a:hover{color:var(--text);border-left-color:color-mix(in srgb,var(--accent) 60%,var(--border))}.toc-list a.pl-nested{padding-left:28px;font-size:12.5px}.post-nav{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:56px}.post-nav-link{display:flex;flex-direction:column;gap:4px;padding:14px 16px;border:1px solid var(--border);border-radius:var(--radius);transition:border-color .18s ease,background-color .18s ease;min-width:0}.post-nav-link:hover{border-color:color-mix(in srgb,var(--accent) 40%,var(--border));background-color:var(--surface)}.post-nav-label{font-family:var(--font-mono);font-size:10.5px;letter-spacing:.06em;color:var(--faint)}.post-nav-link:hover .post-nav-label{color:var(--accent)}.post-nav-title{font-size:13.5px;font-weight:500;color:var(--text);line-height:1.4;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}@media (max-width:560px){.post-nav{grid-template-columns:1fr}}.sb-hint{font-family:var(--font-mono);font-size:10.5px;font-weight:500;color:var(--faint);border:1px solid var(--border);border-radius:var(--radius-sm);padding:2px 7px;background:transparent;transition:color .15s ease,border-color .15s ease}.sb-hint:hover{color:var(--accent);border-color:color-mix(in srgb,var(--accent) 45%,var(--border))}@media print{:root{--bg:#fff;--surface:#fff;--surface-hover:#fff;--text:#000;--muted:#333;--faint:#555;--border:#ccc;--accent:#000}.post-nav,.skip-link,.statusbar,.toc,body:after,body:before{display:none!important}body{padding-bottom:0;font-size:11.5pt}.article-shell{max-width:100%;padding:0}.article-body a{color:#000;text-decoration:underline}.article-body a[href^=http]:after{content:" (" attr(href) ")";font-size:.8em;color:#555;word-break:break-all}}@view-transition{navigation:auto}.hover\:text-\[color\:var\(--accent\)\]:hover{color:var(--accent)}.hover\:text-\[color\:var\(--text\)\]:hover{color:var(--text)}.dark\:inline:is(.dark *){display:inline}.dark\:hidden:is(.dark *){display:none}</style><link rel="preload" href="/dist/styles.css?v=892bfb0d" onload="this.rel='stylesheet'" as="style"><noscript><link rel="stylesheet" href="/dist/styles.css?v=892bfb0d"></noscript>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <link rel="alternate" type="application/rss+xml" title="Keith Tyser" href="https://keithtyser.com/feed.xml">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": "My First Kaggle Gold: ROGII Wellbore Geology",
+    "description": "Six years, thirty-odd competitions, six bronze medals, and then a solo gold. What actually changed.",
+    "datePublished": "2026-08-07",
+    "url": "https://keithtyser.com/blog/my-first-kaggle-gold-rogii-2026.html",
+    "image": "https://keithtyser.com/blog/og/my-first-kaggle-gold-rogii-2026.png",
+    "author": { "@type": "Person", "name": "Keith Tyser", "url": "https://keithtyser.com/" }
+  }
+  </script>
+  <script type="speculationrules">{"prerender":[{"where":{"href_matches":"/*"},"eagerness":"moderate"}]}</script>
+  <script src="/dist/main.js?v=db85b930" defer></script>
+</head>
+<body>
+  <a href="#main" class="skip-link">Skip to content</a>
+
+  <div class="article-shell article-with-toc">
+    <header class="article-header">
+      <a href="/blog/" class="mono text-[12px] muted hover:text-[color:var(--accent)] transition-colors">← All writing</a>
+    </header>
+
+    <main id="main">
+    <div class="article-layout">
+      <article>
+      <header class="mb-10">
+        <h1 class="article-title">My First Kaggle Gold: ROGII Wellbore Geology</h1>
+        <p class="article-date"><time datetime="2026-08-07">Aug 07, 2026</time> <span class="sb-sep" aria-hidden="true">·</span> 8 min read</p>
+      </header>
+        <div class="article-body">
+<p>I got my first Kaggle gold medal.</p>
+<p>I finished <strong>14th out of 6,125 teams</strong> in <a href="https://www.kaggle.com/competitions/rogii-wellbore-geology-prediction" target="_blank" rel="noopener noreferrer">ROGII Wellbore Geology Prediction</a>, competing solo, with a private score of 6.329. It took six years and more than thirty competitions to get here.</p>
+<p>I had just woken up from a nap. The first thing I did was open the leaderboard on my phone, not expecting much, because I had ended the competition in 79th on the public board. I stared at the 14 for a while.</p>
+<figure>
+  <img src="/blog/images/rogii-private-leaderboard.webp" alt="The ROGII private leaderboard top 15. My entry sits at rank 14 with a score of 6.329, marked with a green up-arrow showing a 65-place climb, and a banner reading 'You won a gold medal! Your team placed 14th out of 6125 teams.'" loading="lazy">
+</figure>
+
+<p>The solution writeup is <a href="https://www.kaggle.com/competitions/rogii-wellbore-geology-prediction/writeups/14th-place-a-hierarchical-u-net-stack-with-seed-a" target="_blank" rel="noopener noreferrer">on Kaggle</a> and the code is <a href="https://github.com/keithtyser/rogii-wellbore-geology-solution" target="_blank" rel="noopener noreferrer">on GitHub</a>. This post is about the six years, not the model.</p>
+<h2 id="before-i-ever-competed"><a class="anchor" href="#before-i-ever-competed" aria-label="Link to section: Before I ever competed">#</a>Before I ever competed</h2>
+<p>In 2019 or 2020, a classmate in undergrad told me he was entering machine learning competitions on Kaggle. I signed up soon after to look around, and then entered nothing.</p>
+<p>Not long after that I took my first data science class. The class ran its own competition, off Kaggle, and I got completely absorbed in it. I spent far more time on it than the grade justified, and I overfit the private test set.</p>
+<p>That is funny in hindsight. I learned the most important idea in competitive machine learning before I had made a single submission on the actual site.</p>
+<p>A year later a grad school course used <a href="https://www.kaggle.com/competitions/cs-506-midterm-a1-b1" target="_blank" rel="noopener noreferrer">a real Kaggle competition</a> as its final project. I did not place as well as I wanted. I also did not overfit the public test set, which felt like progress.</p>
+<h2 id="six-years-of-bronze"><a class="anchor" href="#six-years-of-bronze" aria-label="Link to section: Six years of bronze">#</a>Six years of bronze</h2>
+<p>For most of the years that followed I competed sporadically. I would enter something, poke at it for a week, and drift away. The competitions I reliably put real effort into were the <a href="https://www.kaggle.com/competitions/march-machine-learning-mania-2025" target="_blank" rel="noopener noreferrer">March Mania</a> tournaments, which is a strange thing to admit, because March Mania needs more luck than any other competition on the site.</p>
+<p>The Brier score rewards gambling. If you overwrite a few predictions to 100% and they land, you jump the leaderboard. If they don&#39;t, you&#39;re finished. Converting betting lines to probabilities, correcting for longshot bias, and then placing a few deliberate 100% bets is enough to win the whole thing, provided the games cooperate.</p>
+<p>In 2025 I did a lot of analysis and three teams stood clearly above the rest. I locked UConn women to win it all at 100%. I locked South Carolina women into the championship game at 100%. I locked the Duke men to win it all at 100%.</p>
+<p>Before the Final Four I was sitting in 3rd place. UConn and South Carolina were both there, exactly as predicted. Duke was in the men&#39;s Final Four. If my teams held, I could not finish worse than top three and I had a real shot at winning.</p>
+<p>Then Duke lost to Houston in a game they choked away. I finished 166th of 1,727 with a bronze.</p>
+<p>I will keep entering March Mania, but it excites me less now. Until the metric changes, it is a betting contest with a modeling costume on.</p>
+<p>The one that actually stung was the <a href="https://www.kaggle.com/competitions/nfl-big-data-bowl-2026-prediction/leaderboard" target="_blank" rel="noopener noreferrer">NFL Big Data Bowl 2026</a>. I finished 99th of 1,899, only five places away from my first silver.</p>
+<figure>
+  <img src="/blog/images/rogii-medal-history.webp" alt="My Kaggle competition medal history: one gold, one silver, and six bronze. ROGII at 14 of 6,125 with gold, NeuroGolf at 91 of 2,963 with silver, then bronze finishes in NFL Big Data Bowl 2026, ARC Prize 2024, AMP Parkinson's, March Machine Learning Mania 2025, Orbit Wars, and BirdCLEF+ 2026." loading="lazy">
+</figure>
+
+<p>Six bronzes. A bronze is the top 10% and I was glad to have them, but I kept landing in the same band and could not get through to the top 5%. That gets old.</p>
+<h2 id="what-actually-changed"><a class="anchor" href="#what-actually-changed" aria-label="Link to section: What actually changed">#</a>What actually changed</h2>
+<p>Four things, and none of them are &quot;I got better at machine learning.&quot;</p>
+<h3 id="build-the-offline-evaluation-first"><a class="anchor" href="#build-the-offline-evaluation-first" aria-label="Link to section: Build the offline evaluation first">#</a>Build the offline evaluation first</h3>
+<p>The public leaderboard will fool you. It is easy to watch that number improve and mistake it for progress.</p>
+<p>Now the first thing I build in any competition, before any modeling, is a holdout evaluation I can run locally. A good one tells me three things: whether the solution generalizes, how strong it actually is, and roughly where it will land on the leaderboard. Sometimes I need it because daily submissions are capped. Sometimes I need it because the public set is small and noisy. I always need it.</p>
+<h3 id="then-read-the-data"><a class="anchor" href="#then-read-the-data" aria-label="Link to section: Then read the data">#</a>Then read the data</h3>
+<p>&quot;Garbage in, garbage out&quot; is one of those lines you learn early and don&#39;t understand until much later. Academia gave me clean, well-behaved datasets and let me believe that was normal. Working with real data corrected that, and Kaggle finished the job.</p>
+<p>Reading top solution writeups, I kept noticing how often the decisive move was in the data rather than the model: a leak, a quality problem, a way to generate synthetic examples, something odd about how the labels were made. So after the evaluation harness, I spend real time going through the data before I train anything.</p>
+<h3 id="kaggle-is-partly-an-engineering-competition"><a class="anchor" href="#kaggle-is-partly-an-engineering-competition" aria-label="Link to section: Kaggle is partly an engineering competition">#</a>Kaggle is partly an engineering competition</h3>
+<p>Most competitions want a notebook submission, running offline, with a runtime cap of nine to twelve hours and a fixed amount of compute. That is an engineering problem before it is a modeling one.</p>
+<p>It took me too long to learn the basics: installing dependencies from an attached Kaggle dataset, shipping trained weights and source code as datasets, and above all submitting an inference-only notebook. For years I assumed training and inference had to happen inside the same submission. They do not, and believing they did cost me a lot. Once you train elsewhere and submit only the inference step, the runtime budget stops being the thing that decides your ceiling.</p>
+<p><a href="https://www.kaggle.com/code/jeroencottaar/tufa-labs-duck-harness-june-30-milestone-winner" target="_blank" rel="noopener noreferrer">Tufa Labs&#39; duck harness notebook</a> is a good example of what a well-engineered submission looks like.</p>
+<h3 id="iterate-faster"><a class="anchor" href="#iterate-faster" aria-label="Link to section: Iterate faster">#</a>Iterate faster</h3>
+<p>I spent 16 focused days on ROGII and ran 607 experiments in them.</p>
+<p>Coding agents are the reason. Before them I could brute-force a hyperparameter sweep or point AutoML at something, but testing a new architecture or a different preprocessing idea meant a day of implementation each time. Now the gap between having an idea and having a measured result is small enough that I can afford to be wrong most of the time. That matters more than it sounds, because I usually had the ideas. I could just never build them fast enough to find out which ones worked.</p>
+<h2 id="the-grind"><a class="anchor" href="#the-grind" aria-label="Link to section: The grind">#</a>The grind</h2>
+<p>ROGII was frustrating in a way NeuroGolf never was.</p>
+<p>NeuroGolf was 400 small independent problems and an exact scorer, so there was always another measurable gain sitting somewhere. ROGII was one hard problem that refused to move. Reasonable baselines landed around 11 to 15 CV. Getting under 8 took a long time. Then I sat at roughly 7.5 for a stretch, found a real breakthrough down to 6.6, and stalled again at 6.4 for the last few days with nothing left that worked. Seed ensembling took me the rest of the way to a final CV of 6.2518.</p>
+<p>That is what 607 experiments buys you. Most of them failed, and for long stretches it looked like they all would.</p>
+<h2 id="why-the-leaderboard-moved"><a class="anchor" href="#why-the-leaderboard-moved" aria-label="Link to section: Why the leaderboard moved">#</a>Why the leaderboard moved</h2>
+<p>Everyone knew there would be a shakeup.</p>
+<p>A heavily forked <a href="https://www.kaggle.com/code/evgendvorkin/rogii-physics-lb-7-872-v48" target="_blank" rel="noopener noreferrer">public notebook</a> was sitting in bronze range on the public board at 6.361, built from models with a CV around 10 or 11. That gap is not subtle. It dropped about 1,000 places when the private scores landed.</p>
+<p>My own CV tracked the leaderboard closely all the way through, which is not something everyone had. Strong competitors were posting CVs near 6 while scoring 8.5 publicly, and that disagreement is miserable to work with, because you have to decide which number is lying. I never had that problem, so I trusted my CV and picked my final submissions on it.</p>
+<p>I moved up 65 places. Most of the top ten climbed too, some by 30 or 40. One team came up 1,561 places into 15th, one spot behind me, which is a good reminder of how little the public board was worth.</p>
+<h2 id="on-competing-solo"><a class="anchor" href="#on-competing-solo" aria-label="Link to section: On competing solo">#</a>On competing solo</h2>
+<p>Solo gold is one of the harder things to get on Kaggle, and I did not set out to do it that way. It&#39;s just how it happened. Teams help. More people means more ideas tried per day, and the breakthroughs that separate gold from silver often come out of that.</p>
+<p>I still prefer solo, for two reasons.</p>
+<p>The first is that I can quit whenever I want. This is a hobby. Some competitions stop being fun and I abandon them, which is fine on my own and would not be fine if three other people were counting on me. I don&#39;t want to grind something out because I feel obligated to.</p>
+<p>The second is imposter syndrome. I worry I won&#39;t contribute enough to be worth teaming with. That one I&#39;m less proud of.</p>
+<h2 id="where-this-leaves-me"><a class="anchor" href="#where-this-leaves-me" aria-label="Link to section: Where this leaves me">#</a>Where this leaves me</h2>
+<p>At the time of writing this I am rank <strong>311 of 212,364</strong>, still a Competitions Expert. Master needs one more silver or better. Grandmaster needs four more golds.</p>
+<figure>
+  <img src="/blog/images/rogii-kaggle-ranking.webp" alt="My Kaggle competitions ranking over time, flat around the top 2,000 through 2024 and 2025, then climbing steadily through 2026 before a sharp jump to rank 311." loading="lazy">
+</figure>
+
+<p>The chart looks like a hockey stick, and I want to be careful about reading too much into it. Silver and gold three weeks apart is a small sample. My <a href="/blog/my-first-kaggle-silver-neurogolf-2026.html">silver in NeuroGolf</a> came from a completely different kind of competition, so I can&#39;t point to one trick that carried over. What I think happened is that I finally have a way of approaching a new competition: evaluation first, then data, then models, then engineering. Whether that holds up is something the next few competitions will tell me.</p>
+<p>The medals matter to me more than the rank does. Each one is evidence that what I built was genuinely strong work, not a lucky draw. I want grandmaster mostly to settle the question of whether any of this is a fluke.</p>
+<p>And the competition itself is fun in a way I had almost forgotten. It is the same feeling I got playing sports in high school and video games after that. I also learn a great deal along the way, which is a real part of why I keep entering rather than the excuse I tell people.</p>
+<p>Next up is the <a href="https://www.kaggle.com/competitions/pokemon-tcg-ai-battle" target="_blank" rel="noopener noreferrer">Pokémon TCG AI Battle</a> competition. Reinforcement learning is not my strong suit and I know almost nothing about Pokémon, so I expect to learn a lot.</p>
+
+        </div>
+      </article>
+        <aside class="toc">
+          <p class="toc-label">Contents</p>
+          <ul class="toc-list">
+          <li><a href="#before-i-ever-competed">Before I ever competed</a></li>
+          <li><a href="#six-years-of-bronze">Six years of bronze</a></li>
+          <li><a href="#what-actually-changed">What actually changed</a></li>
+          <li><a href="#build-the-offline-evaluation-first" class="pl-nested">Build the offline evaluation first</a></li>
+          <li><a href="#then-read-the-data" class="pl-nested">Then read the data</a></li>
+          <li><a href="#kaggle-is-partly-an-engineering-competition" class="pl-nested">Kaggle is partly an engineering competition</a></li>
+          <li><a href="#iterate-faster" class="pl-nested">Iterate faster</a></li>
+          <li><a href="#the-grind">The grind</a></li>
+          <li><a href="#why-the-leaderboard-moved">Why the leaderboard moved</a></li>
+          <li><a href="#on-competing-solo">On competing solo</a></li>
+          <li><a href="#where-this-leaves-me">Where this leaves me</a></li>
+          </ul>
+        </aside>
+    </div>
+    <nav class="post-nav" aria-label="Adjacent posts">
+      <a href="/blog/my-192gb-blackwell-ai-workstation.html" class="post-nav-link">
+        <span class="post-nav-label">← older</span>
+        <span class="post-nav-title">My 192 GB Blackwell AI Workstation</span>
+      </a>
+      <span class="post-nav-spacer"></span>
+    </nav>
+    </main>
+
+    <footer class="mt-24 pt-8 border-t text-[12px] muted">
+      <div class="flex items-center justify-between gap-4">
+        <a href="/" class="hover:text-[color:var(--text)] transition-colors">keithtyser.com</a>
+        <nav class="flex items-center gap-1" aria-label="Social links">
+          <a href="mailto:keithtyser@gmail.com" class="icon-link" aria-label="Email"><svg class="icon text-[12px]" aria-hidden="true"><use href="/icons.svg#envelope"/></svg></a>
+          <a href="https://github.com/keithtyser" target="_blank" rel="noopener" class="icon-link" aria-label="GitHub"><svg class="icon text-[12px]" aria-hidden="true"><use href="/icons.svg#github"/></svg></a>
+          <a href="https://twitter.com/keithtyser" target="_blank" rel="noopener" class="icon-link" aria-label="X (Twitter)"><svg class="icon text-[12px]" aria-hidden="true"><use href="/icons.svg#x-twitter"/></svg></a>
+          <a href="https://keithtyser.com/feed.xml" class="icon-link" aria-label="RSS feed"><svg class="icon text-[12px]" aria-hidden="true"><use href="/icons.svg#rss"/></svg></a>
+        </nav>
+      </div>
+      <p class="mt-4 text-center text-[11px]"><a href="/ai.html" class="hover:text-[color:var(--text)] transition-colors">for AI agents →</a> <span aria-hidden="true">·</span> <a href="https://github.com/keithtyser/personal-site/tree/gh-pages" target="_blank" rel="noopener" class="hover:text-[color:var(--text)] transition-colors">view source →</a></p>
+    </footer>
+  </div>
+
+  <div class="statusbar" role="contentinfo" aria-label="Status bar">
+    <div class="sb-left">
+      <span class="sb-host">keith@keithtyser.com</span><span class="sb-sep">:</span><span>~/blog/my-first-kaggle-gold-rogii-2026</span>
+    </div>
+    <div class="sb-right">
+      <time class="sb-clock" id="sb-clock" title="Your local time" aria-hidden="true"></time>
+      <button type="button" class="sb-hint" data-palette-open aria-label="ctrl+k: open command palette">ctrl+k</button>
+      <button id="darkModeToggle" type="button" class="icon-link" aria-label="Toggle theme">
+        <svg class="icon text-[13px] dark:hidden" aria-hidden="true"><use href="/icons.svg#moon"/></svg>
+        <svg class="icon text-[13px] hidden dark:inline" aria-hidden="true"><use href="/icons.svg#sun"/></svg>
+      </button>
+    </div>
+  </div>
+  <script data-goatcounter="https://keithtyser.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+</body>
+</html>
