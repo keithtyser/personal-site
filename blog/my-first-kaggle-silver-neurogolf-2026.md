@@ -1,13 +1,15 @@
 ---
 title: "My First Kaggle Silver: NeuroGolf 2026"
-description: I finished 97th in NeuroGolf 2026 after using coding agents to optimize 400 ONNX models.
+description: I finished 91st in NeuroGolf 2026 after using coding agents to optimize 400 ONNX models.
 date: 2026-07-15
 toc: true
 ---
 
 I finally earned my first Kaggle silver medal.
 
-I finished **97th out of 3,061 entries** in [NeuroGolf 2026](https://www.kaggle.com/competitions/neurogolf-2026), with a final score of **7,496.25**. That put me in the top 3.2%, 2.43 points inside the top 100, and comfortably above the silver cutoff.
+I finished **91st out of 2,963 entries** in [NeuroGolf 2026](https://www.kaggle.com/competitions/neurogolf-2026), with a final score of **7,496.25**. That put me in the top 3.1%, comfortably above the silver cutoff.
+
+At the deadline the board read 97th of 3,061. Kaggle then removed 98 teams for rule and terms of service violations, which moved me up six places. The figures above are the standings as they stand today. Ranks quoted later in this post are the ones I was watching at the time.
 
 After six bronze medals, getting the first silver feels great. Mostly, though, I feel relieved. This competition was fascinating, but it consumed an absurd amount of time, attention, and AI tokens. I am very happy it is over.
 
@@ -163,7 +165,7 @@ I published the exact final package at [keithtyser/neurogolf-2026-final-submissi
 
 ```text
 Score:      7,496.25
-Place:      97 / 3,061
+Place:      91 / 2,963
 ZIP files:  400 ONNX models
 ZIP SHA256: d90f10e8b58b1360db7d80bcd8cc239f06ce227a6823f6204413312c5bd57ea8
 ```
