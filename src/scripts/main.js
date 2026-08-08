@@ -500,6 +500,7 @@ function initPalette() {
     { title: 'LinkedIn', hint: 'social', href: 'https://linkedin.com/in/keithtyser/', external: true },
     { title: 'X (Twitter)', hint: 'social', href: 'https://twitter.com/keithtyser', external: true },
     { title: 'Google Scholar', hint: 'social', href: 'https://scholar.google.com/citations?user=LyyIWSYAAAAJ', external: true },
+    { title: 'Kaggle', hint: 'social', href: 'https://www.kaggle.com/keithtyser', external: true },
     { title: 'Email Keith', hint: 'social', href: 'mailto:keithtyser@gmail.com' },
     { title: 'Newsletter', hint: 'social', href: 'https://buttondown.com/keithtyser', external: true },
     { title: 'RSS feed', hint: 'social', href: '/feed.xml' },

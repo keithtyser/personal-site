@@ -345,6 +345,7 @@ ${postNav || ''}
           <a href="mailto:keithtyser@gmail.com" class="icon-link" aria-label="Email"><svg class="icon text-[12px]" aria-hidden="true"><use href="/icons.svg#envelope"/></svg></a>
           <a href="https://github.com/keithtyser" target="_blank" rel="noopener" class="icon-link" aria-label="GitHub"><svg class="icon text-[12px]" aria-hidden="true"><use href="/icons.svg#github"/></svg></a>
           <a href="https://twitter.com/keithtyser" target="_blank" rel="noopener" class="icon-link" aria-label="X (Twitter)"><svg class="icon text-[12px]" aria-hidden="true"><use href="/icons.svg#x-twitter"/></svg></a>
+          <a href="https://www.kaggle.com/keithtyser" target="_blank" rel="noopener" class="icon-link" aria-label="Kaggle"><svg class="icon text-[12px]" aria-hidden="true"><use href="/icons.svg#kaggle"/></svg></a>
           <a href="${SITE_URL}/feed.xml" class="icon-link" aria-label="RSS feed"><svg class="icon text-[12px]" aria-hidden="true"><use href="/icons.svg#rss"/></svg></a>
         </nav>
       </div>
@@ -523,6 +524,7 @@ ${entries}
           <a href="mailto:keithtyser@gmail.com" class="icon-link" aria-label="Email"><svg class="icon text-[12px]" aria-hidden="true"><use href="/icons.svg#envelope"/></svg></a>
           <a href="https://github.com/keithtyser" target="_blank" rel="noopener" class="icon-link" aria-label="GitHub"><svg class="icon text-[12px]" aria-hidden="true"><use href="/icons.svg#github"/></svg></a>
           <a href="https://twitter.com/keithtyser" target="_blank" rel="noopener" class="icon-link" aria-label="X (Twitter)"><svg class="icon text-[12px]" aria-hidden="true"><use href="/icons.svg#x-twitter"/></svg></a>
+          <a href="https://www.kaggle.com/keithtyser" target="_blank" rel="noopener" class="icon-link" aria-label="Kaggle"><svg class="icon text-[12px]" aria-hidden="true"><use href="/icons.svg#kaggle"/></svg></a>
           <a href="${SITE_URL}/feed.xml" class="icon-link" aria-label="RSS feed"><svg class="icon text-[12px]" aria-hidden="true"><use href="/icons.svg#rss"/></svg></a>
         </nav>
       </div>
@@ -801,7 +803,7 @@ Currently: finishing Neurogolf 2026 on Kaggle (near the silver line at 154/3022)
 Writing on the site:
 ${postLines}
 
-Site: keithtyser.com. It has a command palette (ctrl+k), a working terminal, a game called orbit, and KeithOS (startx). Socials: github.com/keithtyser, twitter.com/keithtyser, linkedin.com/in/keithtyser.`;
+Site: keithtyser.com. It has a command palette (ctrl+k), a working terminal, a game called orbit, and KeithOS (startx). Socials: github.com/keithtyser, twitter.com/keithtyser, linkedin.com/in/keithtyser, kaggle.com/keithtyser.`;
 
   const chunks = [];
   for (const p of posts) {
