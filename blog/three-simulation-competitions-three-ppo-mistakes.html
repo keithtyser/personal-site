@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en" data-beasties-container>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Three Simulation Competitions and Three PPO Mistakes - Keith Tyser</title>
+  <meta name="description" content="What I learned about reinforcement learning from Orbit Wars, Pokémon TCG, and Kaggriculture. Each competition showed me a different mistake.">
+  <link rel="canonical" href="https://keithtyser.com/blog/three-simulation-competitions-three-ppo-mistakes.html">
+  <meta name="theme-color" content="#0a0a0a">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="Three Simulation Competitions and Three PPO Mistakes">
+  <meta property="og:description" content="What I learned about reinforcement learning from Orbit Wars, Pokémon TCG, and Kaggriculture. Each competition showed me a different mistake.">
+  <meta property="og:url" content="https://keithtyser.com/blog/three-simulation-competitions-three-ppo-mistakes.html">
+  <meta property="og:image" content="https://keithtyser.com/blog/og/three-simulation-competitions-three-ppo-mistakes.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="article:published_time" content="2026-10-03">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Three Simulation Competitions and Three PPO Mistakes">
+  <meta name="twitter:description" content="What I learned about reinforcement learning from Orbit Wars, Pokémon TCG, and Kaggriculture. Each competition showed me a different mistake.">
+  <meta name="twitter:image" content="https://keithtyser.com/blog/og/three-simulation-competitions-three-ppo-mistakes.png">
+  <script>
+    (() => {
+      const saved = localStorage.getItem('theme');
+      const dark = saved ? saved === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+      if (dark) document.documentElement.classList.add('dark');
+    })();
+  </script>
+  <link rel="preload" href="/fonts/SchibstedGroteskVariable.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/fonts/JetBrainsMonoVariable.woff2" as="font" type="font/woff2" crossorigin>
+  <style>*,:after,:before{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgba(59,130,246,.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }*,:after,:before{box-sizing:border-box;border:0 solid #e5e7eb}:after,:before{--tw-content:""}html{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;-o-tab-size:4;tab-size:4;font-family:ui-sans-serif,system-ui,sans-serif,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,Noto Color Emoji;font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}body{margin:0;line-height:inherit}h1,h2,h3{font-size:inherit;font-weight:inherit}a{text-decoration:inherit}strong{font-weight:bolder}code{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,Liberation Mono,Courier New,monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}table{text-indent:0;border-color:inherit;border-collapse:collapse}button{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button{text-transform:none}button{-webkit-appearance:button;background-color:transparent;background-image:none}figure,h1,h2,h3,p{margin:0}ol,ul{list-style:none;margin:0;padding:0}button{cursor:pointer}img,svg{display:block;vertical-align:middle}img{max-width:100%;height:auto}*,:after,:before{border-color:var(--border)}html{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility}body,html{background-color:var(--bg)}body{font-family:var(--font-sans);color:var(--text);font-size:17px;line-height:1.65;font-weight:400;-webkit-tap-highlight-color:transparent;padding-bottom:calc(var(--statusbar-h) + 24px);position:relative}body:before{z-index:-1;background:radial-gradient(900px 460px at 50% -140px,color-mix(in srgb,var(--accent) var(--glow-strength),transparent),transparent 70%)}body:after,body:before{content:"";position:fixed;inset:0;pointer-events:none}body:after{z-index:9999;opacity:var(--grain-opacity);background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='a'%3E%3CfeTurbulence baseFrequency='.9' numOctaves='2' stitchTiles='stitch' type='fractalNoise'/%3E%3C/filter%3E%3Cpath d='M0 0h160v160H0z' filter='url(%23a)'/%3E%3C/svg%3E")}a{color:inherit;text-decoration:none;transition:color .15s ease}button{font-family:inherit;cursor:pointer}.mb-10{margin-bottom:2.5rem}.mt-24{margin-top:6rem}.mt-4{margin-top:1rem}.flex{display:flex}.hidden{display:none}.items-center{align-items:center}.justify-between{justify-content:space-between}.gap-1{gap:.25rem}.gap-4{gap:1rem}.border-t{border-top-width:1px}.pt-8{padding-top:2rem}.text-center{text-align:center}.text-\[11px\]{font-size:11px}.text-\[12px\]{font-size:12px}.text-\[13px\]{font-size:13px}.transition-colors{transition-property:color,background-color,border-color,text-decoration-color,fill,stroke;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}:root{--bg:#f5f4ef;--surface:#fdfdfa;--surface-hover:#eeede6;--text:#171a17;--muted:#585f59;--faint:#646b64;--border:#e0dfd5;--border-hover:#c8c7bb;--accent:#1a7f37;--accent-hover:#156b2e;--accent-ink:#f5fff7;--success:#1a7f37;--font-sans:"Schibsted Grotesk",system-ui,-apple-system,"Segoe UI",sans-serif;--font-mono:"JetBrains Mono",ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;--radius-sm:5px;--radius:8px;--radius-lg:12px;--shadow-sm:0 1px 2px rgba(20,24,20,.05);--shadow:0 4px 16px rgba(20,24,20,.07);--grain-opacity:0.05;--glow-strength:7%;--statusbar-h:40px;color-scheme:light}@media (prefers-reduced-motion:reduce){*,:after,:before{transition-duration:.01ms!important;animation-duration:.01ms!important}}.skip-link{position:absolute;top:-48px;left:8px;background:var(--surface);color:var(--text);padding:8px 14px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;font-weight:500;z-index:100;transition:top .15s ease}.skip-link:focus{top:8px}.muted{color:var(--muted)}.mono{font-family:var(--font-mono)}.icon{width:1em;height:1em;vertical-align:-.125em;flex-shrink:0}.icon-link{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;color:var(--faint);border-radius:var(--radius-sm);transition:color .15s ease,background-color .15s ease}.icon-link:hover{color:var(--accent);background-color:var(--surface-hover)}.statusbar{position:fixed;bottom:0;left:0;right:0;z-index:90;height:var(--statusbar-h);justify-content:space-between;gap:16px;padding-inline:14px;font-family:var(--font-mono);font-size:11.5px;color:var(--muted);border-top:1px solid var(--border);background-color:color-mix(in srgb,var(--bg) 84%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}.sb-left,.sb-right,.statusbar{display:flex;align-items:center}.sb-left,.sb-right{gap:10px;min-width:0;white-space:nowrap}.sb-host{color:var(--accent);font-weight:550;overflow:hidden;text-overflow:ellipsis}.sb-sep{color:var(--faint);-webkit-user-select:none;-moz-user-select:none;user-select:none}.sb-clock{font-variant-numeric:tabular-nums;color:var(--faint)}.statusbar .icon-link{width:26px;height:26px}@media (max-width:460px){.sb-host{max-width:150px}}.article-shell{max-width:680px;margin-inline:auto;padding:24px 24px 80px}@media (min-width:640px){.article-shell{padding:32px 32px 96px}}.article-header{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:48px}.article-title{font-size:32px;line-height:1.15;letter-spacing:-.03em;font-weight:650;color:var(--text);margin-bottom:10px}@media (min-width:640px){.article-title{font-size:38px}}.article-date{display:block;font-family:var(--font-mono);font-size:12px;color:var(--faint);letter-spacing:.02em;margin-bottom:40px}.article-body{font-size:17px;line-height:1.7;color:var(--text)}.article-body>:first-child{margin-top:0}.article-body p{margin:1.25em 0}.article-body h2{font-size:23px;font-weight:650;letter-spacing:-.015em;margin-top:2.5em;margin-bottom:.6em}.article-body h2,.article-body h3{color:var(--text);scroll-margin-top:24px;position:relative}.article-body h3{font-size:18px;font-weight:600;margin-top:2em;margin-bottom:.5em}.article-body .anchor{position:absolute;right:100%;padding-right:8px;color:var(--faint);text-decoration:none;opacity:0;transition:opacity .15s ease,color .15s ease;-webkit-user-select:none;-moz-user-select:none;user-select:none;font-weight:400;font-size:.85em}.article-body .anchor:focus-visible,.article-body h2:hover .anchor,.article-body h3:hover .anchor{opacity:1}.article-body .anchor:hover{color:var(--accent)}.article-body a{color:var(--accent);text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:3px;text-decoration-color:color-mix(in srgb,var(--accent) 40%,transparent);transition:text-decoration-color .15s ease}.article-body a:hover{text-decoration-color:var(--accent)}.article-body strong{font-weight:600;color:var(--text)}.article-body ol,.article-body ul{margin:1.25em 0;padding-left:1.5em}.article-body ul{list-style:disc}.article-body ol{list-style:decimal}.article-body li,.article-body li>ul{margin:.4em 0}.article-body code{font-family:var(--font-mono);font-size:.85em;background-color:var(--surface-hover);border:1px solid var(--border);padding:1px 6px;border-radius:4px}.article-body img{max-width:100%;height:auto;border-radius:var(--radius);margin:1.5em 0;border:1px solid var(--border)}.article-body figure{margin:2.25em 0}.article-body figure img{display:block;width:100%;margin:0}.article-body figcaption{margin-top:.75rem;color:var(--text-muted);font-family:var(--font-mono);font-size:13px;font-style:italic;line-height:1.55}.article-body table{width:100%;border-collapse:collapse;margin:1.5em 0;font-size:15px;display:block;overflow-x:auto}.article-body td,.article-body th,.article-body thead{border-bottom:1px solid var(--border)}.article-body td,.article-body th{padding:10px 12px;text-align:left}.article-body th{font-weight:600;color:var(--text);background-color:var(--surface)}.article-with-toc{max-width:960px}@media (min-width:1024px){.article-with-toc .article-layout{display:grid;grid-template-columns:minmax(0,1fr) 220px;gap:48px;align-items:start}}.toc{display:none}@media (min-width:1024px){.toc{display:block;position:sticky;top:24px;font-size:13px}}.toc-label{font-family:var(--font-mono);font-size:10.5px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);margin-bottom:12px}.toc-list{list-style:none;padding:0;margin:0;border-left:1px solid var(--border)}.toc-list li{margin:0}.toc-list a{display:block;padding:5px 0 5px 14px;margin-left:-1px;border-left:1px solid transparent;color:var(--muted);line-height:1.4;transition:color .15s ease,border-color .15s ease}.toc-list a:hover{color:var(--text);border-left-color:color-mix(in srgb,var(--accent) 60%,var(--border))}.toc-list a.pl-nested{padding-left:28px;font-size:12.5px}.post-nav{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:56px}.post-nav-link{display:flex;flex-direction:column;gap:4px;padding:14px 16px;border:1px solid var(--border);border-radius:var(--radius);transition:border-color .18s ease,background-color .18s ease;min-width:0}.post-nav-link:hover{border-color:color-mix(in srgb,var(--accent) 40%,var(--border));background-color:var(--surface)}.post-nav-label{font-family:var(--font-mono);font-size:10.5px;letter-spacing:.06em;color:var(--faint)}.post-nav-link:hover .post-nav-label{color:var(--accent)}.post-nav-title{font-size:13.5px;font-weight:500;color:var(--text);line-height:1.4;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}@media (max-width:560px){.post-nav{grid-template-columns:1fr}}.sb-hint{font-family:var(--font-mono);font-size:10.5px;font-weight:500;color:var(--faint);border:1px solid var(--border);border-radius:var(--radius-sm);padding:2px 7px;background:transparent;transition:color .15s ease,border-color .15s ease}.sb-hint:hover{color:var(--accent);border-color:color-mix(in srgb,var(--accent) 45%,var(--border))}@media print{:root{--bg:#fff;--surface:#fff;--surface-hover:#fff;--text:#000;--muted:#333;--faint:#555;--border:#ccc;--accent:#000}.post-nav,.skip-link,.statusbar,.toc,body:after,body:before{display:none!important}body{padding-bottom:0;font-size:11.5pt}.article-shell{max-width:100%;padding:0}.article-body a{color:#000;text-decoration:underline}.article-body a[href^=http]:after{content:" (" attr(href) ")";font-size:.8em;color:#555;word-break:break-all}}@view-transition{navigation:auto}.hover\:text-\[color\:var\(--accent\)\]:hover{color:var(--accent)}.hover\:text-\[color\:var\(--text\)\]:hover{color:var(--text)}.dark\:inline:is(.dark *){display:inline}.dark\:hidden:is(.dark *){display:none}</style><link rel="preload" href="/dist/styles.css?v=3097a2a4" onload="this.rel='stylesheet'" as="style"><noscript><link rel="stylesheet" href="/dist/styles.css?v=3097a2a4"></noscript>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <link rel="alternate" type="application/rss+xml" title="Keith Tyser" href="https://keithtyser.com/feed.xml">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": "Three Simulation Competitions and Three PPO Mistakes",
+    "description": "What I learned about reinforcement learning from Orbit Wars, Pokémon TCG, and Kaggriculture. Each competition showed me a different mistake.",
+    "datePublished": "2026-10-03",
+    "url": "https://keithtyser.com/blog/three-simulation-competitions-three-ppo-mistakes.html",
+    "image": "https://keithtyser.com/blog/og/three-simulation-competitions-three-ppo-mistakes.png",
+    "author": { "@type": "Person", "name": "Keith Tyser", "url": "https://keithtyser.com/" }
+  }
+  </script>
+  <script type="speculationrules">{"prerender":[{"where":{"href_matches":"/*"},"eagerness":"moderate"}]}</script>
+  <script src="/dist/main.js?v=6eac75da" defer></script>
+</head>
+<body>
+  <a href="#main" class="skip-link">Skip to content</a>
+
+  <div class="article-shell article-with-toc">
+    <header class="article-header">
+      <a href="/blog/" class="mono text-[12px] muted hover:text-[color:var(--accent)] transition-colors">← All writing</a>
+    </header>
+
+    <main id="main">
+    <div class="article-layout">
+      <article>
+      <header class="mb-10">
+        <h1 class="article-title">Three Simulation Competitions and Three PPO Mistakes</h1>
+        <p class="article-date"><time datetime="2026-10-03">Oct 03, 2026</time> <span class="sb-sep" aria-hidden="true">·</span> 18 min read</p>
+      </header>
+        <div class="article-body">
+<p>From April to September, I entered three Kaggle simulation competitions: <a href="https://www.kaggle.com/competitions/orbit-wars" target="_blank" rel="noopener noreferrer">Orbit Wars</a>, the <a href="https://www.kaggle.com/competitions/pokemon-tcg-ai-battle" target="_blank" rel="noopener noreferrer">Pokémon TCG AI Battle</a>, and <a href="https://www.kaggle.com/competitions/kaggriculture" target="_blank" rel="noopener noreferrer">Kaggriculture</a>. In each competition, you submit an agent. The agent plays against the agents of other teams on a live ladder, and the ladder sets your rank.</p>
+<p>In all three competitions, I wanted to win with self-play reinforcement learning (RL). I used PPO (proximal policy optimization). In the last two competitions, I started PPO from a behavioral cloning (BC) model.</p>
+<table>
+<thead>
+<tr>
+<th>Competition</th>
+<th>Final agent</th>
+<th>Result</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Orbit Wars</td>
+<td>Heuristic bot</td>
+<td>Bronze, 348 / 4,729</td>
+</tr>
+<tr>
+<td>Pokémon TCG</td>
+<td>300M model, BC + PPO</td>
+<td>Silver, 210 / 6,807</td>
+</tr>
+<tr>
+<td>Kaggriculture</td>
+<td>5.35M model, BC + PPO</td>
+<td>Silver range, not final</td>
+</tr>
+</tbody></table>
+<p>In each competition, I fixed one mistake from the previous competition. Then I made a new mistake:</p>
+<ul>
+<li>In Orbit Wars, PPO did not learn.</li>
+<li>In Pokémon, PPO worked, but my model was too large for my compute.</li>
+<li>In Kaggriculture, my model was small, but its task was too large.</li>
+</ul>
+<h2 id="orbit-wars-ppo-did-not-learn"><a class="anchor" href="#orbit-wars-ppo-did-not-learn" aria-label="Link to section: Orbit Wars: PPO did not learn">#</a>Orbit Wars: PPO did not learn</h2>
+<p>Orbit Wars is a real-time space strategy game. Each player starts with one planet on a 100×100 board, and planets make ships. On each turn, you send fleets at an angle toward other planets. A sun destroys fleets that fly through it. Comets move across the board on a schedule.</p>
+<p>I started my main RL attempt in late May. The network did not aim the fleets. The policy selected a source planet, a target planet, and one of six ship fractions. A predictive-aim routine calculated the angle. The network was small, with approximately 32,000 parameters.</p>
+<p>I put most of my effort into speed. My first Python environment ran 7 steps per second. Then I wrote a batched PyTorch version for the AMD GPU in my home PC. This version ran approximately 7,500 steps per second on full games. In approximately 71 hours, the run recorded approximately 1.43 billion transitions.</p>
+<p>The optimizer metrics looked correct, but the agent did not become strong. The best league checkpoint won approximately one third of its games against my own heuristic bot. On May 25, I wrote: &quot;we don&#39;t seem to be making any progress in the last 48 hours. what are we doing wrong?&quot;</p>
+<p>Now I know that the problems were not in the optimizer:</p>
+<ul>
+<li>The simulator made most training games shorter: 64–256 turns. The real game has 500 turns.</li>
+<li>The simulator did not have comets until late in the run.</li>
+<li>My parity test against the official engine covered only 11–23 steps of random play.</li>
+<li>The agent trained against proxy opponents, not against the bots that it had to beat.</li>
+<li>Each evaluation used only two games per opponent.</li>
+</ul>
+<p>My simulator was fast, but it simulated a different game. Also, my evaluations used too few games to show the problem. I submitted a heuristic bot and received a bronze medal at rank 348.</p>
+<p>The winner, Isaiah (<a href="https://github.com/IsaiahPressman/kaggle-orbit-wars" target="_blank" rel="noopener noreferrer">code</a>), trained a 200M-parameter transformer with pure self-play. The training used 15 billion steps and approximately 2,400 B200 GPU-hours. He also rewrote the game engine in Rust.</p>
+<p>From this result, I learned the wrong lesson. I thought that RL in these competitions needs a datacenter, and I kept this belief for two more competitions. But a counterexample was available in early May. The team in second place at that time <a href="https://www.kaggle.com/competitions/orbit-wars/discussion/697725" target="_blank" rel="noopener noreferrer">posted their RL lessons</a>. They trained a 600K-parameter model from scratch with self-play. The training took approximately three days on one rented RTX 5090, and their GPU budget was approximately $150.</p>
+<p>From that post, I took only one fact: their speed of 10,000 steps per second. Thus, I decided that speed was my problem. Speed was not my first problem.</p>
+<h2 id="pok-mon-tcg-ppo-worked-but-the-model-was-too-large"><a class="anchor" href="#pok-mon-tcg-ppo-worked-but-the-model-was-too-large" aria-label="Link to section: Pokémon TCG: PPO worked, but the model was too large">#</a>Pokémon TCG: PPO worked, but the model was too large</h2>
+<p>Pokémon was a different type of problem. At each decision, the engine gives the agent a short list of legal options, and the agent selects one option. A game has approximately 100 decisions. The agent also selects its 60-card deck.</p>
+<h3 id="bc-first-and-a-bug-that-hid-the-results"><a class="anchor" href="#bc-first-and-a-bug-that-hid-the-results" aria-label="Link to section: BC first, and a bug that hid the results">#</a>BC first, and a bug that hid the results</h3>
+<p>In this competition, I started with BC. BC trains a policy to predict the moves of strong players from public replays. Then PPO makes that policy stronger. My first BC model was a 13M-parameter transformer, and it scored 523 on the ladder. This score was too low.</p>
+<p>The cause was a bug. Until July 28, all my neural network submissions used a fallback move. The function <code>torch.set_grad_enabled(False)</code> is thread-local, and the Kaggle harness called my agent from a different thread. Thus, the network path did not run correctly, and my fallback selected option zero for each decision. After I fixed the bug, the same 13M BC file scored 878. BC alone put me in the bronze medal range.</p>
+<h3 id="the-parts-of-the-recipe-that-worked"><a class="anchor" href="#the-parts-of-the-recipe-that-worked" aria-label="Link to section: The parts of the recipe that worked">#</a>The parts of the recipe that worked</h3>
+<p>PPO then made the BC policy stronger. I will use these parts again:</p>
+<ul>
+<li>Start from BC. Use a KL penalty toward a reference policy. Move the reference policy to each new promoted checkpoint. Do not keep it frozen at BC.</li>
+<li>Promote a checkpoint only when it beats the current best checkpoint in a head-to-head test with sufficient games. A fixed 600-game gate let noise through, so I changed to a sequential probability ratio test.</li>
+<li>Measure each checkpoint against a fixed baseline that does not change. A policy can beat its parent and still not improve against other opponents.</li>
+<li>Train against a league, not only against the current policy. My league started with five PPO runs on five different decks, with one shared opponent pool. Later, I added public agents and 42 behavioral clones of top ladder agents.</li>
+</ul>
+<h3 id="i-made-the-model-too-large"><a class="anchor" href="#i-made-the-model-too-large" aria-label="Link to section: I made the model too large">#</a>I made the model too large</h3>
+<p>My 13M PPO run improved for only a short time, so I decided that the model was too small. On July 29, I wrote: &quot;300M should allow the model to learn for awhile.&quot; I selected the largest model that fit the Kaggle submission limit of 197.7 MiB after 5-bit quantization. That model had 300 million parameters.</p>
+<p>This decision made the competition expensive. The 13M model made approximately 60,000 self-play decisions per second on my two GPUs. The 300M model made approximately 1,700–2,000 decisions per second on one GPU. A PCIe fault caused my second GPU to disconnect many times. Thus, I rented GPUs on Vast for the main run. At the end, I used an H200.</p>
+<p>The 300M model continued to learn. Iteration 851 of the final PPO run won my silver medal. It scored 963 and finished at rank 210 of 6,807. But at iteration 779, the model had only approximately 71 million decisions of experience. That is approximately 200 times less experience than the Orbit Wars winner used. Later checkpoints did not beat iteration 851 on the ladder.</p>
+<p>I did not find out what that model could do with full training. Also, I did not do the most important experiment: a medium-size model that could play many more games in the same weeks. I asked, &quot;What is the largest model that fits the submission limit?&quot; The correct question was, &quot;What is the largest model that I can train to convergence before the deadline?&quot;</p>
+<p>The Pokémon ladder also showed me that ladder scores have much noise. I submitted the same it851 file five times. The five scores were 731, 838, 945, 963, and 1,004.</p>
+<h2 id="kaggriculture-the-model-had-too-much-to-learn"><a class="anchor" href="#kaggriculture-the-model-had-too-much-to-learn" aria-label="Link to section: Kaggriculture: the model had too much to learn">#</a>Kaggriculture: the model had too much to learn</h2>
+<p>Kaggriculture is a two-player farming game. Each player has a 10×10 farm. A game has 30 in-game days, and each day has 24 turns. At the end, the player with more money wins.</p>
+<p>During the game, you do these tasks:</p>
+<ul>
+<li>Hire workers and buy land.</li>
+<li>Plant wheat, carrots, tomatoes, strawberries, and melons.</li>
+<li>Keep geese, cows, and sheep.</li>
+<li>Sell products in a shared town market. The prices change when the two players sell.</li>
+</ul>
+<p>I was on a five-person team, QQ Farming. This section is about my part of the work: the PPO policy. Both of our final submissions used this policy.</p>
+<h3 id="i-fixed-the-model-size"><a class="anchor" href="#i-fixed-the-model-size" aria-label="Link to section: I fixed the model size">#</a>I fixed the model size</h3>
+<p>I did not make the 300M mistake again. The final policy had 5.35 million parameters. It had these parts:</p>
+<ul>
+<li>A small CNN for the two farms</li>
+<li>Tokens for workers, market items, and history</li>
+<li>A three-layer transformer</li>
+<li>A GRU that keeps memory through the full season</li>
+<li>Autoregressive decoders for workers and market orders</li>
+</ul>
+<h3 id="i-did-not-fix-the-action-space"><a class="anchor" href="#i-did-not-fix-the-action-space" aria-label="Link to section: I did not fix the action space">#</a>I did not fix the action space</h3>
+<p>On each turn, the network made these decisions for each worker:</p>
+<ol>
+<li>A PASS/ACT gate.</li>
+<li>One of 44 command templates. Examples are &quot;move north&quot;, &quot;water&quot;, &quot;harvest&quot;, &quot;plant a crop&quot;, and &quot;pick up an item&quot;.</li>
+<li>A quantity, if the command needs one.</li>
+</ol>
+<p>After the worker decisions, the network wrote up to ten ordered market requests. Each request had 23 possible types and up to 233 possible quantities. The network also selected each movement step, one tile at a time. The policy had no task layer.</p>
+<p>On held-out games, this was approximately 25 decisions for each player on each turn. That is approximately 18,000 decisions for each player in each game. The model had to learn how to move before it could learn how to farm.</p>
+<p>Before this, I tried a different approach. On September 17, I trained a macro version. The network selected production jobs from approximately 1,100 candidates. A hand-written executor then moved the workers to do the jobs. This version lost all its games, and it also lost all four games against an agent that does nothing.</p>
+<p>The problem was the executor. It did not use fertilizer. Also, it could not express approximately one quarter of the actions of the strong players. I did not fix the abstraction. Instead, I changed to primitive actions.</p>
+<h3 id="the-bc-model-was-accurate-but-it-did-not-win"><a class="anchor" href="#the-bc-model-was-accurate-but-it-did-not-win" aria-label="Link to section: The BC model was accurate, but it did not win">#</a>The BC model was accurate, but it did not win</h3>
+<p>The BC data had 22,185 games from the organizer&#39;s top-episode datasets. That is 31.9 million player-turns. The data included both seats, with winners and losers. After 11 epochs, I tested the model on 650 games that it did not see in training. It predicted the worker command correctly 85.7% of the time. It predicted the market request correctly 86.0% of the time.</p>
+<p>The model did not win one game against a strong bot.</p>
+<figure>
+  <picture>
+    <source media="(max-width: 640px)" srcset="/blog/images/kaggriculture-bc-accuracy-vs-wins-mobile.svg">
+    <img src="/blog/images/kaggriculture-bc-accuracy-vs-wins.svg" alt="The held-out worker-command accuracy of the Kaggriculture BC model increased from 76.2 percent at epoch 1 to 85.7 percent at epoch 11. Against three strong bots, the model won 0 of 24 games at each epoch." loading="lazy">
+  </picture>
+  <figcaption>At each epoch, the model played the same 24 games against three strong bots. The model always beat an agent that does nothing, and it beat weak bots. It did not beat a strong bot.</figcaption>
+</figure>
+
+<p>This result confused me, because BC worked in Pokémon. Now I think that the cause was the action space again:</p>
+<ul>
+<li><strong>Errors compound.</strong> In Pokémon, one wrong selection in 100 decisions usually does not lose the game. In Kaggriculture, 86% accuracy over 18,000 decisions causes the model to leave the states of the teacher early. After that, the model must improvise.<ul>
+<li>Example 1: One opponent clone had 95% accuracy. On turn 3, it moved north and did not pick up a sheep. All of its later purchases expected the sheep. The clone had no money by turn 96.</li>
+<li>Example 2: Another clone followed its teacher until approximately turn 200. Then it made different decisions, mostly in the market, and its animals starved.</li>
+</ul>
+</li>
+<li><strong>Some of the accuracy was easy.</strong> The teacher selected ACT for 94% of worker slots. Thus, a model that always selects ACT gets 94% accuracy on the gate.</li>
+<li><strong>I cloned an average player, not a winner.</strong> The data had both seats, with winners and losers. An average player does not beat strong bots.</li>
+<li><strong>I trained on requests, not on results.</strong> The 3rd-place team found that many strong bots send market orders that are too large. The engine silently makes these orders smaller. If you clone the raw orders, your model learns orders that the engine does not execute.</li>
+</ul>
+<h3 id="ppo-improved-the-policy-but-toward-the-wrong-target"><a class="anchor" href="#ppo-improved-the-policy-but-toward-the-wrong-target" aria-label="Link to section: PPO improved the policy, but toward the wrong target">#</a>PPO improved the policy, but toward the wrong target</h3>
+<p>PPO started from this BC checkpoint on September 19. It ran until the deadline on September 30, approximately 11.5 days. Earlier in September, I also used PPO with other models.</p>
+<p>The setup had these parts:</p>
+<ul>
+<li><strong>Simulator.</strong> A JAX port of the game engine ran on the GPU, and the policy ran in PyTorch. I did parity tests against the official engine.</li>
+<li><strong>Hardware.</strong> I used two RTX PRO 6000 GPUs on my workstation. For the last five days, I rented an eight-GPU machine. It made approximately 16 full games per second.</li>
+<li><strong>Opponents.</strong> Approximately 87% of the training games were against real scripted bots from the ladder and from my teammates. The pool had 52 bots from 29 different authors. The sampler selected more games against the bots that beat the policy.</li>
+<li><strong>Reward.</strong> A win/loss reward gave almost no signal, because the policy lost 98% of its games. Thus, I added reward terms for the cash margin and the final cash.</li>
+</ul>
+<p>During 8.3 million games, the policy improved steadily:</p>
+<ul>
+<li>In the first few hours, its cash deficit against the strong bots decreased from $64–82k to approximately $28k.</li>
+<li>By day five, it won half of its games against AFS R2, one of the strongest bots on our panel.</li>
+<li>On September 28, it had the highest rating in the internal arena of our team.</li>
+<li>On a fixed panel of eight bots, its score increased from less than 20% to 98%.</li>
+</ul>
+<p>Some bugs did not show errors:</p>
+<ul>
+<li>For one day, changes to the learning rate had no effect. The saved optimizer state replaced the new value.</li>
+<li>In bf16, the replay calculated the probability of a full turn incorrectly. Each turn has approximately 25 factors. With the learning rate at zero, the PPO clip still activated on 22% of turns.</li>
+</ul>
+<p>The ladder score did not follow the panel score closely.</p>
+<figure>
+  <picture>
+    <source media="(max-width: 640px)" srcset="/blog/images/kaggriculture-ppo-panel-vs-ladder-mobile.svg">
+    <img src="/blog/images/kaggriculture-ppo-panel-vs-ladder.svg" alt="Two charts with the same x-axis, the PPO update. Top chart: the score against the same eight bots increased from approximately 16 percent to 98 percent between updates 119 and 3,529. A marker shows the evaluator change at update 2,149. Bottom chart: the Kaggle ladder scores of eleven pure-PPO submissions between updates 2,239 and 3,519. The scores are between 1,605 and 2,399. They decreased while the panel score increased, and the last score is 2,040. A line shows the silver cutoff at 2,048." loading="lazy">
+  </picture>
+  <figcaption>Top: each evaluation used 128 games against the same eight bots. The bold line is a rolling mean of nine evaluations. At update 2,149, the evaluator changed from the official CPU engine to greedy play on the GPU simulator. Thus, the two halves are not one continuous measurement. Bottom: ladder scores on October 3. Old submissions stop playing and their scores freeze, so these scores are approximate.</figcaption>
+</figure>
+
+<p>Pure-PPO submissions had ladder scores from 1,605 to 2,399. On average, later checkpoints did better, but the result was not reliable. My panel gave three checkpoints scores of 98%, 100%, and 97%. On the ladder, they scored 2,166, 2,399, and 2,040.</p>
+<p>My best ladder result did not come from pure PPO. It came from a hybrid agent. PPO played days 0–11, and then a deterministic planner from a teammate played days 12–29. This hybrid scored 2,433. The planner works at the task level and calculates sales with a price model. My policy almost never found this behavior through exploration.</p>
+<p>Thus, I think that my policy did not have task-level planning. The policy did not need more training time.</p>
+<p>My panel was also too similar to my training pool. In internal tests, the final policy beat three bots from my teammates in 84–92% of games. On the ladder, those same bots scored approximately 600 points more than my policy. If your policy trains against the panel, the panel is not a held-out evaluation.</p>
+<h3 id="what-the-top-teams-did-differently"><a class="anchor" href="#what-the-top-teams-did-differently" aria-label="Link to section: What the top teams did differently">#</a>What the top teams did differently</h3>
+<p>The top teams published their solutions. Each solution did something important that my solution did not do:</p>
+<ul>
+<li><strong>M &amp; M &amp; P &amp; Q, 1st place when they posted</strong> (<a href="https://www.kaggle.com/competitions/kaggriculture/discussion/745073" target="_blank" rel="noopener noreferrer">preview</a>, <a href="https://github.com/msdsm/kaggriculture-solution" target="_blank" rel="noopener noreferrer">code</a>) used a 10.2M-parameter transformer. Their model also outputs primitive unit actions. They did five rounds of BC. The first round used 34 top public submissions. Later rounds added demonstrations from their heuristic planner, for weaknesses that they found in replays. Then they used self-play PPO for approximately 8.29 million games on up to 17 A100 GPUs and 29 A30 GPUs. At inference, rules repair actions that conflict or waste resources. A C++ search planner plays the final day.</li>
+<li><strong>3rd place</strong> (<a href="https://www.kaggle.com/competitions/kaggriculture/discussion/745119" target="_blank" rel="noopener noreferrer">writeup</a>) did not use RL or search. Their network predicts the target tile and an action for each unit. A shortest-path rule moves the unit. Before they made this decision, they measured the moves of their teacher. Each step was a shortest-path move toward the next job of the unit. They trained on the actions that the engine executed, and they selected checkpoints only by money on paired seeds. Across eight versions, validation accuracy had a negative correlation with money.</li>
+<li><strong>7th place</strong> (<a href="https://www.kaggle.com/competitions/kaggriculture/discussion/745367" target="_blank" rel="noopener noreferrer">writeup</a>) cloned the newest versions of the strongest team. Each unit selects a task, then a target tile, then a raw action. RL increased the result by approximately $1,000 for each game. But the noise from game to game was approximately $4,000.</li>
+<li><strong>10th place</strong> (<a href="https://github.com/CarsonBurke/kaggriculture" target="_blank" rel="noopener noreferrer">code</a>) trained a 947k-parameter actor for approximately 10 hours on one RTX 5090. They used BC on games where the two players had ratings of 2,600 or more. Then they used a self-play PPO league with a win/draw/loss reward and held-out reference agents.</li>
+</ul>
+<p>One number surprised me. My PPO lineage played approximately 8.3 million games, almost the same number as M &amp; M &amp; P &amp; Q. Thus, the number of games was not my problem.</p>
+<p>In all these solutions, the network did not have to learn low-level execution from reward only. A rule did the execution, or the network cloned players who already won, or both. My network had to find the execution itself, and it started from a clone of average players.</p>
+<h3 id="current-result"><a class="anchor" href="#current-result" aria-label="Link to section: Current result">#</a>Current result</h3>
+<p>For now, our team is in the silver medal range. The final evaluation continues for approximately two more weeks.</p>
+<h2 id="what-i-will-do-in-the-next-competition"><a class="anchor" href="#what-i-will-do-in-the-next-competition" aria-label="Link to section: What I will do in the next competition">#</a>What I will do in the next competition</h2>
+<h3 id="1-representation-and-action-space-first"><a class="anchor" href="#1-representation-and-action-space-first" aria-label="Link to section: 1. Representation and action space first">#</a>1. Representation and action space first</h3>
+<p>This is the most important lesson. When I debug, I will examine these items first, before hyperparameters and before throughput:</p>
+<ul>
+<li>What does the network see?</li>
+<li>What does the network select?</li>
+<li>Is the architecture correct for these inputs and outputs?</li>
+</ul>
+<p>Use an action space where each decision is important. Do not let the model use capacity on tasks that a rule can do exactly. Before you use an abstraction, compare it with the actions of strong players. The 3rd-place team made sure that each teacher step was a shortest-path move before they used a movement rule. I did not make sure that my macro executor could do the actions of the teachers, and it could not.</p>
+<h3 id="2-use-bc-as-a-start-and-test-it-only-in-full-games"><a class="anchor" href="#2-use-bc-as-a-start-and-test-it-only-in-full-games" aria-label="Link to section: 2. Use BC as a start, and test it only in full games">#</a>2. Use BC as a start, and test it only in full games</h3>
+<p>BC was sufficient for the bronze range in Pokémon. In Kaggriculture, BC alone did not win against strong bots. Per-decision accuracy did not predict either result. Clone players who win. Clone the actions that the engine executed. Select checkpoints by their results in full games.</p>
+<h3 id="3-size-the-model-for-the-training-budget-not-for-the-submission-limit"><a class="anchor" href="#3-size-the-model-for-the-training-budget-not-for-the-submission-limit" aria-label="Link to section: 3. Size the model for the training budget, not for the submission limit">#</a>3. Size the model for the training budget, not for the submission limit</h3>
+<p>The quality of a model depends on the number of games that you can use to train it. Start small, and make sure that the full training loop works. Make the model larger only when the small model does not improve any more. The M &amp; M &amp; P &amp; Q team increased their model from 6 to 12 blocks during the competition. Their 24-block model did not go into a final submission.</p>
+<h3 id="4-you-do-not-need-a-datacenter"><a class="anchor" href="#4-you-do-not-need-a-datacenter" aria-label="Link to section: 4. You do not need a datacenter">#</a>4. You do not need a datacenter</h3>
+<p>Because of the Orbit Wars winner, I thought that RL needs a large amount of compute. But in each competition this year, strong teams used one consumer GPU:</p>
+<ul>
+<li><strong>Orbit Wars:</strong> In May, the second-place team trained a 600K-parameter model with self-play from scratch. The training took approximately three days on one rented RTX 5090.</li>
+<li><strong>Pokémon:</strong> The <a href="https://www.kaggle.com/competitions/pokemon-tcg-ai-battle/discussion/738158" target="_blank" rel="noopener noreferrer">27th-place team</a> used pure self-play PPO without BC. Their 12M-parameter model trained at approximately 30 games per second on one RTX 3090.</li>
+<li><strong>Kaggriculture:</strong> The 10th-place agent trained for approximately 10 hours on one RTX 5090. The 7th-place model pretrained in less than one hour on one RTX 5090.</li>
+</ul>
+<p>More compute can help. In Kaggriculture, M &amp; M &amp; P &amp; Q used tens of A100 GPUs, and the Orbit Wars winner used much more. But a large amount of compute is not necessary. My largest run used eight RTX PRO 6000 GPUs for five days, and it did not get near those single-GPU agents. Those teams gave their models a problem that the models could learn quickly. I did not.</p>
+<h3 id="5-self-play-alone-is-usually-not-sufficient"><a class="anchor" href="#5-self-play-alone-is-usually-not-sufficient" aria-label="Link to section: 5. Self-play alone is usually not sufficient">#</a>5. Self-play alone is usually not sufficient</h3>
+<p>Self-play alone can work. The Orbit Wars winner used only self-play, with approximately 2,400 B200 GPU-hours. Without that budget, different opponents help a lot. Use past checkpoints, public agents, clones of top ladder players, and the bots of your teammates. But keep some opponents out of training. If you do not, your evaluation shows only how well your policy knows its training opponents.</p>
+<h3 id="6-build-an-evaluation-that-you-trust-then-check-it"><a class="anchor" href="#6-build-an-evaluation-that-you-trust-then-check-it" aria-label="Link to section: 6. Build an evaluation that you trust, then check it">#</a>6. Build an evaluation that you trust, then check it</h3>
+<p>Use fixed held-out opponents, paired seeds, both seats, and an internal arena where each agent plays each other agent. Then test the exact package in an environment that is as near to the real harness as possible. In Pokémon, my worst failure was not a modeling failure. It was a thread-local flag. Also, expect noise on the ladder. The same Pokémon file scored from 731 to 1,004.</p>
+<h3 id="7-throughput-last"><a class="anchor" href="#7-throughput-last" aria-label="Link to section: 7. Throughput last">#</a>7. Throughput last</h3>
+<p>A GPU simulator removes the CPU bottleneck, and it is useful. But build it after the six steps above. In Orbit Wars, I made a simulator faster, but it did not simulate the real game. In Kaggriculture, my simulator could run games more than 100 times faster than my policy could select actions. The cause was the policy: it made 25 sequential decisions on each turn. A smaller action space also gives more throughput.</p>
+<h2 id="the-next-competition"><a class="anchor" href="#the-next-competition" aria-label="Link to section: The next competition">#</a>The next competition</h2>
+<p>After three competitions, my pipeline is good. It has these parts:</p>
+<ul>
+<li>BC into PPO</li>
+<li>A league with clones</li>
+<li>Gated promotions</li>
+<li>Paired-seed evaluation</li>
+<li>An internal arena</li>
+<li>A GPU simulator</li>
+</ul>
+<p>Each part came from a mistake in an earlier competition.</p>
+<p>But I did not yet use the first week for the most important part: the representation and the action space. In the next simulation competition, I will do that part first. I want the next competition to start soon.</p>
+
+        </div>
+      </article>
+        <aside class="toc">
+          <p class="toc-label">Contents</p>
+          <ul class="toc-list">
+          <li><a href="#orbit-wars-ppo-did-not-learn">Orbit Wars: PPO did not learn</a></li>
+          <li><a href="#pok-mon-tcg-ppo-worked-but-the-model-was-too-large">Pokémon TCG: PPO worked, but the model was too large</a></li>
+          <li><a href="#bc-first-and-a-bug-that-hid-the-results" class="pl-nested">BC first, and a bug that hid the results</a></li>
+          <li><a href="#the-parts-of-the-recipe-that-worked" class="pl-nested">The parts of the recipe that worked</a></li>
+          <li><a href="#i-made-the-model-too-large" class="pl-nested">I made the model too large</a></li>
+          <li><a href="#kaggriculture-the-model-had-too-much-to-learn">Kaggriculture: the model had too much to learn</a></li>
+          <li><a href="#i-fixed-the-model-size" class="pl-nested">I fixed the model size</a></li>
+          <li><a href="#i-did-not-fix-the-action-space" class="pl-nested">I did not fix the action space</a></li>
+          <li><a href="#the-bc-model-was-accurate-but-it-did-not-win" class="pl-nested">The BC model was accurate, but it did not win</a></li>
+          <li><a href="#ppo-improved-the-policy-but-toward-the-wrong-target" class="pl-nested">PPO improved the policy, but toward the wrong target</a></li>
+          <li><a href="#what-the-top-teams-did-differently" class="pl-nested">What the top teams did differently</a></li>
+          <li><a href="#current-result" class="pl-nested">Current result</a></li>
+          <li><a href="#what-i-will-do-in-the-next-competition">What I will do in the next competition</a></li>
+          <li><a href="#1-representation-and-action-space-first" class="pl-nested">1. Representation and action space first</a></li>
+          <li><a href="#2-use-bc-as-a-start-and-test-it-only-in-full-games" class="pl-nested">2. Use BC as a start, and test it only in full games</a></li>
+          <li><a href="#3-size-the-model-for-the-training-budget-not-for-the-submission-limit" class="pl-nested">3. Size the model for the training budget, not for the submission limit</a></li>
+          <li><a href="#4-you-do-not-need-a-datacenter" class="pl-nested">4. You do not need a datacenter</a></li>
+          <li><a href="#5-self-play-alone-is-usually-not-sufficient" class="pl-nested">5. Self-play alone is usually not sufficient</a></li>
+          <li><a href="#6-build-an-evaluation-that-you-trust-then-check-it" class="pl-nested">6. Build an evaluation that you trust, then check it</a></li>
+          <li><a href="#7-throughput-last" class="pl-nested">7. Throughput last</a></li>
+          <li><a href="#the-next-competition">The next competition</a></li>
+          </ul>
+        </aside>
+    </div>
+    <nav class="post-nav" aria-label="Adjacent posts">
+      <a href="/blog/my-first-kaggle-gold-rogii-2026.html" class="post-nav-link">
+        <span class="post-nav-label">← older</span>
+        <span class="post-nav-title">My First Kaggle Gold: ROGII Wellbore Geology</span>
+      </a>
+      <span class="post-nav-spacer"></span>
+    </nav>
+    </main>
+
+    <footer class="mt-24 pt-8 border-t text-[12px] muted">
+      <div class="flex items-center justify-between gap-4">
+        <a href="/" class="hover:text-[color:var(--text)] transition-colors">keithtyser.com</a>
+        <nav class="flex items-center gap-1" aria-label="Social links">
+          <a href="mailto:keithtyser@gmail.com" class="icon-link" aria-label="Email"><svg class="icon text-[12px]" aria-hidden="true"><use href="/icons.svg?v=881b43c1#envelope"/></svg></a>
+          <a href="https://github.com/keithtyser" target="_blank" rel="noopener" class="icon-link" aria-label="GitHub"><svg class="icon text-[12px]" aria-hidden="true"><use href="/icons.svg?v=881b43c1#github"/></svg></a>
+          <a href="https://twitter.com/keithtyser" target="_blank" rel="noopener" class="icon-link" aria-label="X (Twitter)"><svg class="icon text-[12px]" aria-hidden="true"><use href="/icons.svg?v=881b43c1#x-twitter"/></svg></a>
+          <a href="https://www.kaggle.com/keithtyser" target="_blank" rel="noopener" class="icon-link" aria-label="Kaggle"><svg class="icon text-[12px]" aria-hidden="true"><use href="/icons.svg?v=881b43c1#kaggle"/></svg></a>
+          <a href="https://keithtyser.com/feed.xml" class="icon-link" aria-label="RSS feed"><svg class="icon text-[12px]" aria-hidden="true"><use href="/icons.svg?v=881b43c1#rss"/></svg></a>
+        </nav>
+      </div>
+      <p class="mt-4 text-center text-[11px]"><a href="/ai.html" class="hover:text-[color:var(--text)] transition-colors">for AI agents →</a> <span aria-hidden="true">·</span> <a href="https://github.com/keithtyser/personal-site/tree/gh-pages" target="_blank" rel="noopener" class="hover:text-[color:var(--text)] transition-colors">view source →</a></p>
+    </footer>
+  </div>
+
+  <div class="statusbar" role="contentinfo" aria-label="Status bar">
+    <div class="sb-left">
+      <span class="sb-host">keith@keithtyser.com</span><span class="sb-sep">:</span><span>~/blog/three-simulation-competitions-three-ppo-mistakes</span>
+    </div>
+    <div class="sb-right">
+      <time class="sb-clock" id="sb-clock" title="Your local time" aria-hidden="true"></time>
+      <button type="button" class="sb-hint" data-palette-open aria-label="ctrl+k: open command palette">ctrl+k</button>
+      <button id="darkModeToggle" type="button" class="icon-link" aria-label="Toggle theme">
+        <svg class="icon text-[13px] dark:hidden" aria-hidden="true"><use href="/icons.svg?v=881b43c1#moon"/></svg>
+        <svg class="icon text-[13px] hidden dark:inline" aria-hidden="true"><use href="/icons.svg?v=881b43c1#sun"/></svg>
+      </button>
+    </div>
+  </div>
+  <script data-goatcounter="https://keithtyser.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+</body>
+</html>
