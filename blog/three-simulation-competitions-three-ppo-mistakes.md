@@ -7,7 +7,7 @@ toc: true
 
 From April to September, I entered three Kaggle simulation competitions: [Orbit Wars](https://www.kaggle.com/competitions/orbit-wars), the [Pokémon TCG AI Battle](https://www.kaggle.com/competitions/pokemon-tcg-ai-battle), and [Kaggriculture](https://www.kaggle.com/competitions/kaggriculture). In each competition, you submit an agent. The agent plays against the agents of other teams on a live ladder, and the ladder sets your rank.
 
-In all three competitions, I wanted to win with self-play reinforcement learning (RL). I used PPO (proximal policy optimization). In the last two competitions, I started PPO from a behavioral cloning (BC) model.
+In all three competitions, my goal was to win with self-play reinforcement learning (RL) using PPO (proximal policy optimization). In the last two competitions, I started PPO from a behavioral cloning (BC) model.
 
 | Competition | Final agent | Result |
 |---|---|---|
@@ -29,9 +29,9 @@ I started my main RL attempt in late May. The network did not aim the fleets. Th
 
 I put most of my effort into speed. My first Python environment ran 7 steps per second. Then I wrote a batched PyTorch version for the AMD GPU in my home PC. This version ran approximately 7,500 steps per second on full games. In approximately 71 hours, the run recorded approximately 1.43 billion transitions.
 
-The optimizer metrics looked correct, but the agent did not become strong. The best league checkpoint won approximately one third of its games against my own heuristic bot. On May 25, I wrote: "we don't seem to be making any progress in the last 48 hours. what are we doing wrong?"
+The optimizer metrics looked correct, but the agent did not become strong. The best league checkpoint won approximately one third of its games against my own heuristic bot.
 
-Now I know that the problems were not in the optimizer:
+Looking at the code closer, I realized the problems were not in the optimizer:
 
 - The simulator made most training games shorter: 64–256 turns. The real game has 500 turns.
 - The simulator did not have comets until late in the run.
@@ -39,13 +39,11 @@ Now I know that the problems were not in the optimizer:
 - The agent trained against proxy opponents, not against the bots that it had to beat.
 - Each evaluation used only two games per opponent.
 
-My simulator was fast, but it simulated a different game. Also, my evaluations used too few games to show the problem. I submitted a heuristic bot and received a bronze medal at rank 348.
+My simulator was fast, but it simulated a different game. Also, my evaluations used too few games to show the problem. I was very unprepared to do RL but failing at it taught me a lot. I ended up just submitting a heuristic bot and received a bronze medal at rank 348.
 
 The winner, Isaiah ([code](https://github.com/IsaiahPressman/kaggle-orbit-wars)), trained a 200M-parameter transformer with pure self-play. The training used 15 billion steps and approximately 2,400 B200 GPU-hours. He also rewrote the game engine in Rust.
 
-From this result, I learned the wrong lesson. I thought that RL in these competitions needs a datacenter, and I kept this belief for two more competitions. But a counterexample was available in early May. The team in second place at that time [posted their RL lessons](https://www.kaggle.com/competitions/orbit-wars/discussion/697725). They trained a 600K-parameter model from scratch with self-play. The training took approximately three days on one rented RTX 5090, and their GPU budget was approximately $150.
-
-From that post, I took only one fact: their speed of 10,000 steps per second. Thus, I decided that speed was my problem. Speed was not my first problem.
+From this result, I learned the wrong lesson. I thought that RL in these competitions needs a datacenter, and I kept this belief for two more competitions. But a counterexample was available in early May. The team in second place at that time [posted their RL lessons](https://www.kaggle.com/competitions/orbit-wars/discussion/697725). They trained a 600K-parameter model from scratch with self-play. The training took approximately three days on one rented RTX 5090, and their GPU budget was approximately $150. Therefore my problem is not compute, it's a skill issue.
 
 ## Pokémon TCG: PPO worked, but the model was too large
 
@@ -55,7 +53,7 @@ Pokémon was a different type of problem. At each decision, the engine gives the
 
 In this competition, I started with BC. BC trains a policy to predict the moves of strong players from public replays. Then PPO makes that policy stronger. My first BC model was a 13M-parameter transformer, and it scored 523 on the ladder. This score was too low.
 
-The cause was a bug. Until July 28, all my neural network submissions used a fallback move. The function `torch.set_grad_enabled(False)` is thread-local, and the Kaggle harness called my agent from a different thread. Thus, the network path did not run correctly, and my fallback selected option zero for each decision. After I fixed the bug, the same 13M BC file scored 878. BC alone put me in the bronze medal range.
+The cause was a bug. All of my initial BC submissions used a fallback move. The function `torch.set_grad_enabled(False)` is thread-local, and the Kaggle harness called my agent from a different thread. Thus, the network path did not run correctly, and my fallback selected option zero for each decision. After I fixed the bug, the same 13M BC file scored 878. BC alone put me in the bronze medal range.
 
 ### The parts of the recipe that worked
 
@@ -68,7 +66,7 @@ PPO then made the BC policy stronger. I will use these parts again:
 
 ### I made the model too large
 
-My 13M PPO run improved for only a short time, so I decided that the model was too small. On July 29, I wrote: "300M should allow the model to learn for awhile." I selected the largest model that fit the Kaggle submission limit of 197.7 MiB after 5-bit quantization. That model had 300 million parameters.
+My 13M PPO run improved for only a short time, so I decided that the model was too small. Being the overly ambitious person I am, I selected the largest model that fit the Kaggle submission limit of 197.7 MiB after 5-bit quantization. 300 million parameters. Looking back, it's kind of funny that I thought that was a good idea.
 
 This decision made the competition expensive. The 13M model made approximately 60,000 self-play decisions per second on my two GPUs. The 300M model made approximately 1,700–2,000 decisions per second on one GPU. A PCIe fault caused my second GPU to disconnect many times. Thus, I rented GPUs on Vast for the main run. At the end, I used an H200.
 
@@ -76,7 +74,7 @@ The 300M model continued to learn. Iteration 851 of the final PPO run won my sil
 
 I did not find out what that model could do with full training. Also, I did not do the most important experiment: a medium-size model that could play many more games in the same weeks. I asked, "What is the largest model that fits the submission limit?" The correct question was, "What is the largest model that I can train to convergence before the deadline?"
 
-The Pokémon ladder also showed me that ladder scores have much noise. I submitted the same it851 file five times. The five scores were 731, 838, 945, 963, and 1,004.
+The Pokémon ladder also showed me that ladder scores have much noise. At one point, I submitted the exact same agent twice (at the exact same time) and there was a difference of over 500 ELO between the two.
 
 ## Kaggriculture: the model had too much to learn
 
@@ -113,15 +111,15 @@ After the worker decisions, the network wrote up to ten ordered market requests.
 
 On held-out games, this was approximately 25 decisions for each player on each turn. That is approximately 18,000 decisions for each player in each game. The model had to learn how to move before it could learn how to farm.
 
-Before this, I tried a different approach. On September 17, I trained a macro version. The network selected production jobs from approximately 1,100 candidates. A hand-written executor then moved the workers to do the jobs. This version lost all its games, and it also lost all four games against an agent that does nothing.
+Before this, I tried a different approach. I tried training a macro version first. The network selected production jobs from approximately 1,100 candidates. A hand-written executor then moved the workers to do the jobs. This version lost all its games, and it also lost all four games against an agent that does nothing.
 
-The problem was the executor. It did not use fertilizer. Also, it could not express approximately one quarter of the actions of the strong players. I did not fix the abstraction. Instead, I changed to primitive actions.
+The problem was the executor. It did not use fertilizer. Also, it could not express approximately one quarter of the actions of the strong players. I did not fix the abstraction. Instead, I changed to primitive actions. My thought process was that the policy should be able to learn everything. Unfortunately the action space was way too large to learn, even with over 1.7 million games of training.
 
 ### The BC model was accurate, but it did not win
 
 The BC data had 22,185 games from the organizer's top-episode datasets. That is 31.9 million player-turns. The data included both seats, with winners and losers. After 11 epochs, I tested the model on 650 games that it did not see in training. It predicted the worker command correctly 85.7% of the time. It predicted the market request correctly 86.0% of the time.
 
-The model did not win one game against a strong bot.
+The model still did not win one game against a strong bot.
 
 <figure>
   <picture>
@@ -142,7 +140,7 @@ This result confused me, because BC worked in Pokémon. Now I think that the cau
 
 ### PPO improved the policy, but toward the wrong target
 
-PPO started from this BC checkpoint on September 19. It ran until the deadline on September 30, approximately 11.5 days. Earlier in September, I also used PPO with other models.
+PPO started from the BC checkpoint I trained. It ran until the deadline on September 30, approximately 11.5 days. Earlier in September, I also used PPO with other models.
 
 The setup had these parts:
 
@@ -177,7 +175,7 @@ Pure-PPO submissions had ladder scores from 1,605 to 2,399. On average, later ch
 
 My best ladder result did not come from pure PPO. It came from a hybrid agent. PPO played days 0–11, and then a deterministic planner from a teammate played days 12–29. This hybrid scored 2,433. The planner works at the task level and calculates sales with a price model. My policy almost never found this behavior through exploration.
 
-Thus, I think that my policy did not have task-level planning. The policy did not need more training time.
+Thus, I think the issue was that my policy did not have task-level planning. More training time wouldn't have helped much.
 
 My panel was also too similar to my training pool. In internal tests, the final policy beat three bots from my teammates in 84–92% of games. On the ladder, those same bots scored approximately 600 points more than my policy. If your policy trains against the panel, the panel is not a held-out evaluation.
 
@@ -220,7 +218,7 @@ The quality of a model depends on the number of games that you can use to train 
 
 ### 4. You do not need a datacenter
 
-Because of the Orbit Wars winner, I thought that RL needs a large amount of compute. But in each competition this year, strong teams used one consumer GPU:
+Because of the Orbit Wars winner, I thought that RL needs a large amount of compute. But in each competition this year, there were many strong teams who used only one consumer GPU:
 
 - **Orbit Wars:** In May, the second-place team trained a 600K-parameter model with self-play from scratch. The training took approximately three days on one rented RTX 5090.
 - **Pokémon:** The [27th-place team](https://www.kaggle.com/competitions/pokemon-tcg-ai-battle/discussion/738158) used pure self-play PPO without BC. Their 12M-parameter model trained at approximately 30 games per second on one RTX 3090.
