@@ -5,7 +5,7 @@
     <link>https://keithtyser.com/blog/</link>
     <description>AI/ML, data science, and whatever else seems worth writing down.</description>
     <language>en-us</language>
-    <lastBuildDate>Sat, 03 Oct 2026 16:17:32 GMT</lastBuildDate>
+    <lastBuildDate>Tue, 06 Oct 2026 05:11:05 GMT</lastBuildDate>
     <atom:link href="https://keithtyser.com/feed.xml" rel="self" type="application/rss+xml"/>
     <item>
       <title>Three Simulation Competitions and Three PPO Mistakes</title>
@@ -14,7 +14,7 @@
       <pubDate>Sat, 03 Oct 2026 00:00:00 GMT</pubDate>
       <description>What I learned about reinforcement learning from Orbit Wars, Pokémon TCG, and Kaggriculture. Each competition showed me a different mistake.</description>
       <content:encoded><![CDATA[<p>From April to September, I entered three Kaggle simulation competitions: <a href="https://www.kaggle.com/competitions/orbit-wars" target="_blank" rel="noopener noreferrer">Orbit Wars</a>, the <a href="https://www.kaggle.com/competitions/pokemon-tcg-ai-battle" target="_blank" rel="noopener noreferrer">Pokémon TCG AI Battle</a>, and <a href="https://www.kaggle.com/competitions/kaggriculture" target="_blank" rel="noopener noreferrer">Kaggriculture</a>. In each competition, you submit an agent. The agent plays against the agents of other teams on a live ladder, and the ladder sets your rank.</p>
-<p>In all three competitions, I wanted to win with self-play reinforcement learning (RL). I used PPO (proximal policy optimization). In the last two competitions, I started PPO from a behavioral cloning (BC) model.</p>
+<p>In all three competitions, my goal was to win with self-play reinforcement learning (RL) using PPO (proximal policy optimization). In the last two competitions, I started PPO from a behavioral cloning (BC) model.</p>
 <table>
 <thead>
 <tr>
@@ -49,8 +49,8 @@
 <p>Orbit Wars is a real-time space strategy game. Each player starts with one planet on a 100×100 board, and planets make ships. On each turn, you send fleets at an angle toward other planets. A sun destroys fleets that fly through it. Comets move across the board on a schedule.</p>
 <p>I started my main RL attempt in late May. The network did not aim the fleets. The policy selected a source planet, a target planet, and one of six ship fractions. A predictive-aim routine calculated the angle. The network was small, with approximately 32,000 parameters.</p>
 <p>I put most of my effort into speed. My first Python environment ran 7 steps per second. Then I wrote a batched PyTorch version for the AMD GPU in my home PC. This version ran approximately 7,500 steps per second on full games. In approximately 71 hours, the run recorded approximately 1.43 billion transitions.</p>
-<p>The optimizer metrics looked correct, but the agent did not become strong. The best league checkpoint won approximately one third of its games against my own heuristic bot. On May 25, I wrote: &quot;we don&#39;t seem to be making any progress in the last 48 hours. what are we doing wrong?&quot;</p>
-<p>Now I know that the problems were not in the optimizer:</p>
+<p>The optimizer metrics looked correct, but the agent did not become strong. The best league checkpoint won approximately one third of its games against my own heuristic bot.</p>
+<p>Looking at the code closer, I realized the problems were not in the optimizer:</p>
 <ul>
 <li>The simulator made most training games shorter: 64–256 turns. The real game has 500 turns.</li>
 <li>The simulator did not have comets until late in the run.</li>
@@ -58,15 +58,14 @@
 <li>The agent trained against proxy opponents, not against the bots that it had to beat.</li>
 <li>Each evaluation used only two games per opponent.</li>
 </ul>
-<p>My simulator was fast, but it simulated a different game. Also, my evaluations used too few games to show the problem. I submitted a heuristic bot and received a bronze medal at rank 348.</p>
+<p>My simulator was fast, but it simulated a different game. Also, my evaluations used too few games to show the problem. I was very unprepared to do RL but failing at it taught me a lot. I ended up just submitting a heuristic bot and received a bronze medal at rank 348.</p>
 <p>The winner, Isaiah (<a href="https://github.com/IsaiahPressman/kaggle-orbit-wars" target="_blank" rel="noopener noreferrer">code</a>), trained a 200M-parameter transformer with pure self-play. The training used 15 billion steps and approximately 2,400 B200 GPU-hours. He also rewrote the game engine in Rust.</p>
-<p>From this result, I learned the wrong lesson. I thought that RL in these competitions needs a datacenter, and I kept this belief for two more competitions. But a counterexample was available in early May. The team in second place at that time <a href="https://www.kaggle.com/competitions/orbit-wars/discussion/697725" target="_blank" rel="noopener noreferrer">posted their RL lessons</a>. They trained a 600K-parameter model from scratch with self-play. The training took approximately three days on one rented RTX 5090, and their GPU budget was approximately $150.</p>
-<p>From that post, I took only one fact: their speed of 10,000 steps per second. Thus, I decided that speed was my problem. Speed was not my first problem.</p>
+<p>From this result, I learned the wrong lesson. I thought that RL in these competitions needs a datacenter, and I kept this belief for two more competitions. But a counterexample was available in early May. The team in second place at that time <a href="https://www.kaggle.com/competitions/orbit-wars/discussion/697725" target="_blank" rel="noopener noreferrer">posted their RL lessons</a>. They trained a 600K-parameter model from scratch with self-play. The training took approximately three days on one rented RTX 5090, and their GPU budget was approximately $150. Therefore my problem is not compute, it&#39;s a skill issue.</p>
 <h2 id="pok-mon-tcg-ppo-worked-but-the-model-was-too-large"><a class="anchor" href="#pok-mon-tcg-ppo-worked-but-the-model-was-too-large" aria-label="Link to section: Pokémon TCG: PPO worked, but the model was too large">#</a>Pokémon TCG: PPO worked, but the model was too large</h2>
 <p>Pokémon was a different type of problem. At each decision, the engine gives the agent a short list of legal options, and the agent selects one option. A game has approximately 100 decisions. The agent also selects its 60-card deck.</p>
 <h3 id="bc-first-and-a-bug-that-hid-the-results"><a class="anchor" href="#bc-first-and-a-bug-that-hid-the-results" aria-label="Link to section: BC first, and a bug that hid the results">#</a>BC first, and a bug that hid the results</h3>
 <p>In this competition, I started with BC. BC trains a policy to predict the moves of strong players from public replays. Then PPO makes that policy stronger. My first BC model was a 13M-parameter transformer, and it scored 523 on the ladder. This score was too low.</p>
-<p>The cause was a bug. Until July 28, all my neural network submissions used a fallback move. The function <code>torch.set_grad_enabled(False)</code> is thread-local, and the Kaggle harness called my agent from a different thread. Thus, the network path did not run correctly, and my fallback selected option zero for each decision. After I fixed the bug, the same 13M BC file scored 878. BC alone put me in the bronze medal range.</p>
+<p>The cause was a bug. All of my initial BC submissions used a fallback move. The function <code>torch.set_grad_enabled(False)</code> is thread-local, and the Kaggle harness called my agent from a different thread. Thus, the network path did not run correctly, and my fallback selected option zero for each decision. After I fixed the bug, the same 13M BC file scored 878. BC alone put me in the bronze medal range.</p>
 <h3 id="the-parts-of-the-recipe-that-worked"><a class="anchor" href="#the-parts-of-the-recipe-that-worked" aria-label="Link to section: The parts of the recipe that worked">#</a>The parts of the recipe that worked</h3>
 <p>PPO then made the BC policy stronger. I will use these parts again:</p>
 <ul>
@@ -76,11 +75,11 @@
 <li>Train against a league, not only against the current policy. My league started with five PPO runs on five different decks, with one shared opponent pool. Later, I added public agents and 42 behavioral clones of top ladder agents.</li>
 </ul>
 <h3 id="i-made-the-model-too-large"><a class="anchor" href="#i-made-the-model-too-large" aria-label="Link to section: I made the model too large">#</a>I made the model too large</h3>
-<p>My 13M PPO run improved for only a short time, so I decided that the model was too small. On July 29, I wrote: &quot;300M should allow the model to learn for awhile.&quot; I selected the largest model that fit the Kaggle submission limit of 197.7 MiB after 5-bit quantization. That model had 300 million parameters.</p>
+<p>My 13M PPO run improved for only a short time, so I decided that the model was too small. Being the overly ambitious person I am, I selected the largest model that fit the Kaggle submission limit of 197.7 MiB after 5-bit quantization. 300 million parameters. Looking back, it&#39;s kind of funny that I thought that was a good idea.</p>
 <p>This decision made the competition expensive. The 13M model made approximately 60,000 self-play decisions per second on my two GPUs. The 300M model made approximately 1,700–2,000 decisions per second on one GPU. A PCIe fault caused my second GPU to disconnect many times. Thus, I rented GPUs on Vast for the main run. At the end, I used an H200.</p>
 <p>The 300M model continued to learn. Iteration 851 of the final PPO run won my silver medal. It scored 963 and finished at rank 210 of 6,807. But at iteration 779, the model had only approximately 71 million decisions of experience. That is approximately 200 times less experience than the Orbit Wars winner used. Later checkpoints did not beat iteration 851 on the ladder.</p>
 <p>I did not find out what that model could do with full training. Also, I did not do the most important experiment: a medium-size model that could play many more games in the same weeks. I asked, &quot;What is the largest model that fits the submission limit?&quot; The correct question was, &quot;What is the largest model that I can train to convergence before the deadline?&quot;</p>
-<p>The Pokémon ladder also showed me that ladder scores have much noise. I submitted the same it851 file five times. The five scores were 731, 838, 945, 963, and 1,004.</p>
+<p>The Pokémon ladder also showed me that ladder scores have much noise. At one point, I submitted the exact same agent twice (at the exact same time) and there was a difference of over 500 ELO between the two.</p>
 <h2 id="kaggriculture-the-model-had-too-much-to-learn"><a class="anchor" href="#kaggriculture-the-model-had-too-much-to-learn" aria-label="Link to section: Kaggriculture: the model had too much to learn">#</a>Kaggriculture: the model had too much to learn</h2>
 <p>Kaggriculture is a two-player farming game. Each player has a 10×10 farm. A game has 30 in-game days, and each day has 24 turns. At the end, the player with more money wins.</p>
 <p>During the game, you do these tasks:</p>
@@ -109,11 +108,11 @@
 </ol>
 <p>After the worker decisions, the network wrote up to ten ordered market requests. Each request had 23 possible types and up to 233 possible quantities. The network also selected each movement step, one tile at a time. The policy had no task layer.</p>
 <p>On held-out games, this was approximately 25 decisions for each player on each turn. That is approximately 18,000 decisions for each player in each game. The model had to learn how to move before it could learn how to farm.</p>
-<p>Before this, I tried a different approach. On September 17, I trained a macro version. The network selected production jobs from approximately 1,100 candidates. A hand-written executor then moved the workers to do the jobs. This version lost all its games, and it also lost all four games against an agent that does nothing.</p>
-<p>The problem was the executor. It did not use fertilizer. Also, it could not express approximately one quarter of the actions of the strong players. I did not fix the abstraction. Instead, I changed to primitive actions.</p>
+<p>Before this, I tried a different approach. I tried training a macro version first. The network selected production jobs from approximately 1,100 candidates. A hand-written executor then moved the workers to do the jobs. This version lost all its games, and it also lost all four games against an agent that does nothing.</p>
+<p>The problem was the executor. It did not use fertilizer. Also, it could not express approximately one quarter of the actions of the strong players. I did not fix the abstraction. Instead, I changed to primitive actions. My thought process was that the policy should be able to learn everything. Unfortunately the action space was way too large to learn, even with over 1.7 million games of training.</p>
 <h3 id="the-bc-model-was-accurate-but-it-did-not-win"><a class="anchor" href="#the-bc-model-was-accurate-but-it-did-not-win" aria-label="Link to section: The BC model was accurate, but it did not win">#</a>The BC model was accurate, but it did not win</h3>
 <p>The BC data had 22,185 games from the organizer&#39;s top-episode datasets. That is 31.9 million player-turns. The data included both seats, with winners and losers. After 11 epochs, I tested the model on 650 games that it did not see in training. It predicted the worker command correctly 85.7% of the time. It predicted the market request correctly 86.0% of the time.</p>
-<p>The model did not win one game against a strong bot.</p>
+<p>The model still did not win one game against a strong bot.</p>
 <figure>
   <picture>
     <source media="(max-width: 640px)" srcset="/blog/images/kaggriculture-bc-accuracy-vs-wins-mobile.svg">
@@ -134,7 +133,7 @@
 <li><strong>I trained on requests, not on results.</strong> The 3rd-place team found that many strong bots send market orders that are too large. The engine silently makes these orders smaller. If you clone the raw orders, your model learns orders that the engine does not execute.</li>
 </ul>
 <h3 id="ppo-improved-the-policy-but-toward-the-wrong-target"><a class="anchor" href="#ppo-improved-the-policy-but-toward-the-wrong-target" aria-label="Link to section: PPO improved the policy, but toward the wrong target">#</a>PPO improved the policy, but toward the wrong target</h3>
-<p>PPO started from this BC checkpoint on September 19. It ran until the deadline on September 30, approximately 11.5 days. Earlier in September, I also used PPO with other models.</p>
+<p>PPO started from the BC checkpoint I trained. It ran until the deadline on September 30, approximately 11.5 days. Earlier in September, I also used PPO with other models.</p>
 <p>The setup had these parts:</p>
 <ul>
 <li><strong>Simulator.</strong> A JAX port of the game engine ran on the GPU, and the policy ran in PyTorch. I did parity tests against the official engine.</li>
@@ -165,7 +164,7 @@
 
 <p>Pure-PPO submissions had ladder scores from 1,605 to 2,399. On average, later checkpoints did better, but the result was not reliable. My panel gave three checkpoints scores of 98%, 100%, and 97%. On the ladder, they scored 2,166, 2,399, and 2,040.</p>
 <p>My best ladder result did not come from pure PPO. It came from a hybrid agent. PPO played days 0–11, and then a deterministic planner from a teammate played days 12–29. This hybrid scored 2,433. The planner works at the task level and calculates sales with a price model. My policy almost never found this behavior through exploration.</p>
-<p>Thus, I think that my policy did not have task-level planning. The policy did not need more training time.</p>
+<p>Thus, I think the issue was that my policy did not have task-level planning. More training time wouldn&#39;t have helped much.</p>
 <p>My panel was also too similar to my training pool. In internal tests, the final policy beat three bots from my teammates in 84–92% of games. On the ladder, those same bots scored approximately 600 points more than my policy. If your policy trains against the panel, the panel is not a held-out evaluation.</p>
 <h3 id="what-the-top-teams-did-differently"><a class="anchor" href="#what-the-top-teams-did-differently" aria-label="Link to section: What the top teams did differently">#</a>What the top teams did differently</h3>
 <p>The top teams published their solutions. Each solution did something important that my solution did not do:</p>
@@ -193,7 +192,7 @@
 <h3 id="3-size-the-model-for-the-training-budget-not-for-the-submission-limit"><a class="anchor" href="#3-size-the-model-for-the-training-budget-not-for-the-submission-limit" aria-label="Link to section: 3. Size the model for the training budget, not for the submission limit">#</a>3. Size the model for the training budget, not for the submission limit</h3>
 <p>The quality of a model depends on the number of games that you can use to train it. Start small, and make sure that the full training loop works. Make the model larger only when the small model does not improve any more. The M &amp; M &amp; P &amp; Q team increased their model from 6 to 12 blocks during the competition. Their 24-block model did not go into a final submission.</p>
 <h3 id="4-you-do-not-need-a-datacenter"><a class="anchor" href="#4-you-do-not-need-a-datacenter" aria-label="Link to section: 4. You do not need a datacenter">#</a>4. You do not need a datacenter</h3>
-<p>Because of the Orbit Wars winner, I thought that RL needs a large amount of compute. But in each competition this year, strong teams used one consumer GPU:</p>
+<p>Because of the Orbit Wars winner, I thought that RL needs a large amount of compute. But in each competition this year, there were many strong teams who used only one consumer GPU:</p>
 <ul>
 <li><strong>Orbit Wars:</strong> In May, the second-place team trained a 600K-parameter model with self-play from scratch. The training took approximately three days on one rented RTX 5090.</li>
 <li><strong>Pokémon:</strong> The <a href="https://www.kaggle.com/competitions/pokemon-tcg-ai-battle/discussion/738158" target="_blank" rel="noopener noreferrer">27th-place team</a> used pure self-play PPO without BC. Their 12M-parameter model trained at approximately 30 games per second on one RTX 3090.</li>
@@ -300,7 +299,7 @@
       <pubDate>Tue, 28 Jul 2026 00:00:00 GMT</pubDate>
       <description>Why I moved beyond cloud GPU notebooks and DGX Sparks, what dual RTX PRO 6000 Blackwell cards can do, and the cooling and Linux multi-GPU transfer problems I had to fix.</description>
       <content:encoded><![CDATA[<p>I never feel like I have enough GPUs.</p>
-<p>I already own two DGX Sparks. Clustered, they give me 256 GB of unified memory. That lets me test large models that would not fit on one workstation GPU. Their limit is memory bandwidth. Training and inference both run slower than I want, so I use the Sparks to test a job before moving the full run to faster hardware.</p>
+<p>I already own two DGX Sparks. Clustered, they give me 256 GB of unified memory. That lets me test large models that would not fit on one workstation GPU. But their limit is memory bandwidth. Training and inference both run slower than I want, so I use the Sparks to test a job before moving the full run to faster hardware.</p>
 <p>That still left me short on compute. I use GPUs almost all the time for Kaggle and my work on large language model (LLM) post-training and evaluation. Most days I run supervised fine-tuning (SFT), low-rank adaptation (LoRA), behavioral cloning, or vLLM inference. I also use proximal policy optimization (PPO) for reinforcement learning. Renting GPUs and working in notebook sessions had become the main limit on my work, so I built this machine.</p>
 <figure>
   <img src="/blog/images/blackwell-workstation-open-case.webp" alt="Open side view of my WRX90 workstation with two NVIDIA RTX PRO 6000 Blackwell GPUs, a 420 mm radiator, and six case fans." loading="eager">
@@ -366,8 +365,8 @@
 <td>6x Noctua NF-A14x25 G2 PWM chromax.black, 140 mm</td>
 </tr>
 </tbody></table>
-<p>The important number is 96 GB per GPU. The cards do not share one 192 GB memory pool. A model must be split across both cards to use all 192 GB. For smaller jobs, I can train on one card while the other runs inference or evals.</p>
-<p>The Max-Q cards each have a 300 W power limit. That keeps their total power and heat manageable. I still get the 96 GB capacity that made me want these cards.</p>
+<p>The important number is 96 GB per GPU, which allows you to fit most top open source models with that much VRAM. For smaller jobs, I can train on one card while the other runs inference or evals.</p>
+<p>The Max-Q cards also have a 300 W power limit which makes it much easier to put multiple in one machine without crazy power supplies or special outlets. That keeps their total power and heat manageable and I still get the 96 GB capacity that made me want these cards. Let&#39;s not forget the ~1.8 TB/s bandwidth (6x the speed of the DGX Spark) as well which is the main reason I got it. I can run training/inference much faster.</p>
 <h2 id="what-i-run-on-it"><a class="anchor" href="#what-i-run-on-it" aria-label="Link to section: What I run on it">#</a>What I run on it</h2>
 <p>The machine has stayed busy since I built it:</p>
 <ul>
@@ -376,7 +375,7 @@
 <li>behavioral cloning and PPO reinforcement-learning jobs</li>
 <li>Kaggle training, local validation, and model experiments</li>
 </ul>
-<p>I now use the DGX Sparks earlier in each project. They are good for testing code, checking memory use, and trying large quantized models across 256 GB. Once I know a run is worth doing, I move it to the workstation.</p>
+<p>I now use the DGX Sparks earlier in each project. They are good for testing code, checking memory use, and trying different workloads since they share the same blackwell architecture as the RTX Pro 6000. Once I know a run is worth doing, I move it to the workstation.</p>
 <p>That split has worked well. The Sparks are small, quiet test machines. The workstation is where I care about iteration speed.</p>
 <h2 id="first-benchmark-results"><a class="anchor" href="#first-benchmark-results" aria-label="Link to section: First benchmark results">#</a>First benchmark results</h2>
 <p>I wanted tests that did more than confirm that <code>nvidia-smi</code> could see both cards. I checked memory data, transfers between system memory and each GPU, and sustained BF16 matrix multiplication. I tested each card alone and both cards together.</p>
@@ -474,7 +473,7 @@
 <p>This test measures raw matrix multiplication. It does not measure NVIDIA&#39;s peak specification or tokens per second. I use it to find heat limits, unstable power, or a card that fails when both GPUs run at once.</p>
 <p>GPU 1 was about 8% slower in this test. It still held full power, stayed cool, and passed the memory and PCIe checks. I will track that gap in real training and inference jobs before I draw a conclusion.</p>
 <h3 id="inference-and-lora-with-a-27b-model"><a class="anchor" href="#inference-and-lora-with-a-27b-model" aria-label="Link to section: Inference and LoRA with a 27B model">#</a>Inference and LoRA with a 27B model</h3>
-<p>I also tested a model that I use on this machine: Qwen3.6-27B. The local model card says its BF16 files were rebuilt from a Q8_0 copy. These numbers describe this local checkpoint, not an official BF16 release.</p>
+<p>I also tested a model that I&#39;ve been using a lot recently: Qwen3.6-27B. These numbers describe this local checkpoint, not an official BF16 release.</p>
 <p>For inference, I used <a href="https://github.com/eugr/llama-benchy" target="_blank" rel="noopener noreferrer">llama-benchy</a> 0.4.0 against vLLM 0.25.1. It ran three times with one request at a time, 1,024 input tokens, exact 256-token output, and prefix caching off. The two-GPU test split the model across both cards with tensor parallelism. Its coherence check passed in both cases.</p>
 <table>
 <thead>
@@ -742,7 +741,7 @@ torchrun --nnodes=2 --nproc-per-node=1 ...
 </code></pre><!-- TODO: your actual NCCL env and all-reduce bandwidth test results -->
 
 <h2 id="what-256-gb-actually-buys-you"><a class="anchor" href="#what-256-gb-actually-buys-you" aria-label="Link to section: What 256 GB actually buys you">#</a>What 256 GB actually buys you</h2>
-<p>The headline: two clustered GB10s can serve models up to roughly 405B parameters at FP4. That is not marketing fiction, it just comes with an asterisk the size of the memory bus.</p>
+<p>The headline: two clustered GB10s can serve models up to roughly 405B parameters at FP4. </p>
 <p>Here is what I measured on my pair, single stream, rounded to the ballpark:</p>
 <table>
 <thead>
