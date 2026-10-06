@@ -67,7 +67,7 @@ torchrun --nnodes=2 --nproc-per-node=1 ...
 
 ## What 256 GB actually buys you
 
-The headline: two clustered GB10s can serve models up to roughly 405B parameters at FP4. That is not marketing fiction, it just comes with an asterisk the size of the memory bus.
+The headline: two clustered GB10s can serve models up to roughly 405B parameters at FP4. 
 
 Here is what I measured on my pair, single stream, rounded to the ballpark:
 
