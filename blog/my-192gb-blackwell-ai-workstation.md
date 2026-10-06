@@ -7,7 +7,7 @@ toc: true
 
 I never feel like I have enough GPUs.
 
-I already own two DGX Sparks. Clustered, they give me 256 GB of unified memory. That lets me test large models that would not fit on one workstation GPU. Their limit is memory bandwidth. Training and inference both run slower than I want, so I use the Sparks to test a job before moving the full run to faster hardware.
+I already own two DGX Sparks. Clustered, they give me 256 GB of unified memory. That lets me test large models that would not fit on one workstation GPU. But their limit is memory bandwidth. Training and inference both run slower than I want, so I use the Sparks to test a job before moving the full run to faster hardware.
 
 That still left me short on compute. I use GPUs almost all the time for Kaggle and my work on large language model (LLM) post-training and evaluation. Most days I run supervised fine-tuning (SFT), low-rank adaptation (LoRA), behavioral cloning, or vLLM inference. I also use proximal policy optimization (PPO) for reinforcement learning. Renting GPUs and working in notebook sessions had become the main limit on my work, so I built this machine.
 
@@ -44,9 +44,9 @@ Vast.ai worked well, but I was using it often enough that buying a machine made 
 | Thermal paste | Thermal Grizzly Duronaut |
 | Case fans | 6x Noctua NF-A14x25 G2 PWM chromax.black, 140 mm |
 
-The important number is 96 GB per GPU. The cards do not share one 192 GB memory pool. A model must be split across both cards to use all 192 GB. For smaller jobs, I can train on one card while the other runs inference or evals.
+The important number is 96 GB per GPU, which allows you to fit most top open source models with that much VRAM. For smaller jobs, I can train on one card while the other runs inference or evals.
 
-The Max-Q cards each have a 300 W power limit. That keeps their total power and heat manageable. I still get the 96 GB capacity that made me want these cards.
+The Max-Q cards also have a 300 W power limit which makes it much easier to put multiple in one machine without crazy power supplies or special outlets. That keeps their total power and heat manageable and I still get the 96 GB capacity that made me want these cards. Let's not forget the ~1.8 TB/s bandwidth (6x the speed of the DGX Spark) as well which is the main reason I got it. I can run training/inference much faster.
 
 ## What I run on it
 
@@ -57,7 +57,7 @@ The machine has stayed busy since I built it:
 - behavioral cloning and PPO reinforcement-learning jobs
 - Kaggle training, local validation, and model experiments
 
-I now use the DGX Sparks earlier in each project. They are good for testing code, checking memory use, and trying large quantized models across 256 GB. Once I know a run is worth doing, I move it to the workstation.
+I now use the DGX Sparks earlier in each project. They are good for testing code, checking memory use, and trying different workloads since they share the same blackwell architecture as the RTX Pro 6000. Once I know a run is worth doing, I move it to the workstation.
 
 That split has worked well. The Sparks are small, quiet test machines. The workstation is where I care about iteration speed.
 
@@ -108,7 +108,7 @@ GPU 1 was about 8% slower in this test. It still held full power, stayed cool, a
 
 ### Inference and LoRA with a 27B model
 
-I also tested a model that I use on this machine: Qwen3.6-27B. The local model card says its BF16 files were rebuilt from a Q8_0 copy. These numbers describe this local checkpoint, not an official BF16 release.
+I also tested a model that I've been using a lot recently: Qwen3.6-27B. These numbers describe this local checkpoint, not an official BF16 release.
 
 For inference, I used [llama-benchy](https://github.com/eugr/llama-benchy) 0.4.0 against vLLM 0.25.1. It ran three times with one request at a time, 1,024 input tokens, exact 256-token output, and prefix caching off. The two-GPU test split the model across both cards with tensor parallelism. Its coherence check passed in both cases.
 
