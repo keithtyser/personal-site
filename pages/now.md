@@ -1,7 +1,7 @@
 ---
 title: Now
 description: What I'm working on right now, plus a log of what came before.
-updated: 2026-08-07
+updated: 2026-11-03
 toc: false
 ---
 
@@ -9,25 +9,39 @@ What I'm working on this month. Inspired by Derek Sivers' [/now page](https://no
 
 ## Working on
 
-Just took my first Kaggle gold in [ROGII Wellbore Geology Prediction](https://www.kaggle.com/competitions/rogii-wellbore-geology-prediction), 14 / 6,125, solo. Next up is the Pokémon TCG agent competition.
+Just finished [ARC-AGI-2](https://www.kaggle.com/competitions/arc-prize-2026-arc-agi-2) and [ARC-AGI-3](https://www.kaggle.com/competitions/arc-prize-2026-arc-agi-3), which consumed the last month of my life. On the public leaderboards my team is sitting **5 / 5,070** in ARC-AGI-3, in the gold range, and **32 / 3,626** in ARC-AGI-2, in the silver range. The private leaderboard comes out December 4, so for now I'm hoping to hold onto both medals.
 
-### [Pokémon TCG AI Battle](https://www.kaggle.com/competitions/pokemon-tcg-ai-battle)
+I now have a solid group of people to team up with, so I can take on more competitions at once. These two are up first.
 
-The next competition. Reinforcement learning is not my strong suit and I know almost nothing about Pokémon, which is most of the appeal.
+### [Gemma 4 Developer Agent](https://www.kaggle.com/competitions/gemma-4-developer-agent)
+
+I'll probably give RL another shot here, and I'll probably fail again.
+
+### [Enveda CASMI 2026](https://www.kaggle.com/competitions/enveda-CASMI26-molecule-id-mass-spectra)
+
+Identifying molecules from their mass spectra. Whatever that means.
 
 ## Planned
 
-### [ARC-AGI-2](https://www.kaggle.com/competitions/arc-prize-2026-arc-agi-2) and [ARC-AGI-3](https://www.kaggle.com/competitions/arc-prize-2026-arc-agi-3)
+### [Name That LLM](https://www.kaggle.com/competitions/name-that-llm) and [Verifiable Quantum Circuit Compilation](https://www.kaggle.com/competitions/google-verifiable-quantum-circuit-compilation)
 
-Entered both. Not working on either yet, but they are the two I most want to sink into.
+Entered both, the second one from Google Quantum AI. I'll probably compete in both after Gemma and CASMI.
 
 ## Thinking about
 
-How to create the best agent harness. Is it better to build one great general harness, or specific harnesses per task/workflow?
+How I was able to delete half of the experts from Qwen Flash Next and still keep almost the same performance. Were half of them useless? I never thought that was possible, but it really shows how much of the weights you can get rid of, especially for specialized use cases.
 
 ## Log
 
 Past snapshots of this page, newest first.
+
+### Nov 3, 2026
+
+**Pokémon TCG AI Battle** is over. Competing solo, I finished **210 / 6,807** for a **silver medal** with a 300M-parameter model trained with behavioral cloning and PPO.
+
+**Kaggriculture** is over too. Our five-person team, QQ Farming, finished **302 / 10,148** for another **silver**. It was a very frustrating competition, but I keep learning more about RL and self-play PPO. What I learned across Orbit Wars, Pokémon, and Kaggriculture is in [Three Simulation Competitions and Three PPO Mistakes](/blog/three-simulation-competitions-three-ppo-mistakes.html). Kaggriculture was also my first time on a team, and it was fun. I don't know if I'll ever compete solo again. I already have my solo gold, so going solo now is mostly a disadvantage. A team means more compute, more ideas, more experiments, more everything, and it's great networking. That puts me at 1 gold, 3 silver, and 6 bronze.
+
+**ARC-AGI-2** and **ARC-AGI-3** closed on Nov 2 after taking over the last month, and I'm super happy to finally be done. On the public leaderboards my team is **5 / 5,070** in ARC-AGI-3 (gold range) and **32 / 3,626** in ARC-AGI-2 (silver range). Winners and the private leaderboard come out December 4. In a perfect world we keep gold in ARC-AGI-3 and a shakeup somehow lifts us into gold in ARC-AGI-2. Overall it was a fun competition. I learned a lot about inference engineering and more about RL (GRPO and RLVR), and I got to use B300s for the first time. I might do a writeup. Before this update I was heading into Pokémon TCG, with ARC-AGI-2 and ARC-AGI-3 planned, and thinking about whether one great general agent harness beats specific harnesses per task.
 
 ### Aug 7, 2026
 
