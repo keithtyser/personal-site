@@ -8,7 +8,7 @@ toc: false
 ARC Prize 2026 closed on November 2. I was in both of its Kaggle competitions, on two different teams. These are our results on the public leaderboards:
 
 - [ARC-AGI-3](https://www.kaggle.com/competitions/arc-prize-2026-arc-agi-3): Team Turducken was **5th of 5,070**, with a score of **56.02**.
-- [ARC-AGI-2](https://www.kaggle.com/competitions/arc-prize-2026-arc-agi-2): この遥かなる旅路に祝福を was **32nd of 3,626**, with a score of **70.14**.
+- [ARC-AGI-2](https://www.kaggle.com/competitions/arc-prize-2026-arc-agi-2): この遥かなる旅路に祝福を ("A Blessing on This Long Journey") was **32nd of 3,626**, with a score of **70.14**.
 
 Kaggle will publish the private leaderboards on December 4.
 
@@ -29,6 +29,8 @@ We published three items about our ARC-AGI-3 entry:
 
 ARC-AGI-3 has 110 games that the agent has not seen before. The agent must play all of them on one 96 GB RTX PRO 6000 in approximately nine hours. The agent does not receive the rules of a game. It must find the goal and the rules while it plays.
 
+In the final weeks, Kaggle had infrastructure problems that affected this clock. Because of a problem with the dataset cache, the model sometimes took up to 45 minutes to load. Also, the run stops if the agent does not make a move in a game within 15 minutes. If the server took more than 15 minutes to start, the submission had a score of 0. Many submissions had scores of 0 for this reason, until competitors added a dummy move in the first 15 minutes. The slow startup still used part of the nine hours.
+
 Our entry used Qwen3.8 Flash Next with 4-bit weights on the SGLang fork from Daniel Franzen. We started from his public Milestone 2 notebook, which uses the harness from Tufa Labs. A turducken is a chicken in a duck in a turkey. In our entry, the Tufa Labs harness is the chicken, Daniel's notebook is the duck and our engineering is the turkey.
 
 The model played each game in a separate conversation. It played with Python code that it wrote. It kept a notes file, and the notes stayed when the harness removed old turns from the conversation. At the start of each level, the model wrote a description of a solved level in its notes. The functions that the model wrote stayed available until the end of the game.
@@ -43,7 +45,11 @@ Most of our score increase was a result of more speed. Throughput for a full run
 
 ## ARC-AGI-2
 
-My ARC-AGI-2 team had four members: NT, ngyzly, Slow∞Loop and me. The team name was この遥かなる旅路に祝福を, which means approximately "a blessing on this long journey".
+My ARC-AGI-2 team had four members: NT, ngyzly, Slow∞Loop and me. Our team name means "a blessing on this long journey". We chose it because of the infrastructure problems at Kaggle in the final weeks of the competition.
+
+Kaggle ran ARC-AGI-2 submissions on instances with four L4 GPUs, and the queue for these instances was very long. Kaggle took more than 24 hours to score a submission, and sometimes 48 hours. Because of this long feedback loop, it was difficult to do experiments. I do not want to make excuses, but many competitors reported unstable runs and large, sudden changes in their scores at this time.
+
+The slow feedback also hid a problem in our own stack. During our runs, the KV cache became too full and our throughput collapsed. Our notebook still had a good score, but the score did not increase. We thought that the cause was the infrastructure, or that our changes did not help. We did not find the real cause until late in the competition.
 
 ARC-AGI-2 has 240 hidden grid puzzles, and the solver can give two answers for each puzzle. It must solve all of them in 12 hours on four 24 GB NVIDIA L4 GPUs. We used the same model as in ARC-AGI-3, Qwen3.8 Flash Next with 4-bit weights. Our server was a patched vLLM that used all four GPUs. We started from the public ARC-AGI-3 recipe for Flash Next. This recipe used the 4-bit weights from Daniel Franzen, the patched vLLM runtime from Lord Han Solo and the MTP drafter from albucino.
 

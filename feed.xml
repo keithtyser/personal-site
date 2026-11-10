@@ -5,7 +5,7 @@
     <link>https://keithtyser.com/blog/</link>
     <description>AI/ML, data science, and whatever else seems worth writing down.</description>
     <language>en-us</language>
-    <lastBuildDate>Tue, 10 Nov 2026 14:22:08 GMT</lastBuildDate>
+    <lastBuildDate>Tue, 10 Nov 2026 14:36:29 GMT</lastBuildDate>
     <atom:link href="https://keithtyser.com/feed.xml" rel="self" type="application/rss+xml"/>
     <item>
       <title>ARC Prize 2026: ARC-AGI-2 and ARC-AGI-3</title>
@@ -16,7 +16,7 @@
       <content:encoded><![CDATA[<p>ARC Prize 2026 closed on November 2. I was in both of its Kaggle competitions, on two different teams. These are our results on the public leaderboards:</p>
 <ul>
 <li><a href="https://www.kaggle.com/competitions/arc-prize-2026-arc-agi-3" target="_blank" rel="noopener noreferrer">ARC-AGI-3</a>: Team Turducken was <strong>5th of 5,070</strong>, with a score of <strong>56.02</strong>.</li>
-<li><a href="https://www.kaggle.com/competitions/arc-prize-2026-arc-agi-2" target="_blank" rel="noopener noreferrer">ARC-AGI-2</a>: この遥かなる旅路に祝福を was <strong>32nd of 3,626</strong>, with a score of <strong>70.14</strong>.</li>
+<li><a href="https://www.kaggle.com/competitions/arc-prize-2026-arc-agi-2" target="_blank" rel="noopener noreferrer">ARC-AGI-2</a>: この遥かなる旅路に祝福を (&quot;A Blessing on This Long Journey&quot;) was <strong>32nd of 3,626</strong>, with a score of <strong>70.14</strong>.</li>
 </ul>
 <p>Kaggle will publish the private leaderboards on December 4.</p>
 <h2 id="arc-agi-3-with-team-turducken"><a class="anchor" href="#arc-agi-3-with-team-turducken" aria-label="Link to section: ARC-AGI-3 with Team Turducken">#</a>ARC-AGI-3 with Team Turducken</h2>
@@ -33,6 +33,7 @@
 
 <h3 id="what-we-built"><a class="anchor" href="#what-we-built" aria-label="Link to section: What we built">#</a>What we built</h3>
 <p>ARC-AGI-3 has 110 games that the agent has not seen before. The agent must play all of them on one 96 GB RTX PRO 6000 in approximately nine hours. The agent does not receive the rules of a game. It must find the goal and the rules while it plays.</p>
+<p>In the final weeks, Kaggle had infrastructure problems that affected this clock. Because of a problem with the dataset cache, the model sometimes took up to 45 minutes to load. Also, the run stops if the agent does not make a move in a game within 15 minutes. If the server took more than 15 minutes to start, the submission had a score of 0. Many submissions had scores of 0 for this reason, until competitors added a dummy move in the first 15 minutes. The slow startup still used part of the nine hours.</p>
 <p>Our entry used Qwen3.8 Flash Next with 4-bit weights on the SGLang fork from Daniel Franzen. We started from his public Milestone 2 notebook, which uses the harness from Tufa Labs. A turducken is a chicken in a duck in a turkey. In our entry, the Tufa Labs harness is the chicken, Daniel&#39;s notebook is the duck and our engineering is the turkey.</p>
 <p>The model played each game in a separate conversation. It played with Python code that it wrote. It kept a notes file, and the notes stayed when the harness removed old turns from the conversation. At the start of each level, the model wrote a description of a solved level in its notes. The functions that the model wrote stayed available until the end of the game.</p>
 <p>Most of our score increase was a result of more speed. Throughput for a full run increased from 605 to <strong>2,150 generated tokens per second</strong>, with 32 games on the GPU at the same time. In three weeks, our score increased from 7.36 to 41.97, mostly because of speed work. Harness changes then increased it to 52.82. A last speed change increased it to 56.02.</p>
@@ -43,7 +44,9 @@
 <li>General tools helped more than advice for specific games. Runs with notes, a longer context window and reusable code had better scores. Advice for specific games sometimes caused problems. For example, we told the agent to ignore segmented bars at the edge of the screen. In one game, an edge bar showed the goal.</li>
 </ul>
 <h2 id="arc-agi-2"><a class="anchor" href="#arc-agi-2" aria-label="Link to section: ARC-AGI-2">#</a>ARC-AGI-2</h2>
-<p>My ARC-AGI-2 team had four members: NT, ngyzly, Slow∞Loop and me. The team name was この遥かなる旅路に祝福を, which means approximately &quot;a blessing on this long journey&quot;.</p>
+<p>My ARC-AGI-2 team had four members: NT, ngyzly, Slow∞Loop and me. Our team name means &quot;a blessing on this long journey&quot;. We chose it because of the infrastructure problems at Kaggle in the final weeks of the competition.</p>
+<p>Kaggle ran ARC-AGI-2 submissions on instances with four L4 GPUs, and the queue for these instances was very long. Kaggle took more than 24 hours to score a submission, and sometimes 48 hours. Because of this long feedback loop, it was difficult to do experiments. I do not want to make excuses, but many competitors reported unstable runs and large, sudden changes in their scores at this time.</p>
+<p>The slow feedback also hid a problem in our own stack. During our runs, the KV cache became too full and our throughput collapsed. Our notebook still had a good score, but the score did not increase. We thought that the cause was the infrastructure, or that our changes did not help. We did not find the real cause until late in the competition.</p>
 <p>ARC-AGI-2 has 240 hidden grid puzzles, and the solver can give two answers for each puzzle. It must solve all of them in 12 hours on four 24 GB NVIDIA L4 GPUs. We used the same model as in ARC-AGI-3, Qwen3.8 Flash Next with 4-bit weights. Our server was a patched vLLM that used all four GPUs. We started from the public ARC-AGI-3 recipe for Flash Next. This recipe used the 4-bit weights from Daniel Franzen, the patched vLLM runtime from Lord Han Solo and the MTP drafter from albucino.</p>
 <p>For each puzzle, the model wrote a Python function and ran it on the training examples. The harness accepted a function only when its output was the same as every training output. The output of that function on the test input was our answer.</p>
 <p>Our first Flash Next submission, on October 5, had a score of 42.64. At the end of October, our score was 70.14. As in ARC-AGI-3, most of the increase was a result of inference work:</p>
