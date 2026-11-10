@@ -9,7 +9,7 @@ What I'm working on this month. Inspired by Derek Sivers' [/now page](https://no
 
 ## Working on
 
-Just finished [ARC-AGI-2](https://www.kaggle.com/competitions/arc-prize-2026-arc-agi-2) and [ARC-AGI-3](https://www.kaggle.com/competitions/arc-prize-2026-arc-agi-3), which consumed the last month of my life. On the public leaderboards my team is sitting **5 / 5,070** in ARC-AGI-3, in the gold range, and **32 / 3,626** in ARC-AGI-2, in the silver range. The private leaderboard comes out December 4, so for now I'm hoping to hold onto both medals.
+Just finished [ARC-AGI-2](https://www.kaggle.com/competitions/arc-prize-2026-arc-agi-2) and [ARC-AGI-3](https://www.kaggle.com/competitions/arc-prize-2026-arc-agi-3), which consumed the last month of my life. On the public leaderboards my team is sitting **5 / 5,070** in ARC-AGI-3, in the gold range, and **32 / 3,626** in ARC-AGI-2, in the silver range. The private leaderboard comes out December 4, so for now I'm hoping to hold onto both medals. Our ARC-AGI-3 writeup, paper and video are in [ARC Prize 2026: ARC-AGI-2 and ARC-AGI-3](/blog/arc-prize-2026-arc-agi-2-and-arc-agi-3.html).
 
 I now have a solid group of people to team up with, so I can take on more competitions at once. These two are up first.
 
